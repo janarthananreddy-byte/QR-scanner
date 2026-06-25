@@ -38,6 +38,11 @@ app.post('/api/scan', (req, res) => {
     if (!/^CC\d+$/.test(code)) {
       return res.status(400).json({ error: `Invalid code "${code}". Expected format: CC followed by digits` });
     }
+    // Duplicate check
+    const existing = db.prepare('SELECT id FROM scans WHERE cyclist_code = ?').get(code);
+    if (existing) {
+      return res.status(409).json({ error: 'Rider is already scanned' });
+    }
     const scanned_at = new Date().toISOString();
     const info = db.prepare(
       'INSERT INTO scans (cyclist_code, scanned_at, pit_stop, scanner_name) VALUES (?, ?, ?, ?)'
