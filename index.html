@@ -54,7 +54,6 @@
   </style>
 </head>
 <body>
-
 <header>
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -64,16 +63,12 @@
   <h1>PelotonAid – Pit Stop Scanner</h1>
   <span id="clock"></span>
 </header>
-
 <div class="tab-bar">
   <button class="active" onclick="showTab('scan', this)">📷 Scan</button>
   <button onclick="showTab('records', this)">📋 Records</button>
 </div>
-
 <div id="scan" class="tab active">
-  <div class="scanner-wrap">
-    <div id="reader"></div>
-  </div>
+  <div class="scanner-wrap"><div id="reader"></div></div>
   <div class="field-row">
     <label>Scanner Name:</label>
     <input id="scanner-name" type="text" placeholder="e.g. John, Volunteer 1">
@@ -88,7 +83,6 @@
   </div>
   <div id="toast" class="toast"></div>
 </div>
-
 <div id="records" class="tab">
   <div class="toolbar">
     <input id="search" type="text" placeholder="Search by code, pit stop, or scanner…" oninput="renderTable()">
@@ -100,55 +94,55 @@
   <div id="scan-count"></div>
   <div id="table-container"><div class="empty">Loading…</div></div>
 </div>
-
 <script>
-  let scans = [];
-  let lastScanned = '';
-  let scanCooldown = false;
+  let scans = [], lastScanned = '', scanCooldown = false;
 
   // ── Audio ──────────────────────────────────────────────────────────────
-  const chimeAudio = new Audio('freesound_community-chime-sound-7143.mp3');
-  chimeAudio.volume = 0.6;
+  const _ac = new (window.AudioContext || window.webkitAudioContext)();
+  let _chimeBuf = null;
+
+  // Pre-load chime MP3 into Web Audio buffer (allows gain > 1.0)
+  fetch('freesound_community-chime-sound-7143.mp3')
+    .then(r => r.arrayBuffer())
+    .then(ab => _ac.decodeAudioData(ab))
+    .then(buf => { _chimeBuf = buf; })
+    .catch(() => {});
 
   function playSuccessBeep() {
     try {
-      chimeAudio.currentTime = 0;
-      chimeAudio.play().catch(() => {});
+      if (!_chimeBuf) return;
+      const src  = _ac.createBufferSource();
+      const gain = _ac.createGain();
+      src.buffer = _chimeBuf;
+      gain.gain.value = 2.0;   // 200% volume
+      src.connect(gain);
+      gain.connect(_ac.destination);
+      src.start(0);
     } catch(e) {}
   }
-
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   function playErrorBeep() {
     try {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      const osc  = _ac.createOscillator();
+      const gain = _ac.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.3);
+      osc.frequency.setValueAtTime(300, _ac.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, _ac.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.18, _ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + 0.3);
+      osc.connect(gain); gain.connect(_ac.destination);
+      osc.start(_ac.currentTime); osc.stop(_ac.currentTime + 0.3);
     } catch(e) {}
   }
 
-  // Unlock audio on first touch/click (required by mobile browsers)
-  function unlockAudio() {
-    chimeAudio.play().then(() => { chimeAudio.pause(); chimeAudio.currentTime = 0; }).catch(() => {});
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-  }
-  document.addEventListener('touchstart', unlockAudio, { once: true });
-  document.addEventListener('click',      unlockAudio, { once: true });
+  // Unlock audio context on first interaction (mobile requirement)
+  function _unlockAC() { if (_ac.state === 'suspended') _ac.resume(); }
+  document.addEventListener('touchstart', _unlockAC, { once: true });
+  document.addEventListener('click',      _unlockAC, { once: true });
 
   // ── Clock ──────────────────────────────────────────────────────────────
-  function updateClock() {
-    document.getElementById('clock').textContent = new Date().toLocaleTimeString();
-  }
-  setInterval(updateClock, 1000);
-  updateClock();
+  setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
 
   // ── Tabs ───────────────────────────────────────────────────────────────
   function showTab(id, btn) {
@@ -162,8 +156,7 @@
   // ── Toast ──────────────────────────────────────────────────────────────
   function showToast(msg, type) {
     const t = document.getElementById('toast');
-    t.className = 'toast ' + type;
-    t.textContent = msg;
+    t.className = 'toast ' + type; t.textContent = msg;
     clearTimeout(t._timer);
     t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
   }
@@ -171,13 +164,11 @@
   // ── Save scan ──────────────────────────────────────────────────────────
   async function saveScan(code) {
     if (scanCooldown && code === lastScanned) return;
-    scanCooldown = true;
-    lastScanned = code;
+    scanCooldown = true; lastScanned = code;
     setTimeout(() => { scanCooldown = false; }, 3000);
 
     const pit_stop     = document.getElementById('pit-stop').value.trim() || 'Main';
     const scanner_name = document.getElementById('scanner-name').value.trim();
-
     try {
       const res  = await fetch('/api/scan', {
         method: 'POST',
@@ -185,7 +176,6 @@
         body: JSON.stringify({ cyclist_code: code, pit_stop, scanner_name })
       });
       const data = await res.json();
-
       if (res.status === 409) {
         playErrorBeep();
         showToast('⚠ Rider ' + code + ' is already scanned', 'warning');
@@ -209,40 +199,23 @@
     saveScan(code);
     document.getElementById('manual-code').value = '';
   }
-
-  document.getElementById('manual-code').addEventListener('keydown', e => {
-    if (e.key === 'Enter') submitManual();
-  });
+  document.getElementById('manual-code').addEventListener('keydown', e => { if (e.key === 'Enter') submitManual(); });
 
   // ── QR Scanner ─────────────────────────────────────────────────────────
   const html5QrCode = new Html5Qrcode('reader', { useBarCodeDetectorIfSupported: true });
 
   function onScanSuccess(decodedText) {
     const match = decodedText.match(/CC\d+/i);
-    if (match) {
-      saveScan(match[0].toUpperCase());
-    } else {
-      playErrorBeep();
-      showToast('QR does not contain a valid CC code', 'error');
-    }
+    if (match) { saveScan(match[0].toUpperCase()); }
+    else { playErrorBeep(); showToast('QR does not contain a valid CC code', 'error'); }
   }
-
-  const scanConfig = {
-    fps: 25,
-    qrbox: { width: 200, height: 200 },
-    aspectRatio: 1.0,
-    rememberLastUsedCamera: true,
-    showTorchButtonIfSupported: true,
-    experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-  };
 
   Html5Qrcode.getCameras().then(cameras => {
     if (!cameras || cameras.length === 0) { showToast('No camera found', 'error'); return; }
-    html5QrCode.start({ facingMode: 'environment' }, scanConfig, onScanSuccess, () => {})
-      .catch(() => {
-        html5QrCode.start(cameras[0].id, scanConfig, onScanSuccess, () => {})
-          .catch(err => showToast('Camera error: ' + err, 'error'));
-      });
+    const cfg = { fps: 25, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0, rememberLastUsedCamera: true, showTorchButtonIfSupported: true, experimentalFeatures: { useBarCodeDetectorIfSupported: true } };
+    html5QrCode.start({ facingMode: 'environment' }, cfg, onScanSuccess, () => {})
+      .catch(() => html5QrCode.start(cameras[0].id, cfg, onScanSuccess, () => {})
+        .catch(err => showToast('Camera error: ' + err, 'error')));
   }).catch(() => showToast('Camera permission denied', 'error'));
 
   // ── Records ────────────────────────────────────────────────────────────
@@ -259,29 +232,13 @@
       (s.pit_stop || '').toLowerCase().includes(q) ||
       (s.scanner_name || '').toLowerCase().includes(q)
     );
-
-    document.getElementById('scan-count').textContent =
-      filtered.length + ' record' + (filtered.length !== 1 ? 's' : '') + ' shown';
-
-    if (!filtered.length) {
-      document.getElementById('table-container').innerHTML = '<div class="empty">No records found.</div>';
-      return;
-    }
-
+    document.getElementById('scan-count').textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '') + ' shown';
+    if (!filtered.length) { document.getElementById('table-container').innerHTML = '<div class="empty">No records found.</div>'; return; }
     const rows = filtered.map(s => {
       const dt = new Date(s.scanned_at);
-      return '<tr>' +
-        '<td>' + s.id + '</td>' +
-        '<td><span class="code-badge">' + s.cyclist_code + '</span></td>' +
-        '<td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td>' +
-        '<td>' + (s.pit_stop || '') + '</td>' +
-        '<td>' + (s.scanner_name || '<span style="color:#9ca3af">—</span>') + '</td>' +
-        '<td><button class="del-btn" onclick="deleteScan(' + s.id + ')" title="Delete">✕</button></td>' +
-        '</tr>';
+      return '<tr><td>' + s.id + '</td><td><span class="code-badge">' + s.cyclist_code + '</span></td><td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td><td>' + (s.pit_stop || '') + '</td><td>' + (s.scanner_name || '<span style="color:#9ca3af">—</span>') + '</td><td><button class="del-btn" onclick="deleteScan(' + s.id + ')" title="Delete">✕</button></td></tr>';
     }).join('');
-
-    document.getElementById('table-container').innerHTML =
-      '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
+    document.getElementById('table-container').innerHTML = '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
 
   async function deleteScan(id) {
