@@ -7,221 +7,50 @@
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --green: #16a34a;
-      --green-light: #dcfce7;
-      --red: #dc2626;
-      --red-light: #fee2e2;
-      --gray: #6b7280;
-      --border: #e5e7eb;
-      --bg: #f9fafb;
+      --green: #16a34a; --green-light: #dcfce7;
+      --red: #dc2626;   --red-light: #fee2e2;
+      --amber: #d97706; --amber-light: #fef3c7;
+      --gray: #6b7280;  --border: #e5e7eb; --bg: #f9fafb;
     }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: #111827;
-      min-height: 100vh;
-    }
-
-    header {
-      background: #111827;
-      color: #fff;
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: #111827; min-height: 100vh; }
+    header { background: #111827; color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
     header h1 { font-size: 1.1rem; font-weight: 700; }
     header span { font-size: 0.75rem; color: #9ca3af; margin-left: auto; }
-
-    .tab-bar {
-      display: flex;
-      background: #fff;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 52px;
-      z-index: 99;
-    }
-
-    .tab-bar button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      background: none;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--gray);
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.15s;
-    }
-
-    .tab-bar button.active {
-      color: var(--green);
-      border-bottom-color: var(--green);
-    }
-
+    .tab-bar { display: flex; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 52px; z-index: 99; }
+    .tab-bar button { flex: 1; padding: 12px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s; }
+    .tab-bar button.active { color: var(--green); border-bottom-color: var(--green); }
     .tab { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
     .tab.active { display: block; }
-
-    /* Scanner — smaller camera */
-    .scanner-wrap {
-      display: flex;
-      justify-content: center;
-    }
-
-    #reader {
-      width: 100%;
-      max-width: 300px;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 2px solid var(--border);
-      background: #000;
-    }
-
-    .field-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
+    .scanner-wrap { display: flex; justify-content: center; }
+    #reader { width: 100%; max-width: 300px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); background: #000; }
+    .field-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
     .field-row label { font-size: 0.85rem; font-weight: 600; white-space: nowrap; min-width: 90px; }
-
-    .field-row input {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-    }
-
-    .manual-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .manual-row input {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-    }
-
-    button.primary {
-      background: var(--green);
-      color: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
+    .field-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; }
+    .manual-row { display: flex; gap: 8px; margin-top: 10px; }
+    .manual-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; text-transform: uppercase; }
+    button.primary { background: var(--green); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
     button.primary:disabled { opacity: 0.5; cursor: default; }
-
-    .toast {
-      margin-top: 14px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      display: none;
-    }
-
+    .toast { margin-top: 14px; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; display: none; }
     .toast.success { background: var(--green-light); color: var(--green); display: block; }
     .toast.error   { background: var(--red-light);   color: var(--red);   display: block; }
-
-    /* Records */
-    .toolbar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .toolbar input {
-      flex: 1;
-      min-width: 140px;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.9rem;
-    }
-
+    .toast.warning { background: var(--amber-light); color: var(--amber); display: block; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+    .toolbar input { flex: 1; min-width: 140px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
     .export-btns { display: flex; gap: 6px; }
-
-    button.outline {
-      background: #fff;
-      border: 1px solid var(--border);
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      color: #374151;
-    }
-
+    button.outline { background: #fff; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #374151; }
     button.outline:hover { border-color: var(--green); color: var(--green); }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     thead tr { background: #111827; color: #fff; }
     th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #f0fdf4; }
-
-    .code-badge {
-      background: var(--green-light);
-      color: var(--green);
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    .del-btn {
-      background: none;
-      border: none;
-      color: #dc2626;
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
+    .code-badge { background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 999px; font-weight: 700; letter-spacing: 0.5px; }
+    .del-btn { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 4px; }
     .del-btn:hover { background: var(--red-light); }
-
     .empty { text-align: center; padding: 40px; color: var(--gray); font-size: 0.9rem; }
-
-    #scan-count {
-      font-size: 0.8rem;
-      color: var(--gray);
-      margin-bottom: 8px;
-    }
-
-    @media (max-width: 420px) {
-      th:nth-child(1), td:nth-child(1) { display: none; }
-    }
+    #scan-count { font-size: 0.8rem; color: var(--gray); margin-bottom: 8px; }
+    @media (max-width: 420px) { th:nth-child(1), td:nth-child(1) { display: none; } }
   </style>
 </head>
 <body>
@@ -241,31 +70,25 @@
   <button onclick="showTab('records', this)">📋 Records</button>
 </div>
 
-<!-- SCAN TAB -->
 <div id="scan" class="tab active">
   <div class="scanner-wrap">
     <div id="reader"></div>
   </div>
-
   <div class="field-row">
     <label>Scanner Name:</label>
     <input id="scanner-name" type="text" placeholder="e.g. John, Volunteer 1">
   </div>
-
   <div class="field-row">
     <label>Pit Stop:</label>
     <input id="pit-stop" type="text" value="Main" placeholder="e.g. Main, KM 40">
   </div>
-
   <div class="manual-row" style="margin-top:14px;">
     <input id="manual-code" type="text" placeholder="Manual entry: CC00000001" maxlength="12">
     <button class="primary" onclick="submitManual()">Log</button>
   </div>
-
   <div id="toast" class="toast"></div>
 </div>
 
-<!-- RECORDS TAB -->
 <div id="records" class="tab">
   <div class="toolbar">
     <input id="search" type="text" placeholder="Search by code, pit stop, or scanner…" oninput="renderTable()">
@@ -280,19 +103,56 @@
 
 <script>
   let scans = [];
-  let scanner = null;
   let lastScanned = '';
   let scanCooldown = false;
 
-  // Clock
+  // ── Audio ──────────────────────────────────────────────────────────────
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  function playSuccessBeep() {
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.35);
+    } catch(e) {}
+  }
+
+  function playErrorBeep() {
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.3);
+    } catch(e) {}
+  }
+
+  // Resume audio context on first user interaction
+  document.addEventListener('touchstart', () => { if (audioCtx.state === 'suspended') audioCtx.resume(); }, { once: true });
+  document.addEventListener('click',      () => { if (audioCtx.state === 'suspended') audioCtx.resume(); }, { once: true });
+
+  // ── Clock ──────────────────────────────────────────────────────────────
   function updateClock() {
-    const now = new Date();
-    document.getElementById('clock').textContent = now.toLocaleTimeString();
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString();
   }
   setInterval(updateClock, 1000);
   updateClock();
 
-  // Tabs
+  // ── Tabs ───────────────────────────────────────────────────────────────
   function showTab(id, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
@@ -301,7 +161,7 @@
     if (id === 'records') fetchScans();
   }
 
-  // Toast
+  // ── Toast ──────────────────────────────────────────────────────────────
   function showToast(msg, type) {
     const t = document.getElementById('toast');
     t.className = 'toast ' + type;
@@ -310,29 +170,38 @@
     t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
   }
 
-  // Submit scan to API
+  // ── Save scan ──────────────────────────────────────────────────────────
   async function saveScan(code) {
     if (scanCooldown && code === lastScanned) return;
     scanCooldown = true;
     lastScanned = code;
     setTimeout(() => { scanCooldown = false; }, 3000);
 
-    const pit_stop = document.getElementById('pit-stop').value.trim() || 'Main';
+    const pit_stop    = document.getElementById('pit-stop').value.trim() || 'Main';
     const scanner_name = document.getElementById('scanner-name').value.trim();
+
     try {
-      const res = await fetch('/api/scan', {
+      const res  = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cyclist_code: code, pit_stop, scanner_name })
       });
       const data = await res.json();
-      if (!res.ok) {
+
+      if (res.status === 409) {
+        // Duplicate rider
+        playErrorBeep();
+        showToast('⚠ Rider ' + code + ' is already scanned', 'warning');
+      } else if (!res.ok) {
+        playErrorBeep();
         showToast('⚠ ' + data.error, 'error');
       } else {
-        showToast('✓ ' + data.cyclist_code + ' logged' + (scanner_name ? ' by ' + scanner_name : ''), 'success');
+        playSuccessBeep();
+        showToast('✓ ' + data.cyclist_code + ' logged successfully' + (scanner_name ? ' by ' + scanner_name : ''), 'success');
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
       }
     } catch (e) {
+      playErrorBeep();
       showToast('Network error: ' + e.message, 'error');
     }
   }
@@ -348,16 +217,15 @@
     if (e.key === 'Enter') submitManual();
   });
 
-  // QR Scanner
-  const html5QrCode = new Html5Qrcode('reader', {
-    useBarCodeDetectorIfSupported: true
-  });
+  // ── QR Scanner ─────────────────────────────────────────────────────────
+  const html5QrCode = new Html5Qrcode('reader', { useBarCodeDetectorIfSupported: true });
 
   function onScanSuccess(decodedText) {
     const match = decodedText.match(/CC\d+/i);
     if (match) {
       saveScan(match[0].toUpperCase());
     } else {
+      playErrorBeep();
       showToast('QR does not contain a valid CC code', 'error');
     }
   }
@@ -372,26 +240,15 @@
   };
 
   Html5Qrcode.getCameras().then(cameras => {
-    if (!cameras || cameras.length === 0) {
-      showToast('No camera found', 'error');
-      return;
-    }
-    html5QrCode.start(
-      { facingMode: 'environment' },
-      scanConfig,
-      onScanSuccess,
-      () => {}
-    ).catch(() => {
-      html5QrCode.start(
-        cameras[0].id,
-        scanConfig,
-        onScanSuccess,
-        () => {}
-      ).catch(err => showToast('Camera error: ' + err, 'error'));
-    });
+    if (!cameras || cameras.length === 0) { showToast('No camera found', 'error'); return; }
+    html5QrCode.start({ facingMode: 'environment' }, scanConfig, onScanSuccess, () => {})
+      .catch(() => {
+        html5QrCode.start(cameras[0].id, scanConfig, onScanSuccess, () => {})
+          .catch(err => showToast('Camera error: ' + err, 'error'));
+      });
   }).catch(() => showToast('Camera permission denied', 'error'));
 
-  // Records
+  // ── Records ────────────────────────────────────────────────────────────
   async function fetchScans() {
     const res = await fetch('/api/scans');
     scans = await res.json();
@@ -410,19 +267,16 @@
       filtered.length + ' record' + (filtered.length !== 1 ? 's' : '') + ' shown';
 
     if (!filtered.length) {
-      document.getElementById('table-container').innerHTML =
-        '<div class="empty">No records found.</div>';
+      document.getElementById('table-container').innerHTML = '<div class="empty">No records found.</div>';
       return;
     }
 
     const rows = filtered.map(s => {
-      const dt = new Date(s.scanned_at);
-      const date = dt.toLocaleDateString();
-      const time = dt.toLocaleTimeString();
+      const dt   = new Date(s.scanned_at);
       return '<tr>' +
         '<td>' + s.id + '</td>' +
         '<td><span class="code-badge">' + s.cyclist_code + '</span></td>' +
-        '<td>' + date + '<br><small style="color:#6b7280">' + time + '</small></td>' +
+        '<td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td>' +
         '<td>' + (s.pit_stop || '') + '</td>' +
         '<td>' + (s.scanner_name || '<span style="color:#9ca3af">—</span>') + '</td>' +
         '<td><button class="del-btn" onclick="deleteScan(' + s.id + ')" title="Delete">✕</button></td>' +
@@ -430,10 +284,7 @@
     }).join('');
 
     document.getElementById('table-container').innerHTML =
-      '<table>' +
-      '<thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th><th></th></tr></thead>' +
-      '<tbody>' + rows + '</tbody>' +
-      '</table>';
+      '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
 
   async function deleteScan(id) {
