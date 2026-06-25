@@ -9,7 +9,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
@@ -110,6 +110,65 @@ app.post('/api/reset', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// T-SHIRT ENDPOINTS
+app.get('/api/tshirt/:cc_id', async (req, res) => {
+  const cc_id = req.params.cc_id.trim().toUpperCase();
+  try {
+    const { data } = await supabase.from('tshirts').select('*').eq('cc_id', cc_id).maybeSingle();
+    if (!data) return res.status(404).json({ error: 'Rider ' + cc_id + ' not found in t-shirt list' });
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/tshirt/deliver', async (req, res) => {
+  const { cc_id, delivered_by, distribution_center } = req.body;
+  if (!cc_id) return res.status(400).json({ error: 'Missing cc_id' });
+  const code = cc_id.trim().toUpperCase();
+  try {
+    const { data: existing } = await supabase.from('tshirts').select('id,delivered').eq('cc_id', code).maybeSingle();
+    if (!existing) return res.status(404).json({ error: 'Rider not found' });
+    if (existing.delivered) return res.status(409).json({ error: 'T-shirt already delivered to ' + code });
+    const { data, error } = await supabase.from('tshirts').update({ delivered: true, delivered_at: new Date().toISOString(), delivered_by: delivered_by || '', distribution_center: distribution_center || '' }).eq('cc_id', code).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/tshirts/bulk', async (req, res) => {
+  const { rows } = req.body;
+  if (!rows || !rows.length) return res.status(400).json({ error: 'No data provided' });
+  const records = rows.map(r => ({
+    cc_id: String(r.cc_id || r.CC_ID || r['CC ID'] || r['CC_ID'] || '').trim().toUpperCase(),
+    name: String(r.name || r.Name || r.NAME || r['Rider Name'] || '').trim(),
+    size: String(r.size || r.Size || r.SIZE || r['T-Shirt Size'] || r['Tshirt Size'] || r.tshirt_size || '').trim().toUpperCase()
+  })).filter(r => r.cc_id && r.cc_id.length > 0);
+  if (!records.length) return res.status(400).json({ error: 'No valid rows found. Check column names: cc_id, name, size' });
+  try {
+    const { error } = await supabase.from('tshirts').upsert(records, { onConflict: 'cc_id' });
+    if (error) throw error;
+    res.json({ ok: true, count: records.length });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/tshirts', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('tshirts').select('*').order('cc_id');
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/tshirts/stats', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('tshirts').select('size,delivered,distribution_center');
+    if (error) throw error;
+    const total = data.length, delivered = data.filter(r => r.delivered).length;
+    const bySize = {};
+    data.forEach(r => { const s = r.size || '?'; bySize[s] = (bySize[s] || 0) + 1; });
+    res.json({ total, delivered, pending: total - delivered, bySize });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/export/csv', async (req, res) => {
   try {
     const { data, error } = await supabase.from('scans').select('*').order('id');
@@ -125,13 +184,7 @@ app.get('/api/export/xlsx', async (req, res) => {
   try {
     const { data, error } = await supabase.from('scans').select('*').order('id');
     if (error) throw error;
-    const rows = data.map(s => ({
-      ID: s.id,
-      'Cyclist Code': s.cyclist_code,
-      'Scanned At': s.scanned_at ? new Date(s.scanned_at).toLocaleString() : '',
-      'Pit Stop': s.pit_stop || '',
-      'Scanner Name': s.scanner_name || ''
-    }));
+    const rows = data.map(s => ({ ID: s.id, 'Cyclist Code': s.cyclist_code, 'Scanned At': s.scanned_at ? new Date(s.scanned_at).toLocaleString() : '', 'Pit Stop': s.pit_stop || '', 'Scanner Name': s.scanner_name || '' }));
     const ws = XLSX.utils.json_to_sheet(rows);
     ws['!cols'] = [{wch:6},{wch:16},{wch:22},{wch:8},{wch:16}];
     const wb = XLSX.utils.book_new();
