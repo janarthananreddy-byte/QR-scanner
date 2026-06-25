@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
+const XLSX = require('xlsx');
 
 const app = express();
 const supabase = createClient(
@@ -12,7 +13,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
-// GET /api/health
 app.get('/api/health', async (req, res) => {
   try {
     const start = Date.now();
@@ -22,7 +22,6 @@ app.get('/api/health', async (req, res) => {
   } catch(e) { res.status(503).json({ status: 'error', message: e.message }); }
 });
 
-// POST /api/login
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Missing credentials' });
@@ -33,7 +32,6 @@ app.post('/api/login', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET /api/users
 app.get('/api/users', async (req, res) => {
   try {
     const { data, error } = await supabase.from('app_users').select('id,username,created_at').order('id');
@@ -42,7 +40,6 @@ app.get('/api/users', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// POST /api/users
 app.post('/api/users', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Missing username or password' });
@@ -53,7 +50,6 @@ app.post('/api/users', async (req, res) => {
   } catch(e) { res.status(400).json({ error: e.message }); }
 });
 
-// DELETE /api/users/:id
 app.delete('/api/users/:id', async (req, res) => {
   try {
     const { error } = await supabase.from('app_users').delete().eq('id', req.params.id);
@@ -62,7 +58,6 @@ app.delete('/api/users/:id', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// POST /api/scan
 app.post('/api/scan', async (req, res) => {
   const { cyclist_code, pit_stop, scanner_name } = req.body;
   if (!cyclist_code) return res.status(400).json({ error: 'Missing cyclist_code' });
@@ -79,7 +74,6 @@ app.post('/api/scan', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET /api/scans
 app.get('/api/scans', async (req, res) => {
   try {
     const { data, error } = await supabase.from('scans').select('*').order('id', { ascending: false });
@@ -88,7 +82,6 @@ app.get('/api/scans', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET /api/stats
 app.get('/api/stats', async (req, res) => {
   try {
     const { data, error } = await supabase.from('scans').select('pit_stop,scanner_name');
@@ -109,7 +102,6 @@ app.get('/api/stats', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// POST /api/reset
 app.post('/api/reset', async (req, res) => {
   try {
     const { error } = await supabase.from('scans').delete().neq('id', 0);
@@ -122,9 +114,9 @@ app.get('/api/export/csv', async (req, res) => {
   try {
     const { data, error } = await supabase.from('scans').select('*').order('id');
     if (error) throw error;
-    const lines = ['id,cyclist_code,scanned_at,pit_stop,scanner_name', ...data.map(s => [s.id,s.cyclist_code,s.scanned_at,s.pit_stop,s.scanner_name||''].join(','))];
-    res.setHeader('Content-Type','text/csv');
-    res.setHeader('Content-Disposition','attachment; filename="scans.csv"');
+    const lines = ['id,cyclist_code,scanned_at,pit_stop,scanner_name', ...data.map(s => [s.id, s.cyclist_code, s.scanned_at, s.pit_stop, s.scanner_name || ''].join(','))];
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="scans.csv"');
     res.send(lines.join('\n'));
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -133,10 +125,21 @@ app.get('/api/export/xlsx', async (req, res) => {
   try {
     const { data, error } = await supabase.from('scans').select('*').order('id');
     if (error) throw error;
-    const lines = ['id,cyclist_code,scanned_at,pit_stop,scanner_name', ...data.map(s => [s.id,s.cyclist_code,s.scanned_at,s.pit_stop,s.scanner_name||''].join(','))];
-    res.setHeader('Content-Type','application/vnd.ms-excel');
-    res.setHeader('Content-Disposition','attachment; filename="scans.csv"');
-    res.send(lines.join('\n'));
+    const rows = data.map(s => ({
+      ID: s.id,
+      'Cyclist Code': s.cyclist_code,
+      'Scanned At': s.scanned_at ? new Date(s.scanned_at).toLocaleString() : '',
+      'Pit Stop': s.pit_stop || '',
+      'Scanner Name': s.scanner_name || ''
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{wch:6},{wch:16},{wch:22},{wch:8},{wch:16}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Scans');
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="scans.xlsx"');
+    res.send(buf);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
