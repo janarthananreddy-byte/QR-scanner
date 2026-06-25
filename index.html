@@ -224,7 +224,7 @@
       </div>
       
     </div>
-    <button id="logout-hdr-btn" onclick="doLogout()" title="Logout" style="display:none;background:rgba(220,38,38,0.25);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;font-size:0.72rem;font-weight:700;padding:4px 9px;border-radius:6px;cursor:pointer;white-space:nowrap;">&#128275; Out</button><button class="menu-btn" onclick="openDrawer()">&#9776;</button>
+    <button id="logout-hdr-btn" onclick="doLogout()" title="Logout" style="display:none;background:rgba(220,38,38,0.25);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;font-size:0.72rem;font-weight:700;padding:4px 9px;border-radius:6px;cursor:pointer;white-space:nowrap;">&#128275; Logout</button><button class="menu-btn" onclick="openDrawer()">&#9776;</button>
   </div>
 </header>
 
@@ -273,7 +273,11 @@
     </button>
   </nav>
   <div class="drawer-logout">
-    <button class="logout-btn" onclick="doLogout()">&#128275; Logout</button>
+    <button class="drawer-item" onclick="doLogout()" style="width:100%;border-radius:0;">
+      <span class="di-icon">&#128275;</span>
+      <div class="di-text"><span class="di-title" style="color:#dc2626;">Logout</span><span class="di-sub">Sign out of the app</span></div>
+      <span class="di-arrow">&#8250;</span>
+    </button>
   </div>
 </div>
 
