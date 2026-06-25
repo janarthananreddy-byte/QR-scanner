@@ -7,9 +7,8 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Init DB - use /tmp for writable path on Vercel serverless
-const DB_PATH = process.env.NODE_ENV === 'production' ? '/tmp/scans.db' : 'scans.db';
-const db = new Database(DB_PATH);
+// Init DB
+const db = new Database('scans.db');
 db.exec(`
   CREATE TABLE IF NOT EXISTS scans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,16 +19,13 @@ db.exec(`
 `);
 
 app.use(express.json());
-
-// Serve static files from public/ or root
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(__dirname));
 
 // Save a scan
 app.post('/api/scan', (req, res) => {
   const { cyclist_code, pit_stop } = req.body;
-  if (!cyclist_code || !/^CC\d{5}$/i.test(cyclist_code.trim())) {
-    return res.status(400).json({ error: 'Invalid cyclist code. Expected format: CCXXXXX' });
+  if (!cyclist_code || !/^CC\d{8}$/i.test(cyclist_code.trim())) {
+    return res.status(400).json({ error: 'Invalid cyclist code. Expected format: CCXXXXXXXX' });
   }
   const scanned_at = new Date().toISOString();
   const stmt = db.prepare('INSERT INTO scans (cyclist_code, scanned_at, pit_stop) VALUES (?, ?, ?)');
