@@ -5,7 +5,7 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["index.html", "public/**/*"]
+        "includeFiles": ["index.html", "freesound_community-chime-sound-7143.mp3", "CC_Logo_Green_White.svg", "public/**/*"]
       }
     }
   ],
