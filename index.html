@@ -224,7 +224,7 @@
       </div>
       
     </div>
-    <button class="menu-btn" onclick="openDrawer()">&#9776;</button>
+    <button id="logout-hdr-btn" onclick="doLogout()" title="Logout" style="display:none;background:rgba(220,38,38,0.25);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;font-size:0.72rem;font-weight:700;padding:4px 9px;border-radius:6px;cursor:pointer;white-space:nowrap;">&#128275; Out</button><button class="menu-btn" onclick="openDrawer()">&#9776;</button>
   </div>
 </header>
 
@@ -552,13 +552,13 @@ function doLogin(){
       sessionStorage.setItem('cc_user',r.data.username);
       document.getElementById('login-overlay').classList.add('hidden');
       
-      document.getElementById('scanner-name').value=r.data.username;setTimeout(function(){var el=document.getElementById('scanner-name');if(el)el.value=r.data.username;},300);
+      document.getElementById('scanner-name').value=r.data.username;var lbx=document.getElementById('logout-hdr-btn');if(lbx)lbx.style.display='inline-block';setTimeout(function(){var el=document.getElementById('scanner-name');if(el)el.value=r.data.username;},300);
     } else {
       document.getElementById('login-err').textContent=r.data.error||'Login failed.';
     }
   }).catch(function(){document.getElementById('login-err').textContent='Network error. Try again.';});
 }
-function doLogout(){
+function doLogout(){var lbz=document.getElementById('logout-hdr-btn');if(lbz)lbz.style.display='none';
   sessionStorage.removeItem('cc_user');
   document.getElementById('login-overlay').classList.remove('hidden');
   document.getElementById('l-pass').value='';
@@ -568,7 +568,7 @@ function doLogout(){
 // Check session on load
 (function(){
   var u=sessionStorage.getItem('cc_user');
-  if(u){document.getElementById('login-overlay').classList.add('hidden');document.getElementById('scanner-name').value=u;}
+  if(u){document.getElementById('login-overlay').classList.add('hidden');document.getElementById('scanner-name').value=u;var lby=document.getElementById('logout-hdr-btn');if(lby)lby.style.display='inline-block';}
 })();
 
 // Drawer
