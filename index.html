@@ -28,7 +28,6 @@
     header img.logo{height:36px;width:auto;flex-shrink:0;}
     .header-right{display:flex;align-items:center;gap:8px;}
     #clock{font-size:0.72rem;color:#bbf7d0;white-space:nowrap;}
-    .logged-user{font-size:0.7rem;color:#bbf7d0;background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:999px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .menu-btn{background:none;border:none;color:#bbf7d0;font-size:1.5rem;cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;}
     .db-signal{display:flex;flex-direction:row;align-items:center;gap:6px;}
     .signal-housing{background:#1a1a1a;border-radius:6px;padding:5px 7px;display:flex;flex-direction:row;gap:4px;border:1px solid #333;box-shadow:0 2px 4px rgba(0,0,0,0.5);}
@@ -39,7 +38,6 @@
     .signal-light.red.on{opacity:1;box-shadow:0 0 8px 2px rgba(255,59,48,0.8);}
     .signal-light.amber.on{opacity:1;box-shadow:0 0 8px 2px rgba(255,149,0,0.8);}
     .signal-light.green.on{opacity:1;box-shadow:0 0 8px 2px rgba(52,199,89,0.8);}
-    .db-label{font-size:0.58rem;color:#bbf7d0;letter-spacing:0.3px;white-space:nowrap;}
     /* Drawer */
     .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;opacity:0;pointer-events:none;transition:opacity 0.25s;}
     .drawer-overlay.open{opacity:1;pointer-events:auto;}
@@ -213,14 +211,14 @@
   <img class="logo" src="CC_Logo_Green_White.svg" alt="Chennai Cyclothon 2026">
   <div class="header-right">
     <span id="clock"></span>
-    <span class="logged-user" id="logged-user"></span>
+    
     <div class="db-signal" title="Database status">
       <div class="signal-housing">
         <div class="signal-light red" id="sig-red"></div>
         <div class="signal-light amber" id="sig-amber"></div>
         <div class="signal-light green" id="sig-green"></div>
       </div>
-      <div class="db-label" id="sig-label">DB</div>
+      
     </div>
     <button class="menu-btn" onclick="openDrawer()">&#9776;</button>
   </div>
@@ -488,7 +486,7 @@ setInterval(function(){document.getElementById('clock').textContent=new Date().t
 document.getElementById('clock').textContent=new Date().toLocaleTimeString();
 
 // DB signal
-function setSignal(s){document.getElementById('sig-red').classList.toggle('on',s==='error');document.getElementById('sig-amber').classList.toggle('on',s==='checking');document.getElementById('sig-green').classList.toggle('on',s==='ok');var l=document.getElementById('sig-label');l.textContent=s==='ok'?'DB OK':s==='error'?'DB ERR':'DB...';l.style.color=s==='ok'?'#34c759':s==='error'?'#ff3b30':'#ff9500';}
+function setSignal(s){document.getElementById('sig-red').classList.toggle('on',s==='error');document.getElementById('sig-amber').classList.toggle('on',s==='checking');document.getElementById('sig-green').classList.toggle('on',s==='ok');}
 function checkHealth(){setSignal('checking');fetch('/api/health').then(function(r){setSignal(r.ok?'ok':'error');}).catch(function(){setSignal('error');});}
 checkHealth();setInterval(checkHealth,10000);
 
