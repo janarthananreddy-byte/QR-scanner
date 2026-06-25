@@ -30,7 +30,6 @@
     .manual-row { display: flex; gap: 8px; margin-top: 10px; }
     .manual-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; text-transform: uppercase; }
     button.primary { background: var(--green); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
-    button.primary:disabled { opacity: 0.5; cursor: default; }
     .toast { margin-top: 14px; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; display: none; }
     .toast.success { background: var(--green-light); color: var(--green); display: block; }
     .toast.error   { background: var(--red-light);   color: var(--red);   display: block; }
@@ -103,79 +102,62 @@
 <script>
   let scans = [], lastScanned = '', scanCooldown = false;
 
-  // ── Audio ──────────────────────────────────────────────────────────────
   const _ac = new (window.AudioContext || window.webkitAudioContext)();
   let _chimeBuf = null;
-
-  // Load MP3 into Web Audio buffer (enables gain > 1.0)
   fetch('freesound_community-chime-sound-7143.mp3')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
     .then(ab => _ac.decodeAudioData(ab))
-    .then(buf => { _chimeBuf = buf; console.log('Chime loaded OK'); })
-    .catch(err => console.warn('Chime load failed, will use fallback tone:', err.message));
+    .then(buf => { _chimeBuf = buf; })
+    .catch(err => console.warn('Chime load failed, using fallback:', err.message));
 
   function playSuccessBeep() {
     try {
       if (_ac.state === 'suspended') _ac.resume();
       if (_chimeBuf) {
-        // Play the real chime at 200% volume
-        const src = _ac.createBufferSource();
-        const gain = _ac.createGain();
-        src.buffer = _chimeBuf;
-        gain.gain.value = 2.0;
-        src.connect(gain); gain.connect(_ac.destination);
-        src.start(0);
+        const src = _ac.createBufferSource(), gain = _ac.createGain();
+        src.buffer = _chimeBuf; gain.gain.value = 2.0;
+        src.connect(gain); gain.connect(_ac.destination); src.start(0);
       } else {
-        // Fallback: generated pleasant double-beep
-        [0, 0.18].forEach(delay => {
-          const osc = _ac.createOscillator(), g = _ac.createGain();
-          osc.type = 'sine';
-          osc.frequency.value = 1046;
-          g.gain.setValueAtTime(0.4, _ac.currentTime + delay);
-          g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + delay + 0.15);
-          osc.connect(g); g.connect(_ac.destination);
-          osc.start(_ac.currentTime + delay);
-          osc.stop(_ac.currentTime + delay + 0.15);
+        [0, 0.18].forEach(d => {
+          const o = _ac.createOscillator(), g = _ac.createGain();
+          o.type = 'sine'; o.frequency.value = 1046;
+          g.gain.setValueAtTime(0.4, _ac.currentTime + d);
+          g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + d + 0.15);
+          o.connect(g); g.connect(_ac.destination);
+          o.start(_ac.currentTime + d); o.stop(_ac.currentTime + d + 0.15);
         });
       }
-    } catch(e) { console.error('playSuccessBeep error:', e); }
+    } catch(e) {}
   }
 
   function playErrorBeep() {
     try {
       if (_ac.state === 'suspended') _ac.resume();
-      const osc = _ac.createOscillator(), g = _ac.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(300, _ac.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(150, _ac.currentTime + 0.25);
+      const o = _ac.createOscillator(), g = _ac.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(300, _ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(150, _ac.currentTime + 0.25);
       g.gain.setValueAtTime(0.18, _ac.currentTime);
       g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + 0.3);
-      osc.connect(g); g.connect(_ac.destination);
-      osc.start(_ac.currentTime); osc.stop(_ac.currentTime + 0.3);
+      o.connect(g); g.connect(_ac.destination);
+      o.start(_ac.currentTime); o.stop(_ac.currentTime + 0.3);
     } catch(e) {}
   }
 
-  // Unlock AudioContext on first tap/click (required by browsers)
-  function _unlockAC() {
-    if (_ac.state === 'suspended') _ac.resume().then(() => console.log('AudioContext resumed'));
-  }
+  function _unlockAC() { if (_ac.state === 'suspended') _ac.resume(); }
   document.addEventListener('touchstart', _unlockAC, { once: true });
-  document.addEventListener('click',      _unlockAC, { once: true });
+  document.addEventListener('click', _unlockAC, { once: true });
 
-  // ── Clock ──────────────────────────────────────────────────────────────
   setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
   document.getElementById('clock').textContent = new Date().toLocaleTimeString();
 
-  // ── Tabs ───────────────────────────────────────────────────────────────
   function showTab(id, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    btn.classList.add('active');
+    document.getElementById(id).classList.add('active'); btn.classList.add('active');
     if (id === 'records') fetchScans();
   }
 
-  // ── Toast ──────────────────────────────────────────────────────────────
   function showToast(msg, type) {
     const t = document.getElementById('toast');
     t.className = 'toast ' + type; t.textContent = msg;
@@ -183,13 +165,11 @@
     t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
   }
 
-  // ── Save scan ──────────────────────────────────────────────────────────
   async function saveScan(code) {
     if (scanCooldown && code === lastScanned) return;
     scanCooldown = true; lastScanned = code;
-    setTimeout(() => { scanCooldown = false; }, 3000);
-
-    const pit_stop     = document.getElementById('pit-stop').value;
+    setTimeout(() => { scanCooldown = false; }, 1500);
+    const pit_stop = document.getElementById('pit-stop').value;
     const scanner_name = document.getElementById('scanner-name').value.trim();
     try {
       const res = await fetch('/api/scan', {
@@ -200,19 +180,16 @@
       const data = await res.json();
       if (res.status === 409) {
         playErrorBeep();
-        showToast('⚠ Rider ' + code + ' is already scanned', 'warning');
+        showToast('\u26a0 Rider ' + code + ' is already scanned', 'warning');
       } else if (!res.ok) {
         playErrorBeep();
-        showToast('⚠ ' + data.error, 'error');
+        showToast('\u26a0 ' + data.error, 'error');
       } else {
         playSuccessBeep();
-        showToast('✓ ' + data.cyclist_code + ' logged at ' + pit_stop + (scanner_name ? ' by ' + scanner_name : ''), 'success');
+        showToast('\u2713 ' + data.cyclist_code + ' logged at ' + pit_stop + (scanner_name ? ' by ' + scanner_name : ''), 'success');
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
       }
-    } catch (e) {
-      playErrorBeep();
-      showToast('Network error: ' + e.message, 'error');
-    }
+    } catch(e) { playErrorBeep(); showToast('Network error: ' + e.message, 'error'); }
   }
 
   function submitManual() {
@@ -222,7 +199,6 @@
   }
   document.getElementById('manual-code').addEventListener('keydown', e => { if (e.key === 'Enter') submitManual(); });
 
-  // ── QR Scanner ─────────────────────────────────────────────────────────
   const html5QrCode = new Html5Qrcode('reader', { useBarCodeDetectorIfSupported: true });
   function onScanSuccess(decodedText) {
     const match = decodedText.match(/CC\d+/i);
@@ -237,7 +213,6 @@
         .catch(err => showToast('Camera error: ' + err, 'error')));
   }).catch(() => showToast('Camera permission denied', 'error'));
 
-  // ── Records ────────────────────────────────────────────────────────────
   async function fetchScans() {
     const res = await fetch('/api/scans'); scans = await res.json(); renderTable();
   }
@@ -252,7 +227,7 @@
     if (!filtered.length) { document.getElementById('table-container').innerHTML = '<div class="empty">No records found.</div>'; return; }
     const rows = filtered.map(s => {
       const dt = new Date(s.scanned_at);
-      return '<tr><td>' + s.id + '</td><td><span class="code-badge">' + s.cyclist_code + '</span></td><td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td><td>' + (s.pit_stop || '') + '</td><td>' + (s.scanner_name || '<span style="color:#9ca3af">—</span>') + '</td><td><button class="del-btn" onclick="deleteScan(' + s.id + ')" title="Delete">✕</button></td></tr>';
+      return '<tr><td>' + s.id + '</td><td><span class="code-badge">' + s.cyclist_code + '</span></td><td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td><td>' + (s.pit_stop || '') + '</td><td>' + (s.scanner_name || '<span style="color:#9ca3af">\u2014</span>') + '</td><td><button class="del-btn" onclick="deleteScan(' + s.id + ')" title="Delete">\u2715</button></td></tr>';
     }).join('');
     document.getElementById('table-container').innerHTML = '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
