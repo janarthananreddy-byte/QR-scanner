@@ -50,8 +50,11 @@ app.get('/api/scans', (req, res) => {
 // GET /api/stats
 app.get('/api/stats', (req, res) => {
   const byPitStop = db.prepare('SELECT pit_stop, COUNT(*) as count FROM scans GROUP BY pit_stop').all();
+  const byScanner = db.prepare(
+    'SELECT pit_stop, COALESCE(NULLIF(scanner_name,\'\'), \'(unnamed)\') as scanner_name, COUNT(*) as count FROM scans GROUP BY pit_stop, scanner_name ORDER BY pit_stop, count DESC'
+  ).all();
   const total = db.prepare('SELECT COUNT(*) as count FROM scans').get().count;
-  res.json({ byPitStop, total });
+  res.json({ byPitStop, byScanner, total });
 });
 
 // DELETE /api/scan/:id
@@ -70,7 +73,7 @@ app.get('/api/export/csv', (req, res) => {
   res.send(lines.join('\n'));
 });
 
-// GET /api/export/xlsx (CSV with xlsx mime for Excel open)
+// GET /api/export/xlsx
 app.get('/api/export/xlsx', (req, res) => {
   const scans = db.prepare('SELECT * FROM scans ORDER BY id').all();
   const lines = ['id,cyclist_code,scanned_at,pit_stop,scanner_name',
