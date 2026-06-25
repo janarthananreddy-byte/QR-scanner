@@ -531,7 +531,7 @@ function doLogin(){
     if(r.status===200){
       sessionStorage.setItem('cc_user',r.data.username);
       document.getElementById('login-overlay').classList.add('hidden');
-      document.getElementById('logged-user').textContent=r.data.username;
+      
       document.getElementById('scanner-name').value=r.data.username;setTimeout(function(){var el=document.getElementById('scanner-name');if(el)el.value=r.data.username;},300);
     } else {
       document.getElementById('login-err').textContent=r.data.error||'Login failed.';
@@ -548,7 +548,7 @@ function doLogout(){
 // Check session on load
 (function(){
   var u=sessionStorage.getItem('cc_user');
-  if(u){document.getElementById('login-overlay').classList.add('hidden');document.getElementById('logged-user').textContent=u;document.getElementById('scanner-name').value=u;}
+  if(u){document.getElementById('login-overlay').classList.add('hidden');document.getElementById('scanner-name').value=u;}
 })();
 
 // Drawer
