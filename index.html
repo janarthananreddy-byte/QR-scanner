@@ -24,41 +24,11 @@
     .tab.active { display: block; }
     .scanner-wrap { display: flex; justify-content: center; }
     #reader { width: 100%; max-width: 300px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); background: #000; }
-
-    /* Single-line fields row */
-    .fields-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 12px;
-      flex-wrap: nowrap;
-    }
-    .fields-row label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      white-space: nowrap;
-      color: #374151;
-    }
-    .fields-row input {
-      flex: 2;
-      min-width: 0;
-      padding: 9px 10px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.9rem;
-      background: #fff;
-    }
-    .fields-row select {
-      flex: 1;
-      min-width: 0;
-      padding: 9px 8px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.9rem;
-      background: #fff;
-    }
+    .fields-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: nowrap; }
+    .fields-row label { font-size: 0.8rem; font-weight: 600; white-space: nowrap; color: #374151; }
+    .fields-row input { flex: 2; min-width: 0; padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: #fff; }
+    .fields-row select { flex: 1; min-width: 0; padding: 9px 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: #fff; }
     .divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
-
     .manual-row { display: flex; gap: 8px; margin-top: 10px; }
     .manual-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; text-transform: uppercase; }
     button.primary { background: var(--green); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
@@ -70,15 +40,39 @@
     /* Stats panel */
     .stats-panel { margin-top: 16px; background: #fff; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
     .stats-panel h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray); padding: 10px 14px 6px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); }
-    .stat-cell { text-align: center; padding: 10px 4px; border-right: 1px solid var(--border); }
+    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); border-bottom: 1px solid var(--border); }
+    .stat-cell { text-align: center; padding: 10px 4px; border-right: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
     .stat-cell:last-child { border-right: none; }
     .stat-cell .cp-label { font-size: 0.7rem; font-weight: 700; color: var(--gray); margin-bottom: 4px; }
     .stat-cell .cp-count { font-size: 1.5rem; font-weight: 800; color: var(--green); line-height: 1; }
     .stat-cell.active-cp .cp-label { color: var(--green); }
     .stat-cell.active-cp { background: #f0fdf4; }
-    .stats-total { font-size: 0.78rem; color: var(--gray); padding: 6px 14px 10px; border-top: 1px solid var(--border); text-align: right; }
+    .stats-total { font-size: 0.78rem; color: var(--gray); padding: 6px 14px; text-align: right; }
     .stats-total strong { color: #111827; }
+
+    /* Per-CP scanner detail */
+    .cp-detail { border-top: 1px solid var(--border); }
+    .cp-detail-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px;
+      background: #07570f;
+      color: #fff;
+    }
+    .cp-detail-header .cp-title { font-size: 0.82rem; font-weight: 700; }
+    .cp-detail-header .cp-detail-total { font-size: 0.78rem; color: #bbf7d0; }
+    .scanner-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .scanner-row:last-child { border-bottom: none; }
+    .scanner-row .s-name { font-weight: 600; color: #111827; display: flex; align-items: center; gap: 6px; }
+    .scanner-row .s-name::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .scanner-row .s-count { font-weight: 700; color: var(--green); font-size: 1rem; }
+    .scanner-row .s-bar-wrap { flex: 1; margin: 0 12px; height: 6px; background: var(--green-light); border-radius: 3px; overflow: hidden; }
+    .scanner-row .s-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
+    .cp-detail-empty { padding: 12px 14px; font-size: 0.85rem; color: var(--gray); text-align: center; }
 
     /* Records */
     .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
@@ -113,7 +107,6 @@
 <div id="scan" class="tab active">
   <div class="scanner-wrap"><div id="reader"></div></div>
 
-  <!-- Scanner Name + Pit Stop on one line -->
   <div class="fields-row">
     <label>Scanner Name</label>
     <input id="scanner-name" type="text" placeholder="e.g. John">
@@ -134,17 +127,20 @@
   </div>
   <div id="toast" class="toast"></div>
 
-  <!-- Pit Stop Stats -->
+  <!-- Stats panel -->
   <div class="stats-panel">
     <h3>Pit Stop Counts</h3>
     <div class="stats-grid" id="stats-grid">
-      <div class="stat-cell active-cp" id="stat-CP1"><div class="cp-label">CP1</div><div class="cp-count">–</div></div>
-      <div class="stat-cell" id="stat-CP2"><div class="cp-label">CP2</div><div class="cp-count">–</div></div>
-      <div class="stat-cell" id="stat-CP3"><div class="cp-label">CP3</div><div class="cp-count">–</div></div>
-      <div class="stat-cell" id="stat-CP4"><div class="cp-label">CP4</div><div class="cp-count">–</div></div>
-      <div class="stat-cell" id="stat-CP5"><div class="cp-label">CP5</div><div class="cp-count">–</div></div>
+      <div class="stat-cell active-cp" id="stat-CP1" onclick="selectCp('CP1')"><div class="cp-label">CP1</div><div class="cp-count">–</div></div>
+      <div class="stat-cell" id="stat-CP2" onclick="selectCp('CP2')"><div class="cp-label">CP2</div><div class="cp-count">–</div></div>
+      <div class="stat-cell" id="stat-CP3" onclick="selectCp('CP3')"><div class="cp-label">CP3</div><div class="cp-count">–</div></div>
+      <div class="stat-cell" id="stat-CP4" onclick="selectCp('CP4')"><div class="cp-label">CP4</div><div class="cp-count">–</div></div>
+      <div class="stat-cell" id="stat-CP5" onclick="selectCp('CP5')"><div class="cp-label">CP5</div><div class="cp-count">–</div></div>
     </div>
     <div class="stats-total" id="stats-total">Loading…</div>
+
+    <!-- Per-CP scanner detail -->
+    <div class="cp-detail" id="cp-detail"></div>
   </div>
 </div>
 
@@ -163,6 +159,8 @@
 
 <script>
   let scans = [], lastScanned = '', scanCooldown = false;
+  let statsCache = null;
+
   const _ac = new (window.AudioContext || window.webkitAudioContext)();
   let _chimeBuf = null;
   fetch('freesound_community-chime-sound-7143.mp3')
@@ -223,24 +221,60 @@
     t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
   }
 
-  async function fetchStats() {
-    try {
-      const data = await fetch('/api/stats').then(r => r.json());
-      const counts = {};
-      (data.byPitStop || []).forEach(r => { counts[r.pit_stop] = r.count; });
-      ['CP1','CP2','CP3','CP4','CP5'].forEach(cp => {
-        const cell = document.getElementById('stat-' + cp);
-        if (cell) cell.querySelector('.cp-count').textContent = counts[cp] || 0;
-      });
-      document.getElementById('stats-total').innerHTML = 'Total scans: <strong>' + (data.total || 0) + '</strong>';
-    } catch(e) {}
+  function selectCp(cp) {
+    document.getElementById('pit-stop').value = cp;
+    highlightActiveCp();
   }
+
   function highlightActiveCp() {
     const active = document.getElementById('pit-stop').value;
     ['CP1','CP2','CP3','CP4','CP5'].forEach(cp => {
       const cell = document.getElementById('stat-' + cp);
       if (cell) cell.classList.toggle('active-cp', cp === active);
     });
+    renderCpDetail(active);
+  }
+
+  function renderCpDetail(cp) {
+    const detail = document.getElementById('cp-detail');
+    if (!statsCache) { detail.innerHTML = ''; return; }
+    const scanners = (statsCache.byScanner || []).filter(r => r.pit_stop === cp);
+    const cpTotal = scanners.reduce((s, r) => s + r.count, 0);
+    const maxCount = scanners.length ? Math.max(...scanners.map(r => r.count)) : 1;
+
+    if (!scanners.length) {
+      detail.innerHTML = '<div class="cp-detail-header"><span class="cp-title">' + cp + ' — Scanner Breakdown</span><span class="cp-detail-total">No scans yet</span></div><div class="cp-detail-empty">No scans recorded at ' + cp + ' yet.</div>';
+      return;
+    }
+
+    const rows = scanners.map(r => {
+      const pct = Math.round((r.count / maxCount) * 100);
+      return '<div class="scanner-row">' +
+        '<span class="s-name">' + r.scanner_name + '</span>' +
+        '<div class="s-bar-wrap"><div class="s-bar" style="width:' + pct + '%"></div></div>' +
+        '<span class="s-count">' + r.count + '</span>' +
+        '</div>';
+    }).join('');
+
+    detail.innerHTML =
+      '<div class="cp-detail-header">' +
+        '<span class="cp-title">' + cp + ' — Scanner Breakdown</span>' +
+        '<span class="cp-detail-total">' + cpTotal + ' total scans</span>' +
+      '</div>' + rows;
+  }
+
+  async function fetchStats() {
+    try {
+      statsCache = await fetch('/api/stats').then(r => r.json());
+      const counts = {};
+      (statsCache.byPitStop || []).forEach(r => { counts[r.pit_stop] = r.count; });
+      ['CP1','CP2','CP3','CP4','CP5'].forEach(cp => {
+        const cell = document.getElementById('stat-' + cp);
+        if (cell) cell.querySelector('.cp-count').textContent = counts[cp] || 0;
+      });
+      document.getElementById('stats-total').innerHTML = 'Total scans: <strong>' + (statsCache.total || 0) + '</strong>';
+      renderCpDetail(document.getElementById('pit-stop').value);
+    } catch(e) {}
   }
   fetchStats();
   setInterval(fetchStats, 15000);
