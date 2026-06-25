@@ -1,434 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PelotonAid – Pit Stop Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --green: #16a34a;
-      --green-light: #dcfce7;
-      --red: #dc2626;
-      --red-light: #fee2e2;
-      --gray: #6b7280;
-      --border: #e5e7eb;
-      --bg: #f9fafb;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: #111827;
-      min-height: 100vh;
-    }
-
-    header {
-      background: #111827;
-      color: #fff;
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    header h1 { font-size: 1.1rem; font-weight: 700; }
-    header span { font-size: 0.75rem; color: #9ca3af; margin-left: auto; }
-
-    .tab-bar {
-      display: flex;
-      background: #fff;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 52px;
-      z-index: 99;
-    }
-
-    .tab-bar button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      background: none;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--gray);
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.15s;
-    }
-
-    .tab-bar button.active {
-      color: var(--green);
-      border-bottom-color: var(--green);
-    }
-
-    .tab { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
-    .tab.active { display: block; }
-
-    /* Scanner */
-    #reader {
-      width: 100%;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 2px solid var(--border);
-      background: #000;
-    }
-
-    .pit-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .pit-row label { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
-
-    .pit-row input {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-    }
-
-    .manual-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .manual-row input {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-    }
-
-    button.primary {
-      background: var(--green);
-      color: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    button.primary:disabled { opacity: 0.5; cursor: default; }
-
-    .toast {
-      margin-top: 14px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      display: none;
-    }
-
-    .toast.success { background: var(--green-light); color: var(--green); display: block; }
-    .toast.error   { background: var(--red-light);   color: var(--red);   display: block; }
-
-    /* Records */
-    .toolbar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .toolbar input {
-      flex: 1;
-      min-width: 140px;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.9rem;
-    }
-
-    .export-btns { display: flex; gap: 6px; }
-
-    button.outline {
-      background: #fff;
-      border: 1px solid var(--border);
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      color: #374151;
-    }
-
-    button.outline:hover { border-color: var(--green); color: var(--green); }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-
-    thead tr { background: #111827; color: #fff; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover { background: #f0fdf4; }
-
-    .code-badge {
-      background: var(--green-light);
-      color: var(--green);
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    .del-btn {
-      background: none;
-      border: none;
-      color: #dc2626;
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    .del-btn:hover { background: var(--red-light); }
-
-    .empty { text-align: center; padding: 40px; color: var(--gray); font-size: 0.9rem; }
-
-    #scan-count {
-      font-size: 0.8rem;
-      color: var(--gray);
-      margin-bottom: 8px;
-    }
-
-    @media (max-width: 420px) {
-      th:nth-child(1), td:nth-child(1) { display: none; } /* hide ID on mobile */
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PelotonAid - Pit Stop Scanner</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --green: #16a34a; --green-light: #dcfce7; --red: #dc2626; --red-light: #fee2e2; --gray: #6b7280; --border: #e5e7eb; --bg: #f9fafb; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: #111827; min-height: 100vh; }
+header { background: #111827; color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
+header h1 { font-size: 1.1rem; font-weight: 700; }
+header span { font-size: 0.75rem; color: #9ca3af; margin-left: auto; }
+.tab-bar { display: flex; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 52px; z-index: 99; }
+.tab-bar button { flex: 1; padding: 12px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s; }
+.tab-bar button.active { color: var(--green); border-bottom-color: var(--green); }
+.tab { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
+.tab.active { display: block; }
+#reader { width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); background: #000; }
+.pit-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.pit-row label { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+.pit-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; }
+.manual-row { display: flex; gap: 8px; margin-top: 10px; }
+.manual-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; text-transform: uppercase; }
+button.primary { background: var(--green); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+button.primary:disabled { opacity: 0.5; cursor: default; }
+.toast { margin-top: 14px; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; display: none; }
+.toast.success { background: var(--green-light); color: var(--green); display: block; }
+.toast.error { background: var(--red-light); color: var(--red); display: block; }
+.toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.toolbar input { flex: 1; min-width: 140px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
+.export-btns { display: flex; gap: 6px; }
+button.outline { background: #fff; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #374151; }
+button.outline:hover { border-color: var(--green); color: var(--green); }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+thead tr { background: #111827; color: #fff; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #f0fdf4; }
+.code-badge { background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 999px; font-weight: 700; letter-spacing: 0.5px; }
+.del-btn { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 4px; }
+.del-btn:hover { background: var(--red-light); }
+.empty { text-align: center; padding: 40px; color: var(--gray); font-size: 0.9rem; }
+#scan-count { font-size: 0.8rem; color: var(--gray); margin-bottom: 8px; }
+@media (max-width: 420px) { th:nth-child(1), td:nth-child(1) { display: none; } }
+</style>
 </head>
 <body>
-
 <header>
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-    <rect x="3" y="14" width="7" height="7"/>
-    <path d="M14 14h3v3m0 4h4v-4m-4 0h4"/>
+    <rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3m0 4h4v-4m-4 0h4"/>
   </svg>
-  <h1>PelotonAid – Pit Stop Scanner</h1>
+  <h1>PelotonAid - Pit Stop Scanner</h1>
   <span id="clock"></span>
 </header>
-
 <div class="tab-bar">
-  <button class="active" onclick="showTab('scan', this)">📷 Scan</button>
-  <button onclick="showTab('records', this)">📋 Records</button>
+  <button class="active" onclick="showTab('scan', this)">Scan</button>
+  <button onclick="showTab('records', this)">Records</button>
 </div>
-
-<!-- SCAN TAB -->
 <div id="scan" class="tab active">
   <div id="reader"></div>
-
   <div class="pit-row">
     <label>Pit Stop:</label>
     <input id="pit-stop" type="text" value="Main" placeholder="e.g. Main, KM 40">
   </div>
-
   <div class="manual-row" style="margin-top:14px;">
-    <input id="manual-code" type="text" placeholder="Manual entry: CC00000001" maxlength="10">
+    <input id="manual-code" type="text" placeholder="Manual entry: CC00000001" maxlength="20">
     <button class="primary" onclick="submitManual()">Log</button>
   </div>
-
   <div id="toast" class="toast"></div>
 </div>
-
-<!-- RECORDS TAB -->
 <div id="records" class="tab">
   <div class="toolbar">
-    <input id="search" type="text" placeholder="Search by code or pit stop…" oninput="renderTable()">
+    <input id="search" type="text" placeholder="Search by code or pit stop..." oninput="renderTable()">
     <div class="export-btns">
-      <button class="outline" onclick="location.href='/api/export/xlsx'">⬇ XLS</button>
-      <button class="outline" onclick="location.href='/api/export/csv'">⬇ CSV</button>
+      <button class="outline" onclick="location.href='/api/export/xlsx'">XLS</button>
+      <button class="outline" onclick="location.href='/api/export/csv'">CSV</button>
     </div>
   </div>
   <div id="scan-count"></div>
-  <div id="table-container"><div class="empty">Loading…</div></div>
+  <div id="table-container"><div class="empty">Loading...</div></div>
 </div>
-
 <script>
-  let scans = [];
-  let scanner = null;
-  let lastScanned = '';
-  let scanCooldown = false;
-
-  // Clock
-  function updateClock() {
-    const now = new Date();
-    document.getElementById('clock').textContent = now.toLocaleTimeString();
-  }
-  setInterval(updateClock, 1000);
-  updateClock();
-
-  // Tabs
+  let scans = [], lastScanned = '', scanCooldown = false;
+  function updateClock() { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }
+  setInterval(updateClock, 1000); updateClock();
   function showTab(id, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    btn.classList.add('active');
+    document.getElementById(id).classList.add('active'); btn.classList.add('active');
     if (id === 'records') fetchScans();
   }
-
-  // Toast
   function showToast(msg, type) {
     const t = document.getElementById('toast');
-    t.className = 'toast ' + type;
-    t.textContent = msg;
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
+    t.className = 'toast ' + type; t.textContent = msg;
+    clearTimeout(t._timer); t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
   }
-
-  // Submit scan to API
   async function saveScan(code) {
     if (scanCooldown && code === lastScanned) return;
-    scanCooldown = true;
-    lastScanned = code;
+    scanCooldown = true; lastScanned = code;
     setTimeout(() => { scanCooldown = false; }, 3000);
-
     const pit_stop = document.getElementById('pit-stop').value.trim() || 'Main';
     try {
-      const res = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cyclist_code: code, pit_stop })
-      });
+      const res = await fetch('/api/scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cyclist_code: code, pit_stop }) });
       const data = await res.json();
-      if (!res.ok) {
-        showToast('⚠ ' + data.error, 'error');
-      } else {
-        showToast(`✓ ${data.cyclist_code} logged at ${new Date(data.scanned_at).toLocaleTimeString()}`, 'success');
-        // vibrate on mobile
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-      }
-    } catch (e) {
-      showToast('Network error', 'error');
-    }
+      if (!res.ok) { showToast(data.error, 'error'); }
+      else { showToast(data.cyclist_code + ' logged at ' + new Date(data.scanned_at).toLocaleTimeString(), 'success'); if (navigator.vibrate) navigator.vibrate([100,50,100]); }
+    } catch(e) { showToast('Network error', 'error'); }
   }
-
   function submitManual() {
     const code = document.getElementById('manual-code').value.trim().toUpperCase();
-    if (!code) return;
-    saveScan(code);
-    document.getElementById('manual-code').value = '';
+    if (!code) return; saveScan(code); document.getElementById('manual-code').value = '';
   }
-
-  document.getElementById('manual-code').addEventListener('keydown', e => {
-    if (e.key === 'Enter') submitManual();
-  });
-
-  // QR Scanner
-  const html5QrCode = new Html5Qrcode('reader', {
-    useBarCodeDetectorIfSupported: true  // use native browser BarcodeDetector API when available (much faster)
-  });
-
+  document.getElementById('manual-code').addEventListener('keydown', e => { if (e.key === 'Enter') submitManual(); });
+  const html5QrCode = new Html5Qrcode('reader', { useBarCodeDetectorIfSupported: true });
+  const scanConfig = { fps: 25, qrbox: { width: 220, height: 220 }, aspectRatio: 1.0, rememberLastUsedCamera: true, showTorchButtonIfSupported: true, experimentalFeatures: { useBarCodeDetectorIfSupported: true } };
   function onScanSuccess(decodedText) {
-    const match = decodedText.match(/CC\d{8}/i);
-    if (match) {
-      saveScan(match[0].toUpperCase());
-    } else {
-      showToast('QR does not contain a valid CC code', 'error');
-    }
+    // Accept CC followed by any number of digits anywhere in the QR data
+    const match = decodedText.match(/CC\d+/i);
+    if (match) { saveScan(match[0].toUpperCase()); }
+    else { showToast('QR does not contain a valid CC code', 'error'); }
   }
-
-  const scanConfig = {
-    fps: 25,                          // higher fps = faster detection
-    qrbox: { width: 220, height: 220 }, // smaller box = fewer pixels processed per frame
-    aspectRatio: 1.0,
-    rememberLastUsedCamera: true,
-    showTorchButtonIfSupported: true,  // torch toggle for dark environments
-    experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-  };
-
   Html5Qrcode.getCameras().then(cameras => {
-    if (!cameras || cameras.length === 0) {
-      showToast('No camera found', 'error');
-      return;
-    }
-    html5QrCode.start(
-      { facingMode: 'environment' },
-      scanConfig,
-      onScanSuccess,
-      () => {}
-    ).catch(() => {
-      html5QrCode.start(
-        cameras[0].id,
-        scanConfig,
-        onScanSuccess,
-        () => {}
-      ).catch(err => showToast('Camera error: ' + err, 'error'));
-    });
+    if (!cameras || !cameras.length) { showToast('No camera found', 'error'); return; }
+    html5QrCode.start({ facingMode: 'environment' }, scanConfig, onScanSuccess, () => {})
+      .catch(() => html5QrCode.start(cameras[0].id, scanConfig, onScanSuccess, () => {})
+      .catch(err => showToast('Camera error: ' + err, 'error')));
   }).catch(() => showToast('Camera permission denied', 'error'));
-
-  // Records
-  async function fetchScans() {
-    const res = await fetch('/api/scans');
-    scans = await res.json();
-    renderTable();
-  }
-
+  async function fetchScans() { const res = await fetch('/api/scans'); scans = await res.json(); renderTable(); }
   function renderTable() {
     const q = document.getElementById('search').value.toLowerCase();
-    const filtered = scans.filter(s =>
-      s.cyclist_code.toLowerCase().includes(q) ||
-      (s.pit_stop || '').toLowerCase().includes(q)
-    );
-
-    document.getElementById('scan-count').textContent =
-      `${filtered.length} record${filtered.length !== 1 ? 's' : ''} shown`;
-
-    if (!filtered.length) {
-      document.getElementById('table-container').innerHTML =
-        '<div class="empty">No records found.</div>';
-      return;
-    }
-
-    const rows = filtered.map(s => {
-      const dt = new Date(s.scanned_at);
-      const date = dt.toLocaleDateString();
-      const time = dt.toLocaleTimeString();
-      return `<tr>
-        <td>${s.id}</td>
-        <td><span class="code-badge">${s.cyclist_code}</span></td>
-        <td>${date}<br><small style="color:#6b7280">${time}</small></td>
-        <td>${s.pit_stop}</td>
-        <td><button class="del-btn" onclick="deleteScan(${s.id})" title="Delete">✕</button></td>
-      </tr>`;
-    }).join('');
-
-    document.getElementById('table-container').innerHTML = `
-      <table>
-        <thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th></th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
+    const filtered = scans.filter(s => s.cyclist_code.toLowerCase().includes(q) || (s.pit_stop||'').toLowerCase().includes(q));
+    document.getElementById('scan-count').textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '') + ' shown';
+    if (!filtered.length) { document.getElementById('table-container').innerHTML = '<div class="empty">No records found.</div>'; return; }
+    const rows = filtered.map(s => { const dt = new Date(s.scanned_at);
+      return '<tr><td>'+s.id+'</td><td><span class="code-badge">'+s.cyclist_code+'</span></td><td>'+dt.toLocaleDateString()+'<br><small style="color:#6b7280">'+dt.toLocaleTimeString()+'</small></td><td>'+s.pit_stop+'</td><td><button class="del-btn" onclick="deleteScan('+s.id+')">x</button></td></tr>'; }).join('');
+    document.getElementById('table-container').innerHTML = '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
   }
-
   async function deleteScan(id) {
     if (!confirm('Delete this record?')) return;
-    await fetch('/api/scan/' + id, { method: 'DELETE' });
-    scans = scans.filter(s => s.id !== id);
-    renderTable();
+    await fetch('/api/scan/'+id, { method: 'DELETE' }); scans = scans.filter(s => s.id !== id); renderTable();
   }
-
-  // Initial fetch for records if tab is active
   fetchScans();
 </script>
 </body>
