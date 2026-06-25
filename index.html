@@ -9,11 +9,27 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     :root{--green:#149948;--green-light:#dcfce7;--red:#dc2626;--red-light:#fee2e2;--amber:#d97706;--amber-light:#fef3c7;--gray:#6b7280;--border:#e5e7eb;--bg:#f9fafb;}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:#111827;min-height:100vh;}
+    /* Login overlay */
+    .login-overlay{position:fixed;inset:0;background:#07570f;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+    .login-overlay.hidden{display:none;}
+    .login-logo{height:64px;margin-bottom:24px;}
+    .login-card{background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,0.3);}
+    .login-title{font-size:1.1rem;font-weight:800;color:#07570f;text-align:center;margin-bottom:4px;}
+    .login-sub{font-size:0.8rem;color:var(--gray);text-align:center;margin-bottom:20px;}
+    .login-field{margin-bottom:14px;}
+    .login-field label{display:block;font-size:0.8rem;font-weight:600;color:#374151;margin-bottom:5px;}
+    .login-field input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;}
+    .login-field input:focus{outline:none;border-color:var(--green);}
+    .login-btn{width:100%;background:var(--green);color:#fff;border:none;padding:12px;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:4px;}
+    .login-btn:active{opacity:0.85;}
+    .login-err{color:var(--red);font-size:0.82rem;text-align:center;margin-top:8px;min-height:1.2em;}
+    /* Header */
     header{background:#07570f;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px;}
     header img.logo{height:36px;width:auto;flex-shrink:0;}
+    .header-right{display:flex;align-items:center;gap:8px;}
     #clock{font-size:0.72rem;color:#bbf7d0;white-space:nowrap;}
+    .logged-user{font-size:0.7rem;color:#bbf7d0;background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:999px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .menu-btn{background:none;border:none;color:#bbf7d0;font-size:1.5rem;cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;}
-    .menu-btn:hover{background:rgba(255,255,255,0.12);}
     .db-signal{display:flex;flex-direction:row;align-items:center;gap:6px;}
     .signal-housing{background:#1a1a1a;border-radius:6px;padding:5px 7px;display:flex;flex-direction:row;gap:4px;border:1px solid #333;box-shadow:0 2px 4px rgba(0,0,0,0.5);}
     .signal-light{width:12px;height:12px;border-radius:50%;transition:box-shadow 0.3s,opacity 0.3s;}
@@ -24,6 +40,7 @@
     .signal-light.amber.on{opacity:1;box-shadow:0 0 8px 2px rgba(255,149,0,0.8);}
     .signal-light.green.on{opacity:1;box-shadow:0 0 8px 2px rgba(52,199,89,0.8);}
     .db-label{font-size:0.58rem;color:#bbf7d0;letter-spacing:0.3px;white-space:nowrap;}
+    /* Drawer */
     .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;opacity:0;pointer-events:none;transition:opacity 0.25s;}
     .drawer-overlay.open{opacity:1;pointer-events:auto;}
     .drawer{position:fixed;top:0;right:-290px;width:270px;height:100vh;background:#fff;z-index:200;transition:right 0.28s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.25);display:flex;flex-direction:column;}
@@ -42,6 +59,9 @@
     .drawer-item.coffee-item .di-title{color:#92400e;}
     .drawer-item.coffee-item:hover{background:#fffbeb;}
     .drawer-divider{height:1px;background:#f3f4f6;margin:4px 0;}
+    .drawer-logout{padding:14px 16px;border-top:1px solid #f3f4f6;}
+    .logout-btn{width:100%;background:#fee2e2;color:#dc2626;border:none;padding:10px;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;}
+    /* Tabs */
     .tab-bar{display:flex;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:57px;z-index:99;}
     .tab-bar button{flex:1;padding:12px;border:none;background:none;font-size:0.9rem;font-weight:600;color:var(--gray);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.15s;}
     .tab-bar button.active{color:var(--green);border-bottom-color:var(--green);}
@@ -104,13 +124,32 @@
     .code-badge{background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:999px;font-weight:700;}
     .empty{text-align:center;padding:40px;color:var(--gray);font-size:0.9rem;}
     @media(max-width:420px){th:nth-child(1),td:nth-child(1){display:none;}}
+    /* Menu Pages */
     .menu-page{position:fixed;inset:0;background:var(--bg);z-index:150;display:none;flex-direction:column;overflow-y:auto;}
     .menu-page.open{display:flex;}
     .page-hdr{background:#07570f;padding:12px 16px;display:flex;align-items:center;gap:10px;color:#fff;flex-shrink:0;position:sticky;top:0;z-index:10;}
     .page-back{background:none;border:none;color:#bbf7d0;font-size:1rem;cursor:pointer;padding:4px 10px;border-radius:6px;}
-    .page-back:hover{background:rgba(255,255,255,0.1);}
     .page-ttl{font-size:0.95rem;font-weight:700;}
     .page-body{flex:1;padding:16px;max-width:600px;margin:0 auto;width:100%;}
+    /* PIN gate */
+    .pin-gate{display:flex;flex-direction:column;align-items:center;padding:50px 20px 20px;gap:12px;text-align:center;}
+    .pin-gate .lock-icon{font-size:2.5rem;}
+    .pin-gate h3{font-size:1rem;font-weight:700;}
+    .pin-gate p{font-size:0.82rem;color:var(--gray);max-width:220px;}
+    .pin-form{display:flex;gap:8px;align-items:center;margin-top:4px;}
+    .pin-form input{padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:1rem;width:130px;text-align:center;letter-spacing:4px;}
+    .pin-form input:focus{outline:none;border-color:var(--green);}
+    .pin-form button{background:var(--green);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;}
+    .pin-err{color:var(--red);font-size:0.82rem;min-height:1.2em;}
+    .gated-content{display:none;}
+    .gated-content.visible{display:block;}
+    /* Admin stats */
+    .admin-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px;}
+    .admin-stat{background:#fff;border-radius:10px;border:1px solid var(--border);padding:16px;text-align:center;}
+    .as-value{font-size:2rem;font-weight:800;color:var(--green);line-height:1;}
+    .as-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray);margin-top:4px;font-weight:600;}
+    .section-title{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray);margin:16px 0 10px;}
+    /* Support */
     .support-section{margin-bottom:24px;}
     .support-section-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray);margin-bottom:10px;}
     .contact-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:14px 16px;margin-bottom:8px;}
@@ -123,6 +162,7 @@
     .contact-btns{display:flex;gap:8px;}
     .btn-call{background:var(--green);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
     .btn-wa{background:#25d366;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+    /* Coffee */
     .coffee-card{background:#fff;border-radius:16px;border:2px solid #fde68a;padding:28px 20px;text-align:center;margin-top:20px;}
     .coffee-big-emoji{font-size:3.5rem;margin-bottom:10px;}
     .coffee-devname{font-size:1.2rem;font-weight:800;color:#92400e;}
@@ -131,36 +171,49 @@
     .coffee-btn{display:inline-flex;align-items:center;gap:8px;background:#f59e0b;color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:0.95rem;font-weight:700;text-decoration:none;}
     .coffee-wa{display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:0.88rem;font-weight:600;text-decoration:none;}
     .coffee-phone-display{margin-top:14px;font-size:0.82rem;color:#9ca3af;}
+    /* Users */
     .user-card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
     .user-avatar{width:38px;height:38px;border-radius:50%;background:#07570f;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;}
     .user-info{flex:1;min-width:0;}
     .user-name{font-size:0.9rem;font-weight:600;color:#111827;}
-    .user-stats-row{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
-    .user-cp-tag{font-size:0.68rem;font-weight:600;padding:2px 6px;border-radius:999px;background:var(--green-light);color:var(--green);}
-    .user-total{font-size:1.1rem;font-weight:800;color:var(--green);flex-shrink:0;}
-    .pin-gate{display:flex;flex-direction:column;align-items:center;padding:50px 20px 20px;gap:12px;text-align:center;}
-    .pin-gate .lock-icon{font-size:2.5rem;}
-    .pin-gate h3{font-size:1rem;font-weight:700;}
-    .pin-gate p{font-size:0.82rem;color:var(--gray);max-width:220px;}
-    .pin-form{display:flex;gap:8px;align-items:center;margin-top:4px;}
-    .pin-form input{padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:1rem;width:130px;text-align:center;letter-spacing:4px;}
-    .pin-form input:focus{outline:none;border-color:var(--green);}
-    .pin-form button{background:var(--green);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;}
-    .pin-err{color:var(--red);font-size:0.82rem;min-height:1.2em;}
-    .admin-content{display:none;}
-    .admin-content.visible{display:block;}
-    .admin-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px;}
-    .admin-stat{background:#fff;border-radius:10px;border:1px solid var(--border);padding:16px;text-align:center;}
-    .as-value{font-size:2rem;font-weight:800;color:var(--green);line-height:1;}
-    .as-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray);margin-top:4px;font-weight:600;}
-    .section-title{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray);margin:16px 0 10px;}
+    .user-meta{font-size:0.75rem;color:var(--gray);margin-top:2px;}
+    .user-del{background:#fee2e2;color:#dc2626;border:none;padding:6px 10px;border-radius:6px;font-size:0.78rem;font-weight:600;cursor:pointer;flex-shrink:0;}
+    .add-user-form{background:#fff;border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:16px;}
+    .add-user-form h4{font-size:0.85rem;font-weight:700;color:#111827;margin-bottom:12px;}
+    .form-row{display:flex;gap:8px;margin-bottom:10px;}
+    .form-row input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;}
+    .form-row input:focus{outline:none;border-color:var(--green);}
+    .form-msg{font-size:0.8rem;margin-top:6px;min-height:1.2em;}
+    .form-msg.ok{color:var(--green);}
+    .form-msg.err{color:var(--red);}
   </style>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="login-overlay">
+  <img class="login-logo" src="CC_Logo_Green_White.svg" alt="Chennai Cyclothon 2026">
+  <div class="login-card">
+    <div class="login-title">Pit Stop Scanner</div>
+    <div class="login-sub">Chennai Cyclothon 2026</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input id="l-user" type="text" placeholder="Enter username" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input id="l-pass" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Login</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
 <header>
   <img class="logo" src="CC_Logo_Green_White.svg" alt="Chennai Cyclothon 2026">
-  <div style="display:flex;align-items:center;gap:10px;">
+  <div class="header-right">
     <span id="clock"></span>
+    <span class="logged-user" id="logged-user"></span>
     <div class="db-signal" title="Database status">
       <div class="signal-housing">
         <div class="signal-light red" id="sig-red"></div>
@@ -182,7 +235,7 @@
   <nav class="drawer-nav">
     <button class="drawer-item" onclick="openPage('users')">
       <span class="di-icon">&#128100;</span>
-      <div class="di-text"><span class="di-title">Users</span><span class="di-sub">Access rights</span></div>
+      <div class="di-text"><span class="di-title">Users</span><span class="di-sub">Manage access</span></div>
       <span class="di-arrow">&#8250;</span>
     </button>
     <button class="drawer-item" onclick="openPage('admin')">
@@ -207,6 +260,9 @@
       <span class="di-arrow">&#8250;</span>
     </button>
   </nav>
+  <div class="drawer-logout">
+    <button class="logout-btn" onclick="doLogout()">&#128275; Logout</button>
+  </div>
 </div>
 
 <div class="tab-bar">
@@ -258,18 +314,44 @@
   <div id="table-container"><div class="empty">Loading...</div></div>
 </div>
 
+<!-- PAGE: Users -->
 <div class="menu-page" id="page-users">
   <div class="page-hdr">
     <button class="page-back" onclick="closePage('users')">&#8592; Back</button>
-    <span class="page-ttl">Users with Access Rights</span>
+    <span class="page-ttl">&#128100; Users with Access Rights</span>
   </div>
-  <div class="page-body" id="users-list"><div class="empty">Loading...</div></div>
+  <div class="page-body">
+    <div class="pin-gate" id="users-pin-gate">
+      <div class="lock-icon">&#128274;</div>
+      <h3>Admin Required</h3>
+      <p>Enter the admin PIN to manage users.</p>
+      <div class="pin-form">
+        <input id="users-pin" type="password" maxlength="4" placeholder="PIN" oninput="document.getElementById('users-pin-err').textContent=''" onkeydown="if(event.key==='Enter')checkUsersPin()">
+        <button onclick="checkUsersPin()">Enter</button>
+      </div>
+      <div class="pin-err" id="users-pin-err"></div>
+    </div>
+    <div class="gated-content" id="users-content">
+      <div class="add-user-form">
+        <h4>&#43; Add New User</h4>
+        <div class="form-row">
+          <input id="new-username" type="text" placeholder="Username">
+          <input id="new-password" type="password" placeholder="Password">
+        </div>
+        <button class="primary" onclick="addUser()" style="width:100%;">Add User</button>
+        <div class="form-msg" id="add-user-msg"></div>
+      </div>
+      <div class="section-title">Current Users</div>
+      <div id="users-list"><div class="empty">Loading...</div></div>
+    </div>
+  </div>
 </div>
 
+<!-- PAGE: Admin -->
 <div class="menu-page" id="page-admin">
   <div class="page-hdr">
     <button class="page-back" onclick="closePage('admin')">&#8592; Back</button>
-    <span class="page-ttl">Admin Dashboard</span>
+    <span class="page-ttl">&#128272; Admin Dashboard</span>
   </div>
   <div class="page-body">
     <div class="pin-gate" id="admin-pin-gate">
@@ -282,7 +364,7 @@
       </div>
       <div class="pin-err" id="pin-err"></div>
     </div>
-    <div class="admin-content" id="admin-content">
+    <div class="gated-content" id="admin-content">
       <div class="admin-stat-grid">
         <div class="admin-stat"><div class="as-value" id="adm-total">0</div><div class="as-label">Total Scans</div></div>
         <div class="admin-stat"><div class="as-value" id="adm-cps">0</div><div class="as-label">Active CPs</div></div>
@@ -299,25 +381,39 @@
   </div>
 </div>
 
+<!-- PAGE: Report (PIN locked) -->
 <div class="menu-page" id="page-report">
   <div class="page-hdr">
     <button class="page-back" onclick="closePage('report')">&#8592; Back</button>
-    <span class="page-ttl">Scan Report</span>
+    <span class="page-ttl">&#128202; Scan Report</span>
   </div>
   <div class="page-body">
-    <div class="toolbar">
-      <input id="r-search" type="text" placeholder="Search..." oninput="renderReportTable()">
-      <div class="toolbar-actions">
-        <button class="outline" onclick="refreshReport()">&#8635; Refresh</button>
-        <button class="outline" onclick="location.href='/api/export/xlsx'">Export XLS</button>
-        <button class="outline" onclick="location.href='/api/export/csv'">Export CSV</button>
+    <div class="pin-gate" id="report-pin-gate">
+      <div class="lock-icon">&#128274;</div>
+      <h3>Report Access</h3>
+      <p>Enter the PIN to view scan reports.</p>
+      <div class="pin-form">
+        <input id="report-pin" type="password" maxlength="4" placeholder="PIN" oninput="document.getElementById('report-pin-err').textContent=''" onkeydown="if(event.key==='Enter')checkReportPin()">
+        <button onclick="checkReportPin()">Enter</button>
       </div>
+      <div class="pin-err" id="report-pin-err"></div>
     </div>
-    <div class="records-meta"><span id="r-count"></span></div>
-    <div id="report-table"><div class="empty">Loading...</div></div>
+    <div class="gated-content" id="report-content">
+      <div class="toolbar">
+        <input id="r-search" type="text" placeholder="Search..." oninput="renderReportTable()">
+        <div class="toolbar-actions">
+          <button class="outline" onclick="refreshReport()">&#8635; Refresh</button>
+          <button class="outline" onclick="location.href='/api/export/xlsx'">Export XLS</button>
+          <button class="outline" onclick="location.href='/api/export/csv'">Export CSV</button>
+        </div>
+      </div>
+      <div class="records-meta"><span id="r-count"></span></div>
+      <div id="report-table"><div class="empty">Loading...</div></div>
+    </div>
   </div>
 </div>
 
+<!-- PAGE: Support -->
 <div class="menu-page" id="page-support">
   <div class="page-hdr">
     <button class="page-back" onclick="closePage('support')">&#8592; Back</button>
@@ -352,6 +448,7 @@
   </div>
 </div>
 
+<!-- PAGE: Coffee -->
 <div class="menu-page" id="page-coffee">
   <div class="page-hdr">
     <button class="page-back" onclick="closePage('coffee')">&#8592; Back</button>
@@ -373,39 +470,81 @@
 
 <script>
 var scans=[],reportScans=[],lastScanned='',scanCooldown=false,statsCache=null;
-var countdownTimer=null,countdownVal=10,adminAuth=false;
+var countdownTimer=null,countdownVal=10;
+var adminAuth=false,reportAuth=false,usersAuth=false;
 var ADMIN_PIN='2026';
 
+// Audio
 var _ac=new(window.AudioContext||window.webkitAudioContext)();
 var _chimeBuf=null;
 fetch('freesound_community-chime-sound-7143.mp3').then(function(r){if(!r.ok)throw 0;return r.arrayBuffer();}).then(function(ab){return _ac.decodeAudioData(ab);}).then(function(b){_chimeBuf=b;}).catch(function(){});
-
 function playSuccessBeep(){try{if(_ac.state==='suspended')_ac.resume();if(_chimeBuf){var s=_ac.createBufferSource(),g=_ac.createGain();s.buffer=_chimeBuf;g.gain.value=2;s.connect(g);g.connect(_ac.destination);s.start(0);}else{[0,0.18].forEach(function(d){var o=_ac.createOscillator(),g=_ac.createGain();o.type='sine';o.frequency.value=1046;g.gain.setValueAtTime(0.4,_ac.currentTime+d);g.gain.exponentialRampToValueAtTime(0.001,_ac.currentTime+d+0.15);o.connect(g);g.connect(_ac.destination);o.start(_ac.currentTime+d);o.stop(_ac.currentTime+d+0.15);});}}catch(e){}}
 function playErrorBeep(){try{if(_ac.state==='suspended')_ac.resume();var o=_ac.createOscillator(),g=_ac.createGain();o.type='sawtooth';o.frequency.setValueAtTime(300,_ac.currentTime);o.frequency.exponentialRampToValueAtTime(150,_ac.currentTime+0.25);g.gain.setValueAtTime(0.18,_ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,_ac.currentTime+0.3);o.connect(g);g.connect(_ac.destination);o.start(_ac.currentTime);o.stop(_ac.currentTime+0.3);}catch(e){}}
 document.addEventListener('touchstart',function(){if(_ac.state==='suspended')_ac.resume();},{once:true});
 document.addEventListener('click',function(){if(_ac.state==='suspended')_ac.resume();},{once:true});
 
+// Clock
 setInterval(function(){document.getElementById('clock').textContent=new Date().toLocaleTimeString();},1000);
 document.getElementById('clock').textContent=new Date().toLocaleTimeString();
 
+// DB signal
 function setSignal(s){document.getElementById('sig-red').classList.toggle('on',s==='error');document.getElementById('sig-amber').classList.toggle('on',s==='checking');document.getElementById('sig-green').classList.toggle('on',s==='ok');var l=document.getElementById('sig-label');l.textContent=s==='ok'?'DB OK':s==='error'?'DB ERR':'DB...';l.style.color=s==='ok'?'#34c759':s==='error'?'#ff3b30':'#ff9500';}
 function checkHealth(){setSignal('checking');fetch('/api/health').then(function(r){setSignal(r.ok?'ok':'error');}).catch(function(){setSignal('error');});}
 checkHealth();setInterval(checkHealth,10000);
 
+// Login
+function doLogin(){
+  var u=document.getElementById('l-user').value.trim();
+  var p=document.getElementById('l-pass').value;
+  if(!u||!p){document.getElementById('login-err').textContent='Please enter username and password.';return;}
+  document.getElementById('login-err').textContent='Logging in...';
+  fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(r){
+    if(r.status===200){
+      sessionStorage.setItem('cc_user',r.data.username);
+      document.getElementById('login-overlay').classList.add('hidden');
+      document.getElementById('logged-user').textContent=r.data.username;
+      document.getElementById('scanner-name').value=r.data.username;
+    } else {
+      document.getElementById('login-err').textContent=r.data.error||'Login failed.';
+    }
+  }).catch(function(){document.getElementById('login-err').textContent='Network error. Try again.';});
+}
+function doLogout(){
+  sessionStorage.removeItem('cc_user');
+  document.getElementById('login-overlay').classList.remove('hidden');
+  document.getElementById('l-pass').value='';
+  document.getElementById('login-err').textContent='';
+  closeDrawer();
+}
+// Check session on load
+(function(){
+  var u=sessionStorage.getItem('cc_user');
+  if(u){document.getElementById('login-overlay').classList.add('hidden');document.getElementById('logged-user').textContent=u;document.getElementById('scanner-name').value=u;}
+})();
+
+// Drawer
 function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('drawer-overlay').classList.add('open');}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawer-overlay').classList.remove('open');}
-function openPage(id){closeDrawer();document.getElementById('page-'+id).classList.add('open');if(id==='users')loadUsers();if(id==='report')refreshReport();if(id==='admin'&&adminAuth)loadAdminData();}
+function openPage(id){closeDrawer();document.getElementById('page-'+id).classList.add('open');if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();}
 function closePage(id){document.getElementById('page-'+id).classList.remove('open');}
 
-function checkPin(){var v=document.getElementById('admin-pin').value;if(v===ADMIN_PIN){adminAuth=true;document.getElementById('admin-pin-gate').style.display='none';document.getElementById('admin-content').classList.add('visible');loadAdminData();}else{document.getElementById('pin-err').textContent='Incorrect PIN. Try again.';}}
+// Admin PIN
+function checkPin(){var v=document.getElementById('admin-pin').value;if(v===ADMIN_PIN){adminAuth=true;document.getElementById('admin-pin-gate').style.display='none';document.getElementById('admin-content').classList.add('visible');loadAdminData();}else{document.getElementById('pin-err').textContent='Incorrect PIN.';}}
 function clearPinErr(){document.getElementById('pin-err').textContent='';}
+
+// Report PIN
+function checkReportPin(){var v=document.getElementById('report-pin').value;if(v===ADMIN_PIN){reportAuth=true;document.getElementById('report-pin-gate').style.display='none';document.getElementById('report-content').classList.add('visible');refreshReport();}else{document.getElementById('report-pin-err').textContent='Incorrect PIN.';}}
+
+// Users PIN
+function checkUsersPin(){var v=document.getElementById('users-pin').value;if(v===ADMIN_PIN){usersAuth=true;document.getElementById('users-pin-gate').style.display='none';document.getElementById('users-content').classList.add('visible');loadUsers();}else{document.getElementById('users-pin-err').textContent='Incorrect PIN.';}}
+
+// Admin data
 function loadAdminData(){
   Promise.all([fetch('/api/stats').then(function(r){return r.json();}).catch(function(){return{};}),fetch('/api/scans').then(function(r){return r.json();}).catch(function(){return[];})]).then(function(res){
     var st=res[0],sc=res[1];
     document.getElementById('adm-total').textContent=st.total||0;
     document.getElementById('adm-cps').textContent=(st.byPitStop||[]).length;
-    var sSet=new Set((st.byScanner||[]).map(function(r){return r.scanner_name;}));
-    document.getElementById('adm-scanners').textContent=sSet.size;
+    document.getElementById('adm-scanners').textContent=new Set((st.byScanner||[]).map(function(r){return r.scanner_name;})).size;
     document.getElementById('adm-last').textContent=sc[0]?new Date(sc[0].scanned_at).toLocaleTimeString():'-';
     if(!sc.length){document.getElementById('admin-table').innerHTML='<div class="empty">No records.</div>';return;}
     var rows=sc.map(function(s){var d=new Date(s.scanned_at);return'<tr><td>'+s.id+'</td><td><span class="code-badge">'+s.cyclist_code+'</span></td><td>'+d.toLocaleDateString()+' '+d.toLocaleTimeString()+'</td><td>'+(s.pit_stop||'')+'</td><td>'+(s.scanner_name||'-')+'</td></tr>';}).join('');
@@ -413,18 +552,38 @@ function loadAdminData(){
   });
 }
 
+// Users management
 function loadUsers(){
-  fetch('/api/stats').then(function(r){return r.json();}).catch(function(){return{};}).then(function(res){
-    var map={};
-    (res.byScanner||[]).forEach(function(r){var n=r.scanner_name||'(unnamed)';if(!map[n])map[n]={name:n,total:0,cps:[]};map[n].total+=r.count;map[n].cps.push({cp:r.pit_stop,count:r.count});});
-    var users=Object.values(map).sort(function(a,b){return b.total-a.total;});
-    document.getElementById('users-list').innerHTML=users.length?users.map(function(u){var ini=u.name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().substring(0,2);return'<div class="user-card"><div class="user-avatar">'+ini+'</div><div class="user-info"><div class="user-name">'+u.name+'</div><div class="user-stats-row">'+u.cps.map(function(c){return'<span class="user-cp-tag">'+c.cp+': '+c.count+'</span>';}).join('')+'</div></div><div class="user-total">'+u.total+'</div></div>';}).join(''):'<div class="empty">No scanner activity yet.</div>';
+  fetch('/api/users').then(function(r){return r.json();}).catch(function(){return[];}).then(function(users){
+    var currentUser=sessionStorage.getItem('cc_user')||'';
+    document.getElementById('users-list').innerHTML=users.length?users.map(function(u){
+      var ini=u.username.substring(0,2).toUpperCase();
+      var isMe=u.username===currentUser;
+      return'<div class="user-card"><div class="user-avatar">'+ini+'</div><div class="user-info"><div class="user-name">'+u.username+(isMe?' (you)':'')+'</div><div class="user-meta">Added '+new Date(u.created_at).toLocaleDateString()+'</div></div>'+(isMe?'':'<button class="user-del" onclick="deleteUser('+u.id+',this)">Remove</button>')+'</div>';
+    }).join(''):'<div class="empty">No users found.</div>';
   });
 }
+function addUser(){
+  var u=document.getElementById('new-username').value.trim();
+  var p=document.getElementById('new-password').value;
+  var msg=document.getElementById('add-user-msg');
+  if(!u||!p){msg.className='form-msg err';msg.textContent='Username and password are required.';return;}
+  fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(r){
+    if(r.status===200||r.status===201){msg.className='form-msg ok';msg.textContent='User "'+u+'" added.';document.getElementById('new-username').value='';document.getElementById('new-password').value='';loadUsers();}
+    else{msg.className='form-msg err';msg.textContent=r.data.error||'Failed to add user.';}
+  }).catch(function(){msg.className='form-msg err';msg.textContent='Network error.';});
+}
+function deleteUser(id,btn){
+  if(!confirm('Remove this user?'))return;
+  btn.disabled=true;
+  fetch('/api/users/'+id,{method:'DELETE'}).then(function(){loadUsers();}).catch(function(){btn.disabled=false;});
+}
 
+// Report
 function refreshReport(){fetch('/api/scans').then(function(r){return r.json();}).catch(function(){return[];}).then(function(d){reportScans=d;renderReportTable();});}
 function renderReportTable(){var q=(document.getElementById('r-search')?document.getElementById('r-search').value||'':'').toLowerCase();var f=reportScans.filter(function(s){return s.cyclist_code.toLowerCase().includes(q)||(s.pit_stop||'').toLowerCase().includes(q)||(s.scanner_name||'').toLowerCase().includes(q);});var c=document.getElementById('r-count');if(c)c.textContent=f.length+' records';document.getElementById('report-table').innerHTML=f.length?'<table><thead><tr><th>#</th><th>Cyclist</th><th>Date/Time</th><th>CP</th><th>Scanner</th></tr></thead><tbody>'+f.map(function(s){var d=new Date(s.scanned_at);return'<tr><td>'+s.id+'</td><td><span class="code-badge">'+s.cyclist_code+'</span></td><td>'+d.toLocaleDateString()+'<br><small>'+d.toLocaleTimeString()+'</small></td><td>'+(s.pit_stop||'')+'</td><td>'+(s.scanner_name||'-')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No records found.</div>';}
 
+// Tabs
 function showTab(id,btn){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.tab-bar button').forEach(function(b){b.classList.remove('active');});document.getElementById(id).classList.add('active');btn.classList.add('active');if(id==='records'){fetchScans();startCountdown();}else{stopCountdown();}}
 function startCountdown(){stopCountdown();countdownVal=10;updateCountdownBar();countdownTimer=setInterval(function(){countdownVal--;updateCountdownBar();if(countdownVal<=0){fetchScans();countdownVal=10;}},1000);}
 function stopCountdown(){clearInterval(countdownTimer);countdownTimer=null;}
@@ -432,12 +591,14 @@ function updateCountdownBar(){var b=document.getElementById('countdown-bar');if(
 function manualRefresh(){var btn=document.getElementById('refresh-btn');btn.classList.add('spinning');setTimeout(function(){btn.classList.remove('spinning');},600);fetchScans();countdownVal=10;updateCountdownBar();}
 function showToast(msg,type){var t=document.getElementById('toast');t.className='toast '+type;t.textContent=msg;clearTimeout(t._timer);t._timer=setTimeout(function(){t.className='toast';},4000);}
 
+// Stats
 function selectCp(cp){document.getElementById('pit-stop').value=cp;highlightActiveCp();}
 function highlightActiveCp(){var a=document.getElementById('pit-stop').value;['CP1','CP2','CP3','CP4','CP5'].forEach(function(cp){var c=document.getElementById('stat-'+cp);if(c)c.classList.toggle('active-cp',cp===a);});renderCpDetail(a);}
 function renderCpDetail(cp){var d=document.getElementById('cp-detail');if(!statsCache){d.innerHTML='';return;}var sc=(statsCache.byScanner||[]).filter(function(r){return r.pit_stop===cp;});var tot=sc.reduce(function(s,r){return s+r.count;},0);var mx=sc.length?Math.max.apply(null,sc.map(function(r){return r.count;})):1;if(!sc.length){d.innerHTML='<div class="cp-detail-header"><span class="cp-title">'+cp+' - Scanner Breakdown</span><span class="cp-detail-total">No scans yet</span></div><div class="cp-detail-empty">No scans at '+cp+' yet.</div>';return;}d.innerHTML='<div class="cp-detail-header"><span class="cp-title">'+cp+' - Scanner Breakdown</span><span class="cp-detail-total">'+tot+' total</span></div>'+sc.map(function(r){return'<div class="scanner-row"><span class="s-name">'+r.scanner_name+'</span><div class="s-bar-wrap"><div class="s-bar" style="width:'+Math.round(r.count/mx*100)+'%"></div></div><span class="s-count">'+r.count+'</span></div>';}).join('');}
 function fetchStats(){fetch('/api/stats').then(function(r){return r.json();}).then(function(data){statsCache=data;var c={};(data.byPitStop||[]).forEach(function(r){c[r.pit_stop]=r.count;});['CP1','CP2','CP3','CP4','CP5'].forEach(function(cp){var el=document.getElementById('stat-'+cp);if(el)el.querySelector('.cp-count').textContent=c[cp]||0;});document.getElementById('stats-total').innerHTML='Total scans: <strong>'+(data.total||0)+'</strong>';renderCpDetail(document.getElementById('pit-stop').value);}).catch(function(){});}
 fetchStats();setInterval(fetchStats,15000);
 
+// Scan
 function saveScan(code){if(scanCooldown&&code===lastScanned)return;scanCooldown=true;lastScanned=code;setTimeout(function(){scanCooldown=false;},1500);var pit_stop=document.getElementById('pit-stop').value;var scanner_name=document.getElementById('scanner-name').value.trim();fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cyclist_code:code,pit_stop:pit_stop,scanner_name:scanner_name})}).then(function(res){return res.json().then(function(data){return{status:res.status,data:data};});}).then(function(r){if(r.status===409){playErrorBeep();showToast('Rider '+code+' already scanned at '+pit_stop,'warning');}else if(r.status>=400){playErrorBeep();showToast(r.data.error||'Error','error');}else{playSuccessBeep();showToast(r.data.cyclist_code+' logged at '+pit_stop+(scanner_name?' by '+scanner_name:''),'success');if(navigator.vibrate)navigator.vibrate([100,50,100]);fetchStats();}}).catch(function(e){playErrorBeep();showToast('Network error: '+e.message,'error');});}
 function submitManual(){var c=document.getElementById('manual-code').value.trim().toUpperCase();if(!c)return;saveScan(c);document.getElementById('manual-code').value='';}
 document.getElementById('manual-code').addEventListener('keydown',function(e){if(e.key==='Enter')submitManual();});
