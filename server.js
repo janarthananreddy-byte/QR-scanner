@@ -20,15 +20,14 @@ pit_stop TEXT DEFAULT 'Main'
 `);
 
 app.use(express.json());
-// Serve from public/ first, then root (for index.html)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
 // Save a scan
 app.post('/api/scan', (req, res) => {
 const { cyclist_code, pit_stop } = req.body;
-if (!cyclist_code || !/^CC\d{8}$/i.test(cyclist_code.trim())) {
-return res.status(400).json({ error: 'Invalid cyclist code. Expected format: CCXXXXXXXX' });
+if (!cyclist_code || !/^CC\d+$/i.test(cyclist_code.trim())) {
+return res.status(400).json({ error: 'Invalid cyclist code. Expected format: CC followed by digits' });
 }
 const scanned_at = new Date().toISOString();
 const stmt = db.prepare('INSERT INTO scans (cyclist_code, scanned_at, pit_stop) VALUES (?, ?, ?)');
@@ -36,19 +35,16 @@ const info = stmt.run(cyclist_code.trim().toUpperCase(), scanned_at, pit_stop ||
 res.json({ id: info.lastInsertRowid, cyclist_code: cyclist_code.trim().toUpperCase(), scanned_at, pit_stop: pit_stop || 'Main' });
 });
 
-// Get all scans (newest first)
 app.get('/api/scans', (req, res) => {
 const rows = db.prepare('SELECT * FROM scans ORDER BY id DESC').all();
 res.json(rows);
 });
 
-// Delete a scan
 app.delete('/api/scan/:id', (req, res) => {
 db.prepare('DELETE FROM scans WHERE id = ?').run(req.params.id);
 res.json({ ok: true });
 });
 
-// Export CSV
 app.get('/api/export/csv', (req, res) => {
 const rows = db.prepare('SELECT id, cyclist_code, scanned_at, pit_stop FROM scans ORDER BY id').all();
 const header = 'ID,Cyclist Code,Scanned At,Pit Stop\n';
@@ -58,7 +54,6 @@ res.setHeader('Content-Disposition', 'attachment; filename="pit_stop_scans.csv"'
 res.send(header + body);
 });
 
-// Export XLSX
 app.get('/api/export/xlsx', (req, res) => {
 const rows = db.prepare('SELECT id, cyclist_code, scanned_at, pit_stop FROM scans ORDER BY id').all();
 const data = [
