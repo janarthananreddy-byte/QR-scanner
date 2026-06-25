@@ -15,7 +15,7 @@
     }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: #111827; min-height: 100vh; }
     header {
-      background: #111827;
+      background: #07570f;
       padding: 10px 16px;
       display: flex;
       align-items: center;
@@ -26,7 +26,7 @@
       gap: 12px;
     }
     header img.logo { height: 36px; width: auto; flex-shrink: 0; }
-    header span { font-size: 0.72rem; color: #9ca3af; white-space: nowrap; }
+    header span { font-size: 0.72rem; color: #bbf7d0; white-space: nowrap; }
     .tab-bar { display: flex; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 57px; z-index: 99; }
     .tab-bar button { flex: 1; padding: 12px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s; }
     .tab-bar button.active { color: var(--green); border-bottom-color: var(--green); }
@@ -50,7 +50,7 @@
     button.outline { background: #fff; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #374151; }
     button.outline:hover { border-color: var(--green); color: var(--green); }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    thead tr { background: #111827; color: #fff; }
+    thead tr { background: #1f2937; color: #fff; }
     th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #f0fdf4; }
@@ -106,22 +106,21 @@
 </div>
 <script>
   let scans = [], lastScanned = '', scanCooldown = false;
-
   const _ac = new (window.AudioContext || window.webkitAudioContext)();
   let _chimeBuf = null;
   fetch('freesound_community-chime-sound-7143.mp3')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
     .then(ab => _ac.decodeAudioData(ab))
     .then(buf => { _chimeBuf = buf; })
-    .catch(err => console.warn('Chime load failed, using fallback:', err.message));
+    .catch(err => console.warn('Chime fallback:', err.message));
 
   function playSuccessBeep() {
     try {
       if (_ac.state === 'suspended') _ac.resume();
       if (_chimeBuf) {
-        const src = _ac.createBufferSource(), gain = _ac.createGain();
-        src.buffer = _chimeBuf; gain.gain.value = 2.0;
-        src.connect(gain); gain.connect(_ac.destination); src.start(0);
+        const src = _ac.createBufferSource(), g = _ac.createGain();
+        src.buffer = _chimeBuf; g.gain.value = 2.0;
+        src.connect(g); g.connect(_ac.destination); src.start(0);
       } else {
         [0, 0.18].forEach(d => {
           const o = _ac.createOscillator(), g = _ac.createGain();
@@ -134,7 +133,6 @@
       }
     } catch(e) {}
   }
-
   function playErrorBeep() {
     try {
       if (_ac.state === 'suspended') _ac.resume();
@@ -148,10 +146,9 @@
       o.start(_ac.currentTime); o.stop(_ac.currentTime + 0.3);
     } catch(e) {}
   }
-
-  function _unlockAC() { if (_ac.state === 'suspended') _ac.resume(); }
-  document.addEventListener('touchstart', _unlockAC, { once: true });
-  document.addEventListener('click', _unlockAC, { once: true });
+  function _unlock() { if (_ac.state === 'suspended') _ac.resume(); }
+  document.addEventListener('touchstart', _unlock, { once: true });
+  document.addEventListener('click', _unlock, { once: true });
 
   setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
   document.getElementById('clock').textContent = new Date().toLocaleTimeString();
@@ -162,14 +159,12 @@
     document.getElementById(id).classList.add('active'); btn.classList.add('active');
     if (id === 'records') fetchScans();
   }
-
   function showToast(msg, type) {
     const t = document.getElementById('toast');
     t.className = 'toast ' + type; t.textContent = msg;
     clearTimeout(t._timer);
     t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
   }
-
   async function saveScan(code) {
     if (scanCooldown && code === lastScanned) return;
     scanCooldown = true; lastScanned = code;
@@ -196,7 +191,6 @@
       }
     } catch(e) { playErrorBeep(); showToast('Network error: ' + e.message, 'error'); }
   }
-
   function submitManual() {
     const code = document.getElementById('manual-code').value.trim().toUpperCase();
     if (!code) return; saveScan(code);
