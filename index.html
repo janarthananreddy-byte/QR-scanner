@@ -251,8 +251,6 @@
     <input id="search" type="text" placeholder="Search by code, pit stop, or scanner..." oninput="renderTable()">
     <div class="toolbar-actions">
       <button class="outline refresh-btn" id="refresh-btn" onclick="manualRefresh()"><span class="spin">&#8635;</span> Refresh</button>
-      <button class="outline" onclick="location.href='/api/export/xlsx'">&#11015; XLS</button>
-      <button class="outline" onclick="location.href='/api/export/csv'">&#11015; CSV</button>
     </div>
   </div>
   <div class="records-meta"><span id="scan-count"></span><span id="last-refresh"></span></div>
@@ -292,8 +290,8 @@
         <div class="admin-stat"><div class="as-value" id="adm-last">-</div><div class="as-label">Last Scan</div></div>
       </div>
       <div class="toolbar-actions" style="margin-bottom:14px;">
-        <button class="outline" onclick="location.href='/api/export/xlsx'">&#11015; Export XLS</button>
-        <button class="outline" onclick="location.href='/api/export/csv'">&#11015; Export CSV</button>
+        <button class="outline" onclick="location.href='/api/export/xlsx'">Export XLS</button>
+        <button class="outline" onclick="location.href='/api/export/csv'">Export CSV</button>
       </div>
       <div class="section-title">All Scan Records</div>
       <div id="admin-table"><div class="empty">Loading...</div></div>
@@ -311,8 +309,8 @@
       <input id="r-search" type="text" placeholder="Search..." oninput="renderReportTable()">
       <div class="toolbar-actions">
         <button class="outline" onclick="refreshReport()">&#8635; Refresh</button>
-        <button class="outline" onclick="location.href='/api/export/xlsx'">&#11015; XLS</button>
-        <button class="outline" onclick="location.href='/api/export/csv'">&#11015; CSV</button>
+        <button class="outline" onclick="location.href='/api/export/xlsx'">Export XLS</button>
+        <button class="outline" onclick="location.href='/api/export/csv'">Export CSV</button>
       </div>
     </div>
     <div class="records-meta"><span id="r-count"></span></div>
@@ -390,14 +388,7 @@ document.addEventListener('click',function(){if(_ac.state==='suspended')_ac.resu
 setInterval(function(){document.getElementById('clock').textContent=new Date().toLocaleTimeString();},1000);
 document.getElementById('clock').textContent=new Date().toLocaleTimeString();
 
-function setSignal(s){
-  document.getElementById('sig-red').classList.toggle('on',s==='error');
-  document.getElementById('sig-amber').classList.toggle('on',s==='checking');
-  document.getElementById('sig-green').classList.toggle('on',s==='ok');
-  var l=document.getElementById('sig-label');
-  l.textContent=s==='ok'?'DB OK':s==='error'?'DB ERR':'DB...';
-  l.style.color=s==='ok'?'#34c759':s==='error'?'#ff3b30':'#ff9500';
-}
+function setSignal(s){document.getElementById('sig-red').classList.toggle('on',s==='error');document.getElementById('sig-amber').classList.toggle('on',s==='checking');document.getElementById('sig-green').classList.toggle('on',s==='ok');var l=document.getElementById('sig-label');l.textContent=s==='ok'?'DB OK':s==='error'?'DB ERR':'DB...';l.style.color=s==='ok'?'#34c759':s==='error'?'#ff3b30':'#ff9500';}
 function checkHealth(){setSignal('checking');fetch('/api/health').then(function(r){setSignal(r.ok?'ok':'error');}).catch(function(){setSignal('error');});}
 checkHealth();setInterval(checkHealth,10000);
 
@@ -427,20 +418,12 @@ function loadUsers(){
     var map={};
     (res.byScanner||[]).forEach(function(r){var n=r.scanner_name||'(unnamed)';if(!map[n])map[n]={name:n,total:0,cps:[]};map[n].total+=r.count;map[n].cps.push({cp:r.pit_stop,count:r.count});});
     var users=Object.values(map).sort(function(a,b){return b.total-a.total;});
-    document.getElementById('users-list').innerHTML=users.length?users.map(function(u){
-      var ini=u.name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().substring(0,2);
-      return'<div class="user-card"><div class="user-avatar">'+ini+'</div><div class="user-info"><div class="user-name">'+u.name+'</div><div class="user-stats-row">'+u.cps.map(function(c){return'<span class="user-cp-tag">'+c.cp+': '+c.count+'</span>';}).join('')+'</div></div><div class="user-total">'+u.total+'</div></div>';
-    }).join(''):'<div class="empty">No scanner activity yet.</div>';
+    document.getElementById('users-list').innerHTML=users.length?users.map(function(u){var ini=u.name.split(' ').map(function(w){return w[0];}).join('').toUpperCase().substring(0,2);return'<div class="user-card"><div class="user-avatar">'+ini+'</div><div class="user-info"><div class="user-name">'+u.name+'</div><div class="user-stats-row">'+u.cps.map(function(c){return'<span class="user-cp-tag">'+c.cp+': '+c.count+'</span>';}).join('')+'</div></div><div class="user-total">'+u.total+'</div></div>';}).join(''):'<div class="empty">No scanner activity yet.</div>';
   });
 }
 
 function refreshReport(){fetch('/api/scans').then(function(r){return r.json();}).catch(function(){return[];}).then(function(d){reportScans=d;renderReportTable();});}
-function renderReportTable(){
-  var q=(document.getElementById('r-search')?document.getElementById('r-search').value||'':'').toLowerCase();
-  var f=reportScans.filter(function(s){return s.cyclist_code.toLowerCase().includes(q)||(s.pit_stop||'').toLowerCase().includes(q)||(s.scanner_name||'').toLowerCase().includes(q);});
-  var c=document.getElementById('r-count');if(c)c.textContent=f.length+' records';
-  document.getElementById('report-table').innerHTML=f.length?'<table><thead><tr><th>#</th><th>Cyclist</th><th>Date/Time</th><th>CP</th><th>Scanner</th></tr></thead><tbody>'+f.map(function(s){var d=new Date(s.scanned_at);return'<tr><td>'+s.id+'</td><td><span class="code-badge">'+s.cyclist_code+'</span></td><td>'+d.toLocaleDateString()+'<br><small>'+d.toLocaleTimeString()+'</small></td><td>'+(s.pit_stop||'')+'</td><td>'+(s.scanner_name||'-')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No records found.</div>';
-}
+function renderReportTable(){var q=(document.getElementById('r-search')?document.getElementById('r-search').value||'':'').toLowerCase();var f=reportScans.filter(function(s){return s.cyclist_code.toLowerCase().includes(q)||(s.pit_stop||'').toLowerCase().includes(q)||(s.scanner_name||'').toLowerCase().includes(q);});var c=document.getElementById('r-count');if(c)c.textContent=f.length+' records';document.getElementById('report-table').innerHTML=f.length?'<table><thead><tr><th>#</th><th>Cyclist</th><th>Date/Time</th><th>CP</th><th>Scanner</th></tr></thead><tbody>'+f.map(function(s){var d=new Date(s.scanned_at);return'<tr><td>'+s.id+'</td><td><span class="code-badge">'+s.cyclist_code+'</span></td><td>'+d.toLocaleDateString()+'<br><small>'+d.toLocaleTimeString()+'</small></td><td>'+(s.pit_stop||'')+'</td><td>'+(s.scanner_name||'-')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No records found.</div>';}
 
 function showTab(id,btn){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.tab-bar button').forEach(function(b){b.classList.remove('active');});document.getElementById(id).classList.add('active');btn.classList.add('active');if(id==='records'){fetchScans();startCountdown();}else{stopCountdown();}}
 function startCountdown(){stopCountdown();countdownVal=10;updateCountdownBar();countdownTimer=setInterval(function(){countdownVal--;updateCountdownBar();if(countdownVal<=0){fetchScans();countdownVal=10;}},1000);}
@@ -451,38 +434,20 @@ function showToast(msg,type){var t=document.getElementById('toast');t.className=
 
 function selectCp(cp){document.getElementById('pit-stop').value=cp;highlightActiveCp();}
 function highlightActiveCp(){var a=document.getElementById('pit-stop').value;['CP1','CP2','CP3','CP4','CP5'].forEach(function(cp){var c=document.getElementById('stat-'+cp);if(c)c.classList.toggle('active-cp',cp===a);});renderCpDetail(a);}
-function renderCpDetail(cp){
-  var d=document.getElementById('cp-detail');if(!statsCache){d.innerHTML='';return;}
-  var sc=(statsCache.byScanner||[]).filter(function(r){return r.pit_stop===cp;});
-  var tot=sc.reduce(function(s,r){return s+r.count;},0);
-  var mx=sc.length?Math.max.apply(null,sc.map(function(r){return r.count;})):1;
-  if(!sc.length){d.innerHTML='<div class="cp-detail-header"><span class="cp-title">'+cp+' - Scanner Breakdown</span><span class="cp-detail-total">No scans yet</span></div><div class="cp-detail-empty">No scans at '+cp+' yet.</div>';return;}
-  d.innerHTML='<div class="cp-detail-header"><span class="cp-title">'+cp+' - Scanner Breakdown</span><span class="cp-detail-total">'+tot+' total</span></div>'+sc.map(function(r){return'<div class="scanner-row"><span class="s-name">'+r.scanner_name+'</span><div class="s-bar-wrap"><div class="s-bar" style="width:'+Math.round(r.count/mx*100)+'%"></div></div><span class="s-count">'+r.count+'</span></div>';}).join('');
-}
+function renderCpDetail(cp){var d=document.getElementById('cp-detail');if(!statsCache){d.innerHTML='';return;}var sc=(statsCache.byScanner||[]).filter(function(r){return r.pit_stop===cp;});var tot=sc.reduce(function(s,r){return s+r.count;},0);var mx=sc.length?Math.max.apply(null,sc.map(function(r){return r.count;})):1;if(!sc.length){d.innerHTML='<div class="cp-detail-header"><span class="cp-title">'+cp+' - Scanner Breakdown</span><span class="cp-detail-total">No scans yet</span></div><div class="cp-detail-empty">No scans at '+cp+' yet.</div>';return;}d.innerHTML='<div class="cp-detail-header"><span class="cp-title">'+cp+' - Scanner Breakdown</span><span class="cp-detail-total">'+tot+' total</span></div>'+sc.map(function(r){return'<div class="scanner-row"><span class="s-name">'+r.scanner_name+'</span><div class="s-bar-wrap"><div class="s-bar" style="width:'+Math.round(r.count/mx*100)+'%"></div></div><span class="s-count">'+r.count+'</span></div>';}).join('');}
 function fetchStats(){fetch('/api/stats').then(function(r){return r.json();}).then(function(data){statsCache=data;var c={};(data.byPitStop||[]).forEach(function(r){c[r.pit_stop]=r.count;});['CP1','CP2','CP3','CP4','CP5'].forEach(function(cp){var el=document.getElementById('stat-'+cp);if(el)el.querySelector('.cp-count').textContent=c[cp]||0;});document.getElementById('stats-total').innerHTML='Total scans: <strong>'+(data.total||0)+'</strong>';renderCpDetail(document.getElementById('pit-stop').value);}).catch(function(){});}
 fetchStats();setInterval(fetchStats,15000);
 
-function saveScan(code){
-  if(scanCooldown&&code===lastScanned)return;
-  scanCooldown=true;lastScanned=code;setTimeout(function(){scanCooldown=false;},1500);
-  var pit_stop=document.getElementById('pit-stop').value;
-  var scanner_name=document.getElementById('scanner-name').value.trim();
-  fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cyclist_code:code,pit_stop:pit_stop,scanner_name:scanner_name})}).then(function(res){return res.json().then(function(data){return{status:res.status,data:data};});}).then(function(r){if(r.status===409){playErrorBeep();showToast('Rider '+code+' already scanned at '+pit_stop,'warning');}else if(r.status>=400){playErrorBeep();showToast(r.data.error||'Error','error');}else{playSuccessBeep();showToast(r.data.cyclist_code+' logged at '+pit_stop+(scanner_name?' by '+scanner_name:''),'success');if(navigator.vibrate)navigator.vibrate([100,50,100]);fetchStats();}}).catch(function(e){playErrorBeep();showToast('Network error: '+e.message,'error');});
-}
+function saveScan(code){if(scanCooldown&&code===lastScanned)return;scanCooldown=true;lastScanned=code;setTimeout(function(){scanCooldown=false;},1500);var pit_stop=document.getElementById('pit-stop').value;var scanner_name=document.getElementById('scanner-name').value.trim();fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cyclist_code:code,pit_stop:pit_stop,scanner_name:scanner_name})}).then(function(res){return res.json().then(function(data){return{status:res.status,data:data};});}).then(function(r){if(r.status===409){playErrorBeep();showToast('Rider '+code+' already scanned at '+pit_stop,'warning');}else if(r.status>=400){playErrorBeep();showToast(r.data.error||'Error','error');}else{playSuccessBeep();showToast(r.data.cyclist_code+' logged at '+pit_stop+(scanner_name?' by '+scanner_name:''),'success');if(navigator.vibrate)navigator.vibrate([100,50,100]);fetchStats();}}).catch(function(e){playErrorBeep();showToast('Network error: '+e.message,'error');});}
 function submitManual(){var c=document.getElementById('manual-code').value.trim().toUpperCase();if(!c)return;saveScan(c);document.getElementById('manual-code').value='';}
 document.getElementById('manual-code').addEventListener('keydown',function(e){if(e.key==='Enter')submitManual();});
 
 var html5QrCode=new Html5Qrcode('reader',{useBarCodeDetectorIfSupported:true});
-Html5Qrcode.getCameras().then(function(cameras){
-  if(!cameras||!cameras.length){showToast('No camera found','error');return;}
-  var cfg={fps:25,qrbox:{width:200,height:200},aspectRatio:1.0,rememberLastUsedCamera:true,showTorchButtonIfSupported:true};
-  function onDecode(d){var m=d.match(/CC[0-9]+/i);if(m)saveScan(m[0].toUpperCase());else{playErrorBeep();showToast('Invalid QR code','error');}}
-  html5QrCode.start({facingMode:'environment'},cfg,onDecode,function(){}).catch(function(){html5QrCode.start(cameras[0].id,cfg,onDecode,function(){}).catch(function(err){showToast('Camera error: '+err,'error');});});
-}).catch(function(){showToast('Camera permission denied','error');});
+Html5Qrcode.getCameras().then(function(cameras){if(!cameras||!cameras.length){showToast('No camera found','error');return;}var cfg={fps:25,qrbox:{width:200,height:200},aspectRatio:1.0,rememberLastUsedCamera:true,showTorchButtonIfSupported:true};function onDecode(d){var m=d.match(/CC[0-9]+/i);if(m)saveScan(m[0].toUpperCase());else{playErrorBeep();showToast('Invalid QR code','error');}}html5QrCode.start({facingMode:'environment'},cfg,onDecode,function(){}).catch(function(){html5QrCode.start(cameras[0].id,cfg,onDecode,function(){}).catch(function(err){showToast('Camera error: '+err,'error');});});}).catch(function(){showToast('Camera permission denied','error');});
 
 function fetchScans(){fetch('/api/scans').then(function(r){return r.json();}).then(function(data){scans=data;renderTable();var el=document.getElementById('last-refresh');if(el)el.textContent='Updated '+new Date().toLocaleTimeString();}).catch(function(){});}
 function renderTable(){var q=(document.getElementById('search')?document.getElementById('search').value||'':'').toLowerCase();var f=scans.filter(function(s){return s.cyclist_code.toLowerCase().includes(q)||(s.pit_stop||'').toLowerCase().includes(q)||(s.scanner_name||'').toLowerCase().includes(q);});document.getElementById('scan-count').textContent=f.length+' record'+(f.length!==1?'s':'')+' shown';document.getElementById('table-container').innerHTML=f.length?'<table><thead><tr><th>#</th><th>Cyclist</th><th>Date/Time</th><th>CP</th><th>Scanner</th></tr></thead><tbody>'+f.map(function(s){var d=new Date(s.scanned_at);return'<tr><td>'+s.id+'</td><td><span class="code-badge">'+s.cyclist_code+'</span></td><td>'+d.toLocaleDateString()+'<br><small style="color:#6b7280">'+d.toLocaleTimeString()+'</small></td><td>'+(s.pit_stop||'')+'</td><td>'+(s.scanner_name||'-')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No records found.</div>';}
 fetchScans();
 </script>
 </body>
-  </html>
+</html>
