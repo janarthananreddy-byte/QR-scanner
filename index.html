@@ -532,7 +532,7 @@ function doLogin(){
       sessionStorage.setItem('cc_user',r.data.username);
       document.getElementById('login-overlay').classList.add('hidden');
       document.getElementById('logged-user').textContent=r.data.username;
-      document.getElementById('scanner-name').value=r.data.username;
+      document.getElementById('scanner-name').value=r.data.username;setTimeout(function(){var el=document.getElementById('scanner-name');if(el)el.value=r.data.username;},300);
     } else {
       document.getElementById('login-err').textContent=r.data.error||'Login failed.';
     }
