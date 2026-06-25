@@ -11,25 +11,22 @@ const DB_PATH = process.env.NODE_ENV === 'production'
   : path.join(__dirname, 'scans.db');
 const db = new Database(DB_PATH);
 
-// Create table with scanner_name column
 db.exec(`
 CREATE TABLE IF NOT EXISTS scans (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   cyclist_code TEXT NOT NULL,
   scanned_at TEXT NOT NULL,
-  pit_stop TEXT DEFAULT 'Main',
+  pit_stop TEXT DEFAULT 'CP1',
   scanner_name TEXT DEFAULT ''
 )
 `);
 
-// Add scanner_name column if upgrading from old schema
 try { db.exec("ALTER TABLE scans ADD COLUMN scanner_name TEXT DEFAULT ''"); } catch(e) {}
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
-// Save a scan
 app.post('/api/scan', (req, res) => {
   try {
     const { cyclist_code, pit_stop, scanner_name } = req.body;
@@ -38,16 +35,16 @@ app.post('/api/scan', (req, res) => {
     if (!/^CC\d+$/.test(code)) {
       return res.status(400).json({ error: `Invalid code "${code}". Expected format: CC followed by digits` });
     }
-    // Duplicate check
-    const existing = db.prepare('SELECT id FROM scans WHERE cyclist_code = ?').get(code);
+    // Duplicate = same rider at same checkpoint
+    const existing = db.prepare('SELECT id FROM scans WHERE cyclist_code = ? AND pit_stop = ?').get(code, pit_stop || 'CP1');
     if (existing) {
-      return res.status(409).json({ error: 'Rider is already scanned' });
+      return res.status(409).json({ error: `Rider ${code} already scanned at ${pit_stop || 'CP1'}` });
     }
     const scanned_at = new Date().toISOString();
     const info = db.prepare(
       'INSERT INTO scans (cyclist_code, scanned_at, pit_stop, scanner_name) VALUES (?, ?, ?, ?)'
-    ).run(code, scanned_at, pit_stop || 'Main', scanner_name || '');
-    res.json({ id: info.lastInsertRowid, cyclist_code: code, scanned_at, pit_stop: pit_stop || 'Main', scanner_name: scanner_name || '' });
+    ).run(code, scanned_at, pit_stop || 'CP1', scanner_name || '');
+    res.json({ id: info.lastInsertRowid, cyclist_code: code, scanned_at, pit_stop: pit_stop || 'CP1', scanner_name: scanner_name || '' });
   } catch (err) {
     console.error('Error saving scan:', err.message);
     res.status(500).json({ error: 'Failed to save scan: ' + err.message });
