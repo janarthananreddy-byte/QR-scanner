@@ -18,8 +18,7 @@
     header img.logo { height: 36px; width: auto; flex-shrink: 0; }
     header span#clock { font-size: 0.72rem; color: #bbf7d0; white-space: nowrap; }
 
-
-    /* Traffic signal */
+    /* Traffic signal - horizontal */
     .db-signal { display: flex; flex-direction: row; align-items: center; gap: 6px; }
     .signal-housing {
       background: #1a1a1a;
@@ -35,3 +34,341 @@
       width: 12px; height: 12px;
       border-radius: 50%;
       transition: box-shadow 0.3s, opacity 0.3s;
+    }
+    .signal-light.red    { background: #ff3b30; opacity: 0.2; }
+    .signal-light.amber  { background: #ff9500; opacity: 0.2; }
+    .signal-light.green  { background: #34c759; opacity: 0.2; }
+    .signal-light.red.on    { opacity: 1; box-shadow: 0 0 8px 2px rgba(255,59,48,0.8); }
+    .signal-light.amber.on  { opacity: 1; box-shadow: 0 0 8px 2px rgba(255,149,0,0.8); }
+    .signal-light.green.on  { opacity: 1; box-shadow: 0 0 8px 2px rgba(52,199,89,0.8); }
+    .db-label { font-size: 0.58rem; color: #bbf7d0; letter-spacing: 0.3px; white-space: nowrap; }
+
+    .tab-bar { display: flex; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 57px; z-index: 99; }
+    .tab-bar button { flex: 1; padding: 12px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s; }
+    .tab-bar button.active { color: var(--green); border-bottom-color: var(--green); }
+    .tab { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
+    .tab.active { display: block; }
+    .scanner-wrap { display: flex; justify-content: center; }
+    #reader { width: 100%; max-width: 300px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); background: #000; }
+    .fields-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: nowrap; }
+    .fields-row label { font-size: 0.8rem; font-weight: 600; white-space: nowrap; color: #374151; }
+    .fields-row input { flex: 2; min-width: 0; padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: #fff; }
+    .fields-row select { flex: 1; min-width: 0; padding: 9px 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: #fff; }
+    .divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+    .manual-row { display: flex; gap: 8px; margin-top: 10px; }
+    .manual-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; text-transform: uppercase; }
+    button.primary { background: var(--green); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+    .toast { margin-top: 12px; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; display: none; }
+    .toast.success { background: var(--green-light); color: var(--green); display: block; }
+    .toast.error   { background: var(--red-light);   color: var(--red);   display: block; }
+    .toast.warning { background: var(--amber-light); color: var(--amber); display: block; }
+    .stats-panel { margin-top: 16px; background: #fff; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+    .stats-panel h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray); padding: 10px 14px 6px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); border-bottom: 1px solid var(--border); }
+    .stat-cell { text-align: center; padding: 10px 4px; border-right: 1px solid var(--border); cursor: pointer; }
+    .stat-cell:last-child { border-right: none; }
+    .stat-cell .cp-label { font-size: 0.7rem; font-weight: 700; color: var(--gray); margin-bottom: 4px; }
+    .stat-cell .cp-count { font-size: 1.5rem; font-weight: 800; color: var(--green); line-height: 1; }
+    .stat-cell.active-cp .cp-label { color: var(--green); }
+    .stat-cell.active-cp { background: #f0fdf4; }
+    .stats-total { font-size: 0.78rem; color: var(--gray); padding: 6px 14px; text-align: right; }
+    .stats-total strong { color: #111827; }
+    .cp-detail { border-top: 1px solid var(--border); }
+    .cp-detail-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: #07570f; color: #fff; }
+    .cp-detail-header .cp-title { font-size: 0.82rem; font-weight: 700; }
+    .cp-detail-header .cp-detail-total { font-size: 0.78rem; color: #bbf7d0; }
+    .scanner-row { display: flex; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+    .scanner-row:last-child { border-bottom: none; }
+    .scanner-row .s-name { font-weight: 600; color: #111827; display: flex; align-items: center; gap: 6px; min-width: 90px; }
+    .scanner-row .s-name::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    .scanner-row .s-bar-wrap { flex: 1; margin: 0 12px; height: 6px; background: var(--green-light); border-radius: 3px; overflow: hidden; }
+    .scanner-row .s-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
+    .scanner-row .s-count { font-weight: 700; color: var(--green); font-size: 1rem; min-width: 28px; text-align: right; }
+    .cp-detail-empty { padding: 12px 14px; font-size: 0.85rem; color: var(--gray); text-align: center; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+    .toolbar input { flex: 1; min-width: 120px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
+    .toolbar-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    button.outline { background: #fff; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #374151; white-space: nowrap; }
+    button.outline:hover { border-color: var(--green); color: var(--green); }
+    .spin { display: inline-block; }
+    button.outline.refresh-btn.spinning .spin { animation: spin 0.6s linear; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .records-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    #scan-count { font-size: 0.8rem; color: var(--gray); }
+    #last-refresh { font-size: 0.75rem; color: var(--gray); }
+    .countdown-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+    .countdown-bar { height: 100%; background: var(--green); border-radius: 2px; transition: width 1s linear; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    thead tr { background: #1f2937; color: #fff; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f0fdf4; }
+    .code-badge { background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 999px; font-weight: 700; }
+    .empty { text-align: center; padding: 40px; color: var(--gray); font-size: 0.9rem; }
+    @media (max-width: 420px) { th:nth-child(1), td:nth-child(1) { display: none; } }
+  </style>
+</head>
+<body>
+<header>
+  <img class="logo" src="CC_Logo_Green_White.svg" alt="Chennai Cyclothon 2026">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span id="clock"></span>
+    <div class="db-signal" title="Database connection status">
+      <div class="signal-housing">
+        <div class="signal-light red"   id="sig-red"></div>
+        <div class="signal-light amber" id="sig-amber"></div>
+        <div class="signal-light green" id="sig-green"></div>
+      </div>
+      <div class="db-label" id="sig-label">DB</div>
+    </div>
+  </div>
+</header>
+
+<div class="tab-bar">
+  <button class="active" onclick="showTab('scan', this)">📷 Scan</button>
+  <button onclick="showTab('records', this)">📋 Records</button>
+</div>
+
+<div id="scan" class="tab active">
+  <div class="scanner-wrap"><div id="reader"></div></div>
+  <div class="fields-row">
+    <label>Scanner Name</label>
+    <input id="scanner-name" type="text" placeholder="e.g. John">
+    <div class="divider"></div>
+    <label>Pit Stop</label>
+    <select id="pit-stop" onchange="highlightActiveCp()">
+      <option value="CP1">CP1</option><option value="CP2">CP2</option>
+      <option value="CP3">CP3</option><option value="CP4">CP4</option>
+      <option value="CP5">CP5</option>
+    </select>
+  </div>
+  <div class="manual-row" style="margin-top:12px;">
+    <input id="manual-code" type="text" placeholder="Manual entry: CC00000001" maxlength="12">
+    <button class="primary" onclick="submitManual()">Log</button>
+  </div>
+  <div id="toast" class="toast"></div>
+  <div class="stats-panel">
+    <h3>Pit Stop Counts</h3>
+    <div class="stats-grid">
+      <div class="stat-cell active-cp" id="stat-CP1" onclick="selectCp('CP1')"><div class="cp-label">CP1</div><div class="cp-count">–</div></div>
+      <div class="stat-cell" id="stat-CP2" onclick="selectCp('CP2')"><div class="cp-label">CP2</div><div class="cp-count">–</div></div>
+      <div class="stat-cell" id="stat-CP3" onclick="selectCp('CP3')"><div class="cp-label">CP3</div><div class="cp-count">–</div></div>
+      <div class="stat-cell" id="stat-CP4" onclick="selectCp('CP4')"><div class="cp-label">CP4</div><div class="cp-count">–</div></div>
+      <div class="stat-cell" id="stat-CP5" onclick="selectCp('CP5')"><div class="cp-label">CP5</div><div class="cp-count">–</div></div>
+    </div>
+    <div class="stats-total" id="stats-total">Loading…</div>
+    <div class="cp-detail" id="cp-detail"></div>
+  </div>
+</div>
+
+<div id="records" class="tab">
+  <div class="toolbar">
+    <input id="search" type="text" placeholder="Search by code, pit stop, or scanner…" oninput="renderTable()">
+    <div class="toolbar-actions">
+      <button class="outline refresh-btn" id="refresh-btn" onclick="manualRefresh()"><span class="spin">↻</span> Refresh</button>
+      <button class="outline" onclick="location.href='/api/export/xlsx'">⬇ XLS</button>
+      <button class="outline" onclick="location.href='/api/export/csv'">⬇ CSV</button>
+    </div>
+  </div>
+  <div class="records-meta"><span id="scan-count"></span><span id="last-refresh"></span></div>
+  <div class="countdown-bar-wrap"><div class="countdown-bar" id="countdown-bar" style="width:100%"></div></div>
+  <div id="table-container"><div class="empty">Loading…</div></div>
+</div>
+
+<script>
+  let scans = [], lastScanned = '', scanCooldown = false, statsCache = null;
+  let countdownTimer = null, countdownVal = 10;
+
+  // Audio
+  const _ac = new (window.AudioContext || window.webkitAudioContext)();
+  let _chimeBuf = null;
+  fetch('freesound_community-chime-sound-7143.mp3')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+    .then(ab => _ac.decodeAudioData(ab)).then(buf => { _chimeBuf = buf; })
+    .catch(err => console.warn('Chime fallback:', err.message));
+  function playSuccessBeep() {
+    try {
+      if (_ac.state === 'suspended') _ac.resume();
+      if (_chimeBuf) {
+        const src = _ac.createBufferSource(), g = _ac.createGain();
+        src.buffer = _chimeBuf; g.gain.value = 2.0;
+        src.connect(g); g.connect(_ac.destination); src.start(0);
+      } else {
+        [0, 0.18].forEach(d => {
+          const o = _ac.createOscillator(), g = _ac.createGain();
+          o.type = 'sine'; o.frequency.value = 1046;
+          g.gain.setValueAtTime(0.4, _ac.currentTime + d);
+          g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + d + 0.15);
+          o.connect(g); g.connect(_ac.destination);
+          o.start(_ac.currentTime + d); o.stop(_ac.currentTime + d + 0.15);
+        });
+      }
+    } catch(e) {}
+  }
+  function playErrorBeep() {
+    try {
+      if (_ac.state === 'suspended') _ac.resume();
+      const o = _ac.createOscillator(), g = _ac.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(300, _ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(150, _ac.currentTime + 0.25);
+      g.gain.setValueAtTime(0.18, _ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + 0.3);
+      o.connect(g); g.connect(_ac.destination);
+      o.start(_ac.currentTime); o.stop(_ac.currentTime + 0.3);
+    } catch(e) {}
+  }
+  function _unlock() { if (_ac.state === 'suspended') _ac.resume(); }
+  document.addEventListener('touchstart', _unlock, { once: true });
+  document.addEventListener('click', _unlock, { once: true });
+
+  // Clock
+  setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+
+  // DB Traffic Signal
+  function setSignal(state) {
+    document.getElementById('sig-red').classList.toggle('on', state === 'error');
+    document.getElementById('sig-amber').classList.toggle('on', state === 'checking');
+    document.getElementById('sig-green').classList.toggle('on', state === 'ok');
+    const label = document.getElementById('sig-label');
+    label.textContent = state === 'ok' ? 'DB OK' : state === 'error' ? 'DB ERR' : 'DB...';
+    label.style.color = state === 'ok' ? '#34c759' : state === 'error' ? '#ff3b30' : '#ff9500';
+  }
+  async function checkHealth() {
+    setSignal('checking');
+    try {
+      const res = await fetch('/api/health');
+      setSignal(res.ok ? 'ok' : 'error');
+    } catch(e) { setSignal('error'); }
+  }
+  checkHealth();
+  setInterval(checkHealth, 10000);
+
+  // Tabs
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active'); btn.classList.add('active');
+    if (id === 'records') { fetchScans(); startCountdown(); } else { stopCountdown(); }
+  }
+  function startCountdown() {
+    stopCountdown(); countdownVal = 10; updateCountdownBar();
+    countdownTimer = setInterval(() => { countdownVal--; updateCountdownBar(); if (countdownVal <= 0) { fetchScans(); countdownVal = 10; } }, 1000);
+  }
+  function stopCountdown() { clearInterval(countdownTimer); countdownTimer = null; }
+  function updateCountdownBar() { const b = document.getElementById('countdown-bar'); if (b) b.style.width = (countdownVal/10*100)+'%'; }
+  function manualRefresh() {
+    const btn = document.getElementById('refresh-btn');
+    btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 600);
+    fetchScans(); countdownVal = 10; updateCountdownBar();
+  }
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.className = 'toast ' + type; t.textContent = msg;
+    clearTimeout(t._timer); t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
+  }
+
+  // Stats
+  function selectCp(cp) { document.getElementById('pit-stop').value = cp; highlightActiveCp(); }
+  function highlightActiveCp() {
+    const active = document.getElementById('pit-stop').value;
+    ['CP1','CP2','CP3','CP4','CP5'].forEach(cp => {
+      const cell = document.getElementById('stat-' + cp);
+      if (cell) cell.classList.toggle('active-cp', cp === active);
+    });
+    renderCpDetail(active);
+  }
+  function renderCpDetail(cp) {
+    const detail = document.getElementById('cp-detail');
+    if (!statsCache) { detail.innerHTML = ''; return; }
+    const scanners = (statsCache.byScanner || []).filter(r => r.pit_stop === cp);
+    const cpTotal = scanners.reduce((s,r) => s + r.count, 0);
+    const maxCount = scanners.length ? Math.max(...scanners.map(r => r.count)) : 1;
+    if (!scanners.length) {
+      detail.innerHTML = '<div class="cp-detail-header"><span class="cp-title">' + cp + ' — Scanner Breakdown</span><span class="cp-detail-total">No scans yet</span></div><div class="cp-detail-empty">No scans recorded at ' + cp + ' yet.</div>';
+      return;
+    }
+    const rows = scanners.map(r => '<div class="scanner-row"><span class="s-name">' + r.scanner_name + '</span><div class="s-bar-wrap"><div class="s-bar" style="width:' + Math.round(r.count/maxCount*100) + '%"></div></div><span class="s-count">' + r.count + '</span></div>').join('');
+    detail.innerHTML = '<div class="cp-detail-header"><span class="cp-title">' + cp + ' — Scanner Breakdown</span><span class="cp-detail-total">' + cpTotal + ' total</span></div>' + rows;
+  }
+  async function fetchStats() {
+    try {
+      statsCache = await fetch('/api/stats').then(r => r.json());
+      const counts = {};
+      (statsCache.byPitStop || []).forEach(r => { counts[r.pit_stop] = r.count; });
+      ['CP1','CP2','CP3','CP4','CP5'].forEach(cp => {
+        const cell = document.getElementById('stat-' + cp);
+        if (cell) cell.querySelector('.cp-count').textContent = counts[cp] || 0;
+      });
+      document.getElementById('stats-total').innerHTML = 'Total scans: <strong>' + (statsCache.total || 0) + '</strong>';
+      renderCpDetail(document.getElementById('pit-stop').value);
+    } catch(e) {}
+  }
+  fetchStats(); setInterval(fetchStats, 15000);
+
+  // Scan
+  async function saveScan(code) {
+    if (scanCooldown && code === lastScanned) return;
+    scanCooldown = true; lastScanned = code;
+    setTimeout(() => { scanCooldown = false; }, 1500);
+    const pit_stop = document.getElementById('pit-stop').value;
+    const scanner_name = document.getElementById('scanner-name').value.trim();
+    try {
+      const res = await fetch('/api/scan', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cyclist_code: code, pit_stop, scanner_name })
+      });
+      const data = await res.json();
+      if (res.status === 409) { playErrorBeep(); showToast('⚠ Rider ' + code + ' already scanned at ' + pit_stop, 'warning'); }
+      else if (!res.ok) { playErrorBeep(); showToast('⚠ ' + data.error, 'error'); }
+      else {
+        playSuccessBeep();
+        showToast('✓ ' + data.cyclist_code + ' logged at ' + pit_stop + (scanner_name ? ' by ' + scanner_name : ''), 'success');
+        if (navigator.vibrate) navigator.vibrate([100,50,100]);
+        fetchStats();
+      }
+    } catch(e) { playErrorBeep(); showToast('Network error: ' + e.message, 'error'); }
+  }
+  function submitManual() {
+    const code = document.getElementById('manual-code').value.trim().toUpperCase();
+    if (!code) return; saveScan(code); document.getElementById('manual-code').value = '';
+  }
+  document.getElementById('manual-code').addEventListener('keydown', e => { if (e.key === 'Enter') submitManual(); });
+
+  const html5QrCode = new Html5Qrcode('reader', { useBarCodeDetectorIfSupported: true });
+  Html5Qrcode.getCameras().then(cameras => {
+    if (!cameras || !cameras.length) { showToast('No camera found', 'error'); return; }
+    const cfg = { fps: 25, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0, rememberLastUsedCamera: true, showTorchButtonIfSupported: true };
+    html5QrCode.start({ facingMode: 'environment' }, cfg,
+      d => { const m = d.match(/CC\d+/i); if (m) saveScan(m[0].toUpperCase()); else { playErrorBeep(); showToast('Invalid QR code', 'error'); } }, () => {})
+      .catch(() => html5QrCode.start(cameras[0].id, cfg,
+        d => { const m = d.match(/CC\d+/i); if (m) saveScan(m[0].toUpperCase()); }, () => {})
+        .catch(err => showToast('Camera error: ' + err, 'error')));
+  }).catch(() => showToast('Camera permission denied', 'error'));
+
+  // Records
+  async function fetchScans() {
+    try {
+      scans = await fetch('/api/scans').then(r => r.json()); renderTable();
+      const el = document.getElementById('last-refresh');
+      if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString();
+    } catch(e) {}
+  }
+  function renderTable() {
+    const q = (document.getElementById('search').value || '').toLowerCase();
+    const filtered = scans.filter(s =>
+      s.cyclist_code.toLowerCase().includes(q) ||
+      (s.pit_stop||'').toLowerCase().includes(q) ||
+      (s.scanner_name||'').toLowerCase().includes(q));
+    document.getElementById('scan-count').textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '') + ' shown';
+    if (!filtered.length) { document.getElementById('table-container').innerHTML = '<div class="empty">No records found.</div>'; return; }
+    const rows = filtered.map(s => {
+      const dt = new Date(s.scanned_at);
+      return '<tr><td>' + s.id + '</td><td><span class="code-badge">' + s.cyclist_code + '</span></td><td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td><td>' + (s.pit_stop||'') + '</td><td>' + (s.scanner_name||'<span style="color:#9ca3af">—</span>') + '</td></tr>';
+    }).join('');
+    document.getElementById('table-container').innerHTML = '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+  fetchScans();
+</script>
+</body>
+</html>
