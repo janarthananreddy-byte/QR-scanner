@@ -109,6 +109,15 @@ app.get('/api/stats', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// POST /api/reset
+app.post('/api/reset', async (req, res) => {
+  try {
+    const { error } = await supabase.from('scans').delete().neq('id', 0);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/export/csv', async (req, res) => {
   try {
     const { data, error } = await supabase.from('scans').select('*').order('id');
