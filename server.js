@@ -4,7 +4,6 @@ const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 
-// Supabase client — uses HTTP (PostgREST), no TCP firewall issues on Vercel
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -13,6 +12,18 @@ const supabase = createClient(
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
+
+// GET /api/health — DB connectivity check
+app.get('/api/health', async (req, res) => {
+  try {
+    const start = Date.now();
+    const { error } = await supabase.from('scans').select('id').limit(1);
+    if (error) throw error;
+    res.json({ status: 'ok', latency: Date.now() - start });
+  } catch(e) {
+    res.status(503).json({ status: 'error', message: e.message });
+  }
+});
 
 // POST /api/scan
 app.post('/api/scan', async (req, res) => {
@@ -24,21 +35,14 @@ app.post('/api/scan', async (req, res) => {
   }
   const cp = pit_stop || 'CP1';
   try {
-    // Check duplicate
     const { data: dup } = await supabase
-      .from('scans')
-      .select('id')
-      .eq('cyclist_code', code)
-      .eq('pit_stop', cp)
-      .maybeSingle();
+      .from('scans').select('id').eq('cyclist_code', code).eq('pit_stop', cp).maybeSingle();
     if (dup) return res.status(409).json({ error: 'Rider ' + code + ' already scanned at ' + cp });
-
     const scanned_at = new Date().toISOString();
     const { data, error } = await supabase
       .from('scans')
       .insert({ cyclist_code: code, scanned_at, pit_stop: cp, scanner_name: scanner_name || '' })
-      .select()
-      .single();
+      .select().single();
     if (error) throw error;
     res.json(data);
   } catch(e) {
@@ -50,10 +54,7 @@ app.post('/api/scan', async (req, res) => {
 // GET /api/scans
 app.get('/api/scans', async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('scans')
-      .select('*')
-      .order('id', { ascending: false });
+    const { data, error } = await supabase.from('scans').select('*').order('id', { ascending: false });
     if (error) throw error;
     res.json(data);
   } catch(e) {
@@ -61,14 +62,11 @@ app.get('/api/scans', async (req, res) => {
   }
 });
 
-// GET /api/stats — aggregate in JS (works for event scale, no GROUP BY needed)
+// GET /api/stats
 app.get('/api/stats', async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('scans')
-      .select('pit_stop, scanner_name');
+    const { data, error } = await supabase.from('scans').select('pit_stop, scanner_name');
     if (error) throw error;
-
     const pitMap = {}, scannerMap = {};
     data.forEach(r => {
       const cp = r.pit_stop || 'CP1';
@@ -78,13 +76,9 @@ app.get('/api/stats', async (req, res) => {
       if (!scannerMap[key]) scannerMap[key] = { pit_stop: cp, scanner_name: name, count: 0 };
       scannerMap[key].count++;
     });
-
     res.json({
-      byPitStop: Object.entries(pitMap)
-        .map(([pit_stop, count]) => ({ pit_stop, count }))
-        .sort((a, b) => a.pit_stop.localeCompare(b.pit_stop)),
-      byScanner: Object.values(scannerMap)
-        .sort((a, b) => a.pit_stop.localeCompare(b.pit_stop) || b.count - a.count),
+      byPitStop: Object.entries(pitMap).map(([pit_stop, count]) => ({ pit_stop, count })).sort((a,b) => a.pit_stop.localeCompare(b.pit_stop)),
+      byScanner: Object.values(scannerMap).sort((a,b) => a.pit_stop.localeCompare(b.pit_stop) || b.count - a.count),
       total: data.length
     });
   } catch(e) {
@@ -92,7 +86,7 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
-// DELETE /api/scan/:id (admin only, no UI button)
+// DELETE /api/scan/:id
 app.delete('/api/scan/:id', async (req, res) => {
   try {
     const { error } = await supabase.from('scans').delete().eq('id', req.params.id);
@@ -113,9 +107,7 @@ app.get('/api/export/csv', async (req, res) => {
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="scans.csv"');
     res.send(lines.join('\n'));
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // GET /api/export/xlsx
@@ -128,9 +120,7 @@ app.get('/api/export/xlsx', async (req, res) => {
     res.setHeader('Content-Type', 'application/vnd.ms-excel');
     res.setHeader('Content-Disposition', 'attachment; filename="scans.csv"');
     res.send(lines.join('\n'));
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 const PORT = process.env.PORT || 3000;
