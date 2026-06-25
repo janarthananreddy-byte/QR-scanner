@@ -24,9 +24,41 @@
     .tab.active { display: block; }
     .scanner-wrap { display: flex; justify-content: center; }
     #reader { width: 100%; max-width: 300px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); background: #000; }
-    .field-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
-    .field-row label { font-size: 0.85rem; font-weight: 600; white-space: nowrap; min-width: 90px; }
-    .field-row input, .field-row select { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; background: #fff; }
+
+    /* Single-line fields row */
+    .fields-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: nowrap;
+    }
+    .fields-row label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      color: #374151;
+    }
+    .fields-row input {
+      flex: 2;
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+    .fields-row select {
+      flex: 1;
+      min-width: 0;
+      padding: 9px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+    .divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+
     .manual-row { display: flex; gap: 8px; margin-top: 10px; }
     .manual-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; text-transform: uppercase; }
     button.primary { background: var(--green); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
@@ -80,12 +112,13 @@
 <!-- SCAN TAB -->
 <div id="scan" class="tab active">
   <div class="scanner-wrap"><div id="reader"></div></div>
-  <div class="field-row">
-    <label>Scanner Name:</label>
-    <input id="scanner-name" type="text" placeholder="e.g. John, Volunteer 1">
-  </div>
-  <div class="field-row">
-    <label>Pit Stop:</label>
+
+  <!-- Scanner Name + Pit Stop on one line -->
+  <div class="fields-row">
+    <label>Scanner Name</label>
+    <input id="scanner-name" type="text" placeholder="e.g. John">
+    <div class="divider"></div>
+    <label>Pit Stop</label>
     <select id="pit-stop" onchange="highlightActiveCp()">
       <option value="CP1">CP1</option>
       <option value="CP2">CP2</option>
@@ -94,7 +127,8 @@
       <option value="CP5">CP5</option>
     </select>
   </div>
-  <div class="manual-row" style="margin-top:14px;">
+
+  <div class="manual-row" style="margin-top:12px;">
     <input id="manual-code" type="text" placeholder="Manual entry: CC00000001" maxlength="12">
     <button class="primary" onclick="submitManual()">Log</button>
   </div>
@@ -189,11 +223,9 @@
     t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
   }
 
-  // Stats
   async function fetchStats() {
     try {
-      const res = await fetch('/api/stats');
-      const data = await res.json();
+      const data = await fetch('/api/stats').then(r => r.json());
       const counts = {};
       (data.byPitStop || []).forEach(r => { counts[r.pit_stop] = r.count; });
       ['CP1','CP2','CP3','CP4','CP5'].forEach(cp => {
