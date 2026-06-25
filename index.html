@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Chennai Cyclothon 2026 - Pit Stop Scanner</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     :root{--green:#149948;--green-light:#dcfce7;--red:#dc2626;--red-light:#fee2e2;--amber:#d97706;--amber-light:#fef3c7;--gray:#6b7280;--border:#e5e7eb;--bg:#f9fafb;}
@@ -185,7 +186,25 @@
     .form-msg{font-size:0.8rem;margin-top:6px;min-height:1.2em;}
     .form-msg.ok{color:var(--green);}
     .form-msg.err{color:var(--red);}
-  </style>
+  
+  /* T-Shirt Distribution */
+  .ts-card{background:#fff;border-radius:12px;border:2px solid #e5e7eb;padding:16px;margin-top:14px;}
+  .ts-size-display{font-size:3rem;font-weight:900;text-align:center;padding:14px 0;letter-spacing:3px;}
+  .ts-size-XS,.ts-size-S{color:#6366f1;} .ts-size-M{color:#16a34a;} .ts-size-L{color:#d97706;} .ts-size-XL,.ts-size-XXL{color:#dc2626;}
+  .ts-rider-name{font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:4px;}
+  .ts-meta{font-size:0.85rem;color:#6b7280;margin-bottom:6px;}
+  .ts-delivered-badge{background:#dcfce7;color:#16a34a;padding:10px 16px;border-radius:8px;font-weight:700;text-align:center;margin-top:10px;font-size:0.9rem;}
+  .ts-pending-badge{background:#fef9c3;color:#854d0e;padding:10px 16px;border-radius:8px;font-weight:700;text-align:center;margin-top:10px;font-size:0.9rem;}
+  button.deliver-btn{background:#16a34a;color:#fff;border:none;padding:13px 24px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;width:100%;margin-top:12px;}
+  .ts-upload-box{background:#f9fafb;border:2px dashed #d1d5db;border-radius:12px;padding:20px;text-align:center;margin-bottom:14px;}
+  .ts-upload-box h3{margin-bottom:6px;font-size:1rem;}
+  .ts-upload-box p{font-size:0.82rem;color:#6b7280;margin-bottom:12px;}
+  .ts-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+  .ts-stat-card{background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:12px;text-align:center;}
+  .ts-stat-num{font-size:1.6rem;font-weight:900;color:#16a34a;}
+  .ts-stat-label{font-size:0.75rem;color:#6b7280;margin-top:2px;}
+
+</style>
 </head>
 <body>
 
@@ -272,7 +291,12 @@
       <div class="di-text"><span class="di-title">DB Size</span><span class="di-sub">Storage &amp; record counts</span></div>
       <span class="di-arrow">&#8250;</span>
     </button>
-    <div class="drawer-divider"></div>
+        <button class="drawer-item" onclick="openPage('page-tshirt-upload')">
+      <span class="di-icon">&#128507;</span>
+      <div class="di-text"><span class="di-title">T-Shirt Upload</span><span class="di-sub">Bulk import &amp; delivery tracking</span></div>
+      <span class="di-arrow">&#8250;</span>
+    </button>
+<div class="drawer-divider"></div>
     <button class="drawer-item" onclick="doLogout()">
       <span class="di-icon">&#128275;</span>
       <div class="di-text"><span class="di-title" style="color:#dc2626;">Logout</span><span class="di-sub">Sign out of the app</span></div>
@@ -283,8 +307,9 @@
 </div>
 
 <div class="tab-bar">
-  <button class="active" onclick="showTab('scan',this)">&#128247; Scan</button>
-  <button onclick="showTab('records',this)">&#128203; Records</button>
+  <button class="active" onclick="showTab('scan',this);stopTsScanner()">&#128247; Scan</button>
+  <button onclick="showTab('records',this);stopTsScanner()">&#128203; Records</button>
+  <button onclick="showTab('tshirt',this);startTsScanner()">&#128507; T-Shirt</button>
 </div>
 
 <div id="scan" class="tab active">
@@ -330,6 +355,49 @@
   <div class="countdown-bar-wrap"><div class="countdown-bar" id="countdown-bar" style="width:100%"></div></div>
   <div id="table-container"><div class="empty">Loading...</div></div>
 </div>
+<!-- T-SHIRT TAB -->
+<div id="tshirt" class="tab">
+  <div class="scanner-wrap"><div id="ts-reader"></div></div>
+  <div class="pit-row" style="margin-top:14px;">
+    <label>Distributor:</label>
+    <input id="ts-distributor" type="text" placeholder="Your name">
+  </div>
+  <div class="pit-row">
+    <label>Dist. Center:</label>
+    <input id="ts-center" type="text" value="Main" placeholder="e.g. CP1, Marina">
+  </div>
+  <div class="manual-row" style="margin-top:10px;">
+    <input id="ts-manual" type="text" placeholder="Enter CC ID or scan QR" maxlength="12" style="text-transform:uppercase;" onkeydown="if(event.key==='Enter')lookupTshirt()">
+    <button class="primary" onclick="lookupTshirt()">&#128269; Lookup</button>
+  </div>
+  <div id="ts-toast" class="toast"></div>
+  <div id="ts-card"></div>
+</div>
+
+<!-- PAGE: T-Shirt Upload -->
+<div class="menu-page" id="page-tshirt-upload">
+  <div class="page-hdr">
+    <button class="page-back" onclick="closePage('page-tshirt-upload')">&#8592; Back</button>
+    <h2>&#128507; T-Shirt Distribution</h2>
+  </div>
+  <div class="page-body">
+    <div class="ts-upload-box">
+      <h3>Bulk Upload Rider List</h3>
+      <p>Excel columns: <strong>cc_id</strong>, <strong>name</strong>, <strong>size</strong> &nbsp;(accepts .xlsx / .xls)</p>
+      <input type="file" id="ts-file" accept=".xlsx,.xls" style="margin:0 auto 12px;display:block;">
+      <button class="primary" onclick="uploadTshirts()">&#128196; Upload &amp; Import</button>
+      <div id="ts-upload-msg" style="margin-top:10px;font-size:0.9rem;"></div>
+    </div>
+    <div id="ts-stats-wrap"></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;">
+      <input type="text" id="ts-search" placeholder="Search CC ID or name..." oninput="renderTshirtTable()" style="flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.9rem;">
+      <button class="outline" onclick="exportTshirtXls()">&#8659; XLS</button>
+    </div>
+    <div id="ts-table-wrap"><div class="empty">Click Refresh or upload data</div></div>
+    <button class="primary" style="margin-top:12px;width:100%;" onclick="loadTshirtRecords()">&#8635; Refresh Records</button>
+  </div>
+</div>
+
 
 <!-- PAGE: Users -->
 <div class="menu-page" id="page-users">
@@ -668,6 +736,134 @@ function checkResetDbPin(){var v=document.getElementById('resetdb-pin').value;if
 function loadResetDbStats(){fetch('/api/stats').then(function(r){return r.json();}).then(function(d){var el=document.getElementById('resetdb-stats');if(el)el.innerHTML='Current records: <strong style="color:#dc2626;font-size:1.2rem;">'+d.total+'</strong>';}).catch(function(){});}
 function confirmReset(){if(!confirm('Are you sure? This will delete ALL scan records and cannot be undone.'))return;var btn=document.querySelector('#resetdb-content button');btn.disabled=true;btn.textContent='Deleting...';fetch('/api/reset',{method:'POST',headers:{'Content-Type':'application/json'}}).then(function(r){return r.json();}).then(function(d){var msg=document.getElementById('resetdb-msg');if(d.ok){msg.style.color='#15803d';msg.textContent='All records deleted successfully.';loadResetDbStats();fetchStats();}else{msg.style.color='#dc2626';msg.textContent=d.error||'Reset failed.';}btn.disabled=false;btn.innerHTML='&#128465; Delete All Records';}).catch(function(){document.getElementById('resetdb-msg').style.color='#dc2626';document.getElementById('resetdb-msg').textContent='Network error.';btn.disabled=false;btn.innerHTML='&#128465; Delete All Records';});}
 function loadDbSize(){var el=document.getElementById('dbsize-content');el.innerHTML='<div class="empty">Loading...</div>';Promise.all([fetch('/api/stats').then(function(r){return r.json();}).catch(function(){return{};}),fetch('/api/users').then(function(r){return r.json();}).catch(function(){return[];})]).then(function(res){var st=res[0],users=res[1];var total=st.total||0;var byCP=st.byPitStop||[];var scanBytes=total*120;var userBytes=(users.length||0)*80;var totalBytes=scanBytes+userBytes;function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return (b/1024).toFixed(1)+'KB';return (b/1048576).toFixed(2)+'MB';}var cpRows=byCP.map(function(c){return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:0.88rem;"><span style="font-weight:600;">'+c.pit_stop+'</span><span style="color:var(--green);font-weight:700;">'+c.count+' records</span></div>';}).join('');el.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:14px;"><div style="background:#07570f;padding:10px 14px;color:#fff;font-size:0.78rem;font-weight:700;text-transform:uppercase;">Scans Table</div><div style="padding:14px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:0.85rem;color:#374151;">Total Records</span><span style="font-size:1.6rem;font-weight:800;color:var(--green);">'+total+'</span></div>'+cpRows+'<div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:0.82rem;color:#6b7280;"><span>Est. size</span><span>'+fmtSize(scanBytes)+'</span></div></div></div><div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:14px;"><div style="background:#1d4ed8;padding:10px 14px;color:#fff;font-size:0.78rem;font-weight:700;text-transform:uppercase;">Users Table</div><div style="padding:14px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:0.85rem;color:#374151;">Total Users</span><span style="font-size:1.6rem;font-weight:800;color:#1d4ed8;">'+users.length+'</span></div><div style="padding:0 14px 12px;font-size:0.82rem;color:#6b7280;display:flex;justify-content:space-between;"><span>Est. size</span><span>'+fmtSize(userBytes)+'</span></div></div><div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:0.85rem;font-weight:600;color:#15803d;">Total DB Size (est.)</span><span style="font-size:1.1rem;font-weight:800;color:#15803d;">'+fmtSize(totalBytes)+'</span></div><div style="text-align:center;"><button class="outline" onclick="loadDbSize()" style="font-size:0.8rem;">&#8635; Refresh</button></div>';});}
+
+
+  // ====== T-SHIRT DISTRIBUTION ======
+  var tsScanner=null,tsData=[],tsAllData=[],tsLastCode='';
+
+  function startTsScanner(){
+    var el=document.getElementById('ts-distributor');
+    if(el&&!el.value){var u=sessionStorage.getItem('cc_user');if(u)el.value=u;}
+    if(tsScanner)return;
+    tsScanner=new Html5Qrcode('ts-reader',{useBarCodeDetectorIfSupported:true});
+    var cfg={fps:20,qrbox:{width:200,height:200},aspectRatio:1.0};
+    var onDec=function(d){var m=d.match(/CC\d+/i);if(m)lookupTshirt(m[0].toUpperCase());};
+    Html5Qrcode.getCameras().then(function(cams){
+      if(!cams||!cams.length)return;
+      tsScanner.start({facingMode:'environment'},cfg,onDec,function(){}).catch(function(){
+        tsScanner.start(cams[0].id,cfg,onDec,function(){}).catch(function(e){showTsToast('Camera: '+e,'error');});
+      });
+    }).catch(function(){showTsToast('Camera denied','error');});
+  }
+
+  function stopTsScanner(){
+    if(tsScanner){tsScanner.stop().catch(function(){});tsScanner.clear();tsScanner=null;}
+  }
+
+  function showTsToast(msg,type){
+    var t=document.getElementById('ts-toast');
+    if(!t)return;
+    t.className='toast '+type;t.textContent=msg;
+    clearTimeout(t._tmr);t._tmr=setTimeout(function(){t.className='toast';},5000);
+  }
+
+  function lookupTshirt(code){
+    if(!code)code=(document.getElementById('ts-manual')||{value:''}).value.trim().toUpperCase();
+    if(!code){showTsToast('Enter a CC ID','error');return;}
+    tsLastCode=code;
+    var url='/api/tshirt/'+encodeURIComponent(code);
+    fetch(url).then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});})
+    .then(function(res){
+      if(!res.ok){showTsToast(res.data.error||'Rider not found','error');document.getElementById('ts-card').innerHTML='';return;}
+      renderTsCard(res.data);
+    }).catch(function(){showTsToast('Network error','error');});
+  }
+
+  function renderTsCard(d){
+    var sClass='ts-size-'+(d.size||'?').replace(/[^A-Z]/g,'');
+    var delHtml=d.delivered
+      ?'<div class="ts-delivered-badge">&#10003; Delivered on '+(d.delivered_at?new Date(d.delivered_at).toLocaleString():'')+'<br><small>By: '+(d.delivered_by||'')+' at '+(d.distribution_center||'')+'</small></div>'
+      :'<div class="ts-pending-badge">&#9711; Not yet delivered</div><button class="deliver-btn" onclick="markDelivered()">&#10003; Mark as Delivered</button>';
+    document.getElementById('ts-card').innerHTML='<div class="ts-card"><div class="ts-rider-name">'+(d.name||d.cc_id)+'</div><div class="ts-meta"><strong>CC ID:</strong> '+d.cc_id+'</div><div class="ts-size-display '+sClass+'">'+(d.size||'N/A')+'</div><div class="ts-meta" style="text-align:center;margin-top:-6px;font-size:0.8rem;">T-Shirt Size</div>'+delHtml+'</div>';
+  }
+
+  function markDelivered(){
+    var dist=(document.getElementById('ts-distributor')||{value:''}).value;
+    var ctr=(document.getElementById('ts-center')||{value:'Main'}).value||'Main';
+    if(!tsLastCode){showTsToast('No rider selected','error');return;}
+    fetch('/api/tshirt/deliver',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cc_id:tsLastCode,delivered_by:dist,distribution_center:ctr})})
+    .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});})
+    .then(function(res){
+      if(!res.ok){showTsToast(res.data.error||'Error','error');return;}
+      showTsToast('\u2713 Delivered to '+tsLastCode,'success');
+      renderTsCard(res.data);
+      var m=document.getElementById('ts-manual');if(m)m.value='';
+    }).catch(function(){showTsToast('Network error','error');});
+  }
+
+  // Upload page functions
+  function uploadTshirts(){
+    var fi=document.getElementById('ts-file');
+    var msg=document.getElementById('ts-upload-msg');
+    if(!fi||!fi.files||!fi.files[0]){msg.innerHTML='<span style="color:red">Select an Excel file first</span>';return;}
+    var rdr=new FileReader();
+    rdr.onload=function(e){
+      try{
+        var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+        var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        if(!rows.length){msg.innerHTML='<span style="color:red">No data rows found</span>';return;}
+        msg.textContent='Uploading '+rows.length+' rows...';
+        fetch('/api/tshirts/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rows:rows})})
+        .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});})
+        .then(function(res){
+          if(!res.ok){msg.innerHTML='<span style="color:red">Error: '+(res.data.error||'failed')+'</span>';return;}
+          msg.innerHTML='<span style="color:green">&#10003; Imported '+res.data.count+' records</span>';
+          loadTshirtRecords();loadTsStats();
+        }).catch(function(){msg.innerHTML='<span style="color:red">Network error</span>';});
+      }catch(err){msg.innerHTML='<span style="color:red">Parse error: '+err.message+'</span>';}
+    };
+    rdr.readAsArrayBuffer(fi.files[0]);
+  }
+
+  function loadTshirtRecords(){
+    fetch('/api/tshirts').then(function(r){return r.json();})
+    .then(function(d){tsAllData=d;renderTshirtTable();loadTsStats();})
+    .catch(function(){var w=document.getElementById('ts-table-wrap');if(w)w.innerHTML='<div class="empty">Error loading</div>';});
+  }
+
+  function renderTshirtTable(){
+    var q=((document.getElementById('ts-search')||{}).value||'a').toLowerCase();
+    if(q==='a')q='';
+    var f=tsAllData.filter(function(r){return(r.cc_id||'a').toLowerCase().includes(q)||(r.name||'a').toLowerCase().includes(q);});
+    var w=document.getElementById('ts-table-wrap');
+    if(!w)return;
+    if(!f.length){w.innerHTML='<div class="empty">No records</div>';return;}
+    var rows=f.map(function(r){
+      var b=r.delivered?'<span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:999px;font-size:0.8rem;font-weight:700;">Delivered</span>':'<span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:999px;font-size:0.8rem;font-weight:700;">Pending</span>';
+      return'<tr><td>'+r.cc_id+'</td><td>'+(r.name||'')+'</td><td style="font-weight:700;">'+(r.size||'')+'</td><td>'+b+'</td><td>'+(r.distribution_center||'')+'</td></tr>';
+    }).join('');
+    w.innerHTML='<table><thead><tr><th>CC ID</th><th>Name</th><th>Size</th><th>Status</th><th>Center</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }
+
+  function loadTsStats(){
+    fetch('/api/tshirts/stats').then(function(r){return r.json();})
+    .then(function(s){
+      var sr=Object.entries(s.bySize||{}).sort().map(function(e){return'<tr><td>'+e[0]+'</td><td style="font-weight:700;">'+e[1]+'</td></tr>';}).join('');
+      var w=document.getElementById('ts-stats-wrap');
+      if(!w)return;
+      w.innerHTML='<div class="ts-stats-grid"><div class="ts-stat-card"><div class="ts-stat-num">'+s.total+'</div><div class="ts-stat-label">Total</div></div><div class="ts-stat-card"><div class="ts-stat-num" style="color:#16a34a">'+s.delivered+'</div><div class="ts-stat-label">Delivered</div></div><div class="ts-stat-card"><div class="ts-stat-num" style="color:#d97706">'+s.pending+'</div><div class="ts-stat-label">Pending</div></div></div>'+(sr?'<table><thead><tr><th>Size</th><th>Count</th></tr></thead><tbody>'+sr+'</tbody></table>':'<p class="empty">No data yet</p>');
+    }).catch(function(){});
+  }
+
+  function exportTshirtXls(){
+    if(!tsAllData.length){alert('Load records first');return;}
+    var rows=tsAllData.map(function(r){return{'CC ID':r.cc_id,'Name':r.name||'a','Size':r.size||'a','Delivered':r.delivered?'Yes':'No','Delivered At':r.delivered_at?new Date(r.delivered_at).toLocaleString():'a','By':r.delivered_by||'a','Center':r.distribution_center||'a'};});
+    var ws=XLSX.utils.json_to_sheet(rows);
+    var wb2=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb2,ws,'TShirts');
+    XLSX.writeFile(wb2,'tshirts.xlsx');
+  }
+
 </script>
 </body>
 </html>
