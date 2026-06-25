@@ -277,7 +277,7 @@
   <div class="scanner-wrap"><div id="reader"></div></div>
   <div class="fields-row">
     <label>Scanner Name</label>
-    <input id="scanner-name" type="text" placeholder="" readonly style="background:#f3f4f6;color:#374151;cursor:default;font-weight:600;">
+    <input id="scanner-name" type="text" placeholder="Your name">
     <div class="divider"></div>
     <label>Pit Stop</label>
     <select id="pit-stop" onchange="highlightActiveCp()">
@@ -628,7 +628,7 @@ function fetchStats(){fetch('/api/stats').then(function(r){return r.json();}).th
 fetchStats();setInterval(fetchStats,15000);
 
 // Scan
-function saveScan(code){if(scanCooldown&&code===lastScanned)return;scanCooldown=true;lastScanned=code;setTimeout(function(){scanCooldown=false;},1500);var pit_stop=document.getElementById('pit-stop').value;var scanner_name=sessionStorage.getItem('cc_user')||document.getElementById('scanner-name').value.trim();fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cyclist_code:code,pit_stop:pit_stop,scanner_name:scanner_name})}).then(function(res){return res.json().then(function(data){return{status:res.status,data:data};});}).then(function(r){if(r.status===409){playErrorBeep();showToast('Rider '+code+' already scanned at '+pit_stop,'warning');}else if(r.status>=400){playErrorBeep();showToast(r.data.error||'Error','error');}else{playSuccessBeep();showToast(r.data.cyclist_code+' logged at '+pit_stop+(scanner_name?' by '+scanner_name:''),'success');if(navigator.vibrate)navigator.vibrate([100,50,100]);fetchStats();}}).catch(function(e){playErrorBeep();showToast('Network error: '+e.message,'error');});}
+function saveScan(code){if(scanCooldown&&code===lastScanned)return;scanCooldown=true;lastScanned=code;setTimeout(function(){scanCooldown=false;},1500);var pit_stop=document.getElementById('pit-stop').value;var scanner_name=document.getElementById('scanner-name').value.trim()||sessionStorage.getItem('cc_user')||'';fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cyclist_code:code,pit_stop:pit_stop,scanner_name:scanner_name})}).then(function(res){return res.json().then(function(data){return{status:res.status,data:data};});}).then(function(r){if(r.status===409){playErrorBeep();showToast('Rider '+code+' already scanned at '+pit_stop,'warning');}else if(r.status>=400){playErrorBeep();showToast(r.data.error||'Error','error');}else{playSuccessBeep();showToast(r.data.cyclist_code+' logged at '+pit_stop+(scanner_name?' by '+scanner_name:''),'success');if(navigator.vibrate)navigator.vibrate([100,50,100]);fetchStats();}}).catch(function(e){playErrorBeep();showToast('Network error: '+e.message,'error');});}
 function submitManual(){var c=document.getElementById('manual-code').value.trim().toUpperCase();if(!c)return;saveScan(c);document.getElementById('manual-code').value='';}
 document.getElementById('manual-code').addEventListener('keydown',function(e){if(e.key==='Enter')submitManual();});
 
