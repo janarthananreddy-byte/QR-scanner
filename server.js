@@ -7,8 +7,9 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Init DB
-const db = new Database(process.env.NODE_ENV === 'production' ? '/tmp/scans.db' : 'scans.db');
+// Init DB - use /tmp for writable path on Vercel serverless
+const DB_PATH = process.env.NODE_ENV === 'production' ? '/tmp/scans.db' : 'scans.db';
+const db = new Database(DB_PATH);
 db.exec(`
   CREATE TABLE IF NOT EXISTS scans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,7 +20,10 @@ db.exec(`
 `);
 
 app.use(express.json());
+
+// Serve static files from public/ or root
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 // Save a scan
 app.post('/api/scan', (req, res) => {
