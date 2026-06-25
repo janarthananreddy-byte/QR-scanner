@@ -106,40 +106,61 @@
   // ── Audio ──────────────────────────────────────────────────────────────
   const _ac = new (window.AudioContext || window.webkitAudioContext)();
   let _chimeBuf = null;
+
+  // Load MP3 into Web Audio buffer (enables gain > 1.0)
   fetch('freesound_community-chime-sound-7143.mp3')
-    .then(r => r.arrayBuffer())
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
     .then(ab => _ac.decodeAudioData(ab))
-    .then(buf => { _chimeBuf = buf; })
-    .catch(() => {});
+    .then(buf => { _chimeBuf = buf; console.log('Chime loaded OK'); })
+    .catch(err => console.warn('Chime load failed, will use fallback tone:', err.message));
 
   function playSuccessBeep() {
     try {
-      if (!_chimeBuf) return;
-      const src = _ac.createBufferSource();
-      const gain = _ac.createGain();
-      src.buffer = _chimeBuf;
-      gain.gain.value = 2.0;
-      src.connect(gain); gain.connect(_ac.destination);
-      src.start(0);
-    } catch(e) {}
+      if (_ac.state === 'suspended') _ac.resume();
+      if (_chimeBuf) {
+        // Play the real chime at 200% volume
+        const src = _ac.createBufferSource();
+        const gain = _ac.createGain();
+        src.buffer = _chimeBuf;
+        gain.gain.value = 2.0;
+        src.connect(gain); gain.connect(_ac.destination);
+        src.start(0);
+      } else {
+        // Fallback: generated pleasant double-beep
+        [0, 0.18].forEach(delay => {
+          const osc = _ac.createOscillator(), g = _ac.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = 1046;
+          g.gain.setValueAtTime(0.4, _ac.currentTime + delay);
+          g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + delay + 0.15);
+          osc.connect(g); g.connect(_ac.destination);
+          osc.start(_ac.currentTime + delay);
+          osc.stop(_ac.currentTime + delay + 0.15);
+        });
+      }
+    } catch(e) { console.error('playSuccessBeep error:', e); }
   }
 
   function playErrorBeep() {
     try {
-      const osc = _ac.createOscillator(), gain = _ac.createGain();
+      if (_ac.state === 'suspended') _ac.resume();
+      const osc = _ac.createOscillator(), g = _ac.createGain();
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(300, _ac.currentTime);
       osc.frequency.exponentialRampToValueAtTime(150, _ac.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.18, _ac.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + 0.3);
-      osc.connect(gain); gain.connect(_ac.destination);
+      g.gain.setValueAtTime(0.18, _ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + 0.3);
+      osc.connect(g); g.connect(_ac.destination);
       osc.start(_ac.currentTime); osc.stop(_ac.currentTime + 0.3);
     } catch(e) {}
   }
 
-  function _unlockAC() { if (_ac.state === 'suspended') _ac.resume(); }
+  // Unlock AudioContext on first tap/click (required by browsers)
+  function _unlockAC() {
+    if (_ac.state === 'suspended') _ac.resume().then(() => console.log('AudioContext resumed'));
+  }
   document.addEventListener('touchstart', _unlockAC, { once: true });
-  document.addEventListener('click', _unlockAC, { once: true });
+  document.addEventListener('click',      _unlockAC, { once: true });
 
   // ── Clock ──────────────────────────────────────────────────────────────
   setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
@@ -196,8 +217,7 @@
 
   function submitManual() {
     const code = document.getElementById('manual-code').value.trim().toUpperCase();
-    if (!code) return;
-    saveScan(code);
+    if (!code) return; saveScan(code);
     document.getElementById('manual-code').value = '';
   }
   document.getElementById('manual-code').addEventListener('keydown', e => { if (e.key === 'Enter') submitManual(); });
@@ -219,8 +239,7 @@
 
   // ── Records ────────────────────────────────────────────────────────────
   async function fetchScans() {
-    const res = await fetch('/api/scans');
-    scans = await res.json(); renderTable();
+    const res = await fetch('/api/scans'); scans = await res.json(); renderTable();
   }
   function renderTable() {
     const q = document.getElementById('search').value.toLowerCase();
