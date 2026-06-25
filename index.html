@@ -16,7 +16,33 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: #111827; min-height: 100vh; }
     header { background: #07570f; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; gap: 12px; }
     header img.logo { height: 36px; width: auto; flex-shrink: 0; }
-    header span { font-size: 0.72rem; color: #bbf7d0; white-space: nowrap; }
+    header span#clock { font-size: 0.72rem; color: #bbf7d0; white-space: nowrap; }
+
+    /* Traffic signal */
+    .db-signal { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .signal-housing {
+      background: #1a1a1a;
+      border-radius: 6px;
+      padding: 4px 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      border: 1px solid #333;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .signal-light {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      transition: box-shadow 0.3s, opacity 0.3s;
+    }
+    .signal-light.red    { background: #ff3b30; opacity: 0.2; }
+    .signal-light.amber  { background: #ff9500; opacity: 0.2; }
+    .signal-light.green  { background: #34c759; opacity: 0.2; }
+    .signal-light.red.on    { opacity: 1; box-shadow: 0 0 8px 2px rgba(255,59,48,0.8); }
+    .signal-light.amber.on  { opacity: 1; box-shadow: 0 0 8px 2px rgba(255,149,0,0.8); }
+    .signal-light.green.on  { opacity: 1; box-shadow: 0 0 8px 2px rgba(52,199,89,0.8); }
+    .db-label { font-size: 0.58rem; color: #bbf7d0; text-align: center; margin-top: 1px; letter-spacing: 0.3px; }
+
     .tab-bar { display: flex; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 57px; z-index: 99; }
     .tab-bar button { flex: 1; padding: 12px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s; }
     .tab-bar button.active { color: var(--green); border-bottom-color: var(--green); }
@@ -39,7 +65,7 @@
     .stats-panel { margin-top: 16px; background: #fff; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
     .stats-panel h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray); padding: 10px 14px 6px; }
     .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); border-bottom: 1px solid var(--border); }
-    .stat-cell { text-align: center; padding: 10px 4px; border-right: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+    .stat-cell { text-align: center; padding: 10px 4px; border-right: 1px solid var(--border); cursor: pointer; }
     .stat-cell:last-child { border-right: none; }
     .stat-cell .cp-label { font-size: 0.7rem; font-weight: 700; color: var(--gray); margin-bottom: 4px; }
     .stat-cell .cp-count { font-size: 1.5rem; font-weight: 800; color: var(--green); line-height: 1; }
@@ -51,20 +77,19 @@
     .cp-detail-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: #07570f; color: #fff; }
     .cp-detail-header .cp-title { font-size: 0.82rem; font-weight: 700; }
     .cp-detail-header .cp-detail-total { font-size: 0.78rem; color: #bbf7d0; }
-    .scanner-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+    .scanner-row { display: flex; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
     .scanner-row:last-child { border-bottom: none; }
-    .scanner-row .s-name { font-weight: 600; color: #111827; display: flex; align-items: center; gap: 6px; }
-    .scanner-row .s-name::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
-    .scanner-row .s-count { font-weight: 700; color: var(--green); font-size: 1rem; }
+    .scanner-row .s-name { font-weight: 600; color: #111827; display: flex; align-items: center; gap: 6px; min-width: 90px; }
+    .scanner-row .s-name::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
     .scanner-row .s-bar-wrap { flex: 1; margin: 0 12px; height: 6px; background: var(--green-light); border-radius: 3px; overflow: hidden; }
     .scanner-row .s-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
+    .scanner-row .s-count { font-weight: 700; color: var(--green); font-size: 1rem; min-width: 28px; text-align: right; }
     .cp-detail-empty { padding: 12px 14px; font-size: 0.85rem; color: var(--gray); text-align: center; }
     .toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
     .toolbar input { flex: 1; min-width: 120px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
     .toolbar-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
     button.outline { background: #fff; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #374151; white-space: nowrap; }
     button.outline:hover { border-color: var(--green); color: var(--green); }
-    button.outline.refresh-btn { display: flex; align-items: center; gap: 4px; }
     button.outline.refresh-btn.spinning .spin { animation: spin 0.6s linear; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .records-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -77,7 +102,7 @@
     th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #f0fdf4; }
-    .code-badge { background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 999px; font-weight: 700; letter-spacing: 0.5px; }
+    .code-badge { background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 999px; font-weight: 700; }
     .empty { text-align: center; padding: 40px; color: var(--gray); font-size: 0.9rem; }
     @media (max-width: 420px) { th:nth-child(1), td:nth-child(1) { display: none; } }
   </style>
@@ -85,8 +110,19 @@
 <body>
 <header>
   <img class="logo" src="CC_Logo_Green_White.svg" alt="Chennai Cyclothon 2026">
-  <span id="clock"></span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span id="clock"></span>
+    <div class="db-signal" title="Database connection status">
+      <div class="signal-housing">
+        <div class="signal-light red"   id="sig-red"></div>
+        <div class="signal-light amber" id="sig-amber" ></div>
+        <div class="signal-light green" id="sig-green"></div>
+      </div>
+      <div class="db-label" id="sig-label">DB</div>
+    </div>
+  </div>
 </header>
+
 <div class="tab-bar">
   <button class="active" onclick="showTab('scan', this)">📷 Scan</button>
   <button onclick="showTab('records', this)">📋 Records</button>
@@ -100,10 +136,8 @@
     <div class="divider"></div>
     <label>Pit Stop</label>
     <select id="pit-stop" onchange="highlightActiveCp()">
-      <option value="CP1">CP1</option>
-      <option value="CP2">CP2</option>
-      <option value="CP3">CP3</option>
-      <option value="CP4">CP4</option>
+      <option value="CP1">CP1</option><option value="CP2">CP2</option>
+      <option value="CP3">CP3</option><option value="CP4">CP4</option>
       <option value="CP5">CP5</option>
     </select>
   </div>
@@ -114,7 +148,7 @@
   <div id="toast" class="toast"></div>
   <div class="stats-panel">
     <h3>Pit Stop Counts</h3>
-    <div class="stats-grid" id="stats-grid">
+    <div class="stats-grid">
       <div class="stat-cell active-cp" id="stat-CP1" onclick="selectCp('CP1')"><div class="cp-label">CP1</div><div class="cp-count">–</div></div>
       <div class="stat-cell" id="stat-CP2" onclick="selectCp('CP2')"><div class="cp-label">CP2</div><div class="cp-count">–</div></div>
       <div class="stat-cell" id="stat-CP3" onclick="selectCp('CP3')"><div class="cp-label">CP3</div><div class="cp-count">–</div></div>
@@ -130,34 +164,27 @@
   <div class="toolbar">
     <input id="search" type="text" placeholder="Search by code, pit stop, or scanner…" oninput="renderTable()">
     <div class="toolbar-actions">
-      <button class="outline refresh-btn" id="refresh-btn" onclick="manualRefresh()">
-        <span class="spin">↻</span> Refresh
-      </button>
+      <button class="outline refresh-btn" id="refresh-btn" onclick="manualRefresh()"><span class="spin">↻</span> Refresh</button>
       <button class="outline" onclick="location.href='/api/export/xlsx'">⬇ XLS</button>
       <button class="outline" onclick="location.href='/api/export/csv'">⬇ CSV</button>
     </div>
   </div>
-  <div class="records-meta">
-    <span id="scan-count"></span>
-    <span id="last-refresh"></span>
-  </div>
+  <div class="records-meta"><span id="scan-count"></span><span id="last-refresh"></span></div>
   <div class="countdown-bar-wrap"><div class="countdown-bar" id="countdown-bar" style="width:100%"></div></div>
   <div id="table-container"><div class="empty">Loading…</div></div>
 </div>
 
 <script>
-  let scans = [], lastScanned = '', scanCooldown = false;
-  let statsCache = null;
+  let scans = [], lastScanned = '', scanCooldown = false, statsCache = null;
   let countdownTimer = null, countdownVal = 10;
 
+  // ── Audio ──────────────────────────────────────────────
   const _ac = new (window.AudioContext || window.webkitAudioContext)();
   let _chimeBuf = null;
   fetch('freesound_community-chime-sound-7143.mp3')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
-    .then(ab => _ac.decodeAudioData(ab))
-    .then(buf => { _chimeBuf = buf; })
+    .then(ab => _ac.decodeAudioData(ab)).then(buf => { _chimeBuf = buf; })
     .catch(err => console.warn('Chime fallback:', err.message));
-
   function playSuccessBeep() {
     try {
       if (_ac.state === 'suspended') _ac.resume();
@@ -181,8 +208,7 @@
     try {
       if (_ac.state === 'suspended') _ac.resume();
       const o = _ac.createOscillator(), g = _ac.createGain();
-      o.type = 'sawtooth';
-      o.frequency.setValueAtTime(300, _ac.currentTime);
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(300, _ac.currentTime);
       o.frequency.exponentialRampToValueAtTime(150, _ac.currentTime + 0.25);
       g.gain.setValueAtTime(0.18, _ac.currentTime);
       g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + 0.3);
@@ -194,45 +220,56 @@
   document.addEventListener('touchstart', _unlock, { once: true });
   document.addEventListener('click', _unlock, { once: true });
 
+  // ── Clock ──────────────────────────────────────────────
   setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
   document.getElementById('clock').textContent = new Date().toLocaleTimeString();
 
+  // ── DB Traffic Signal ──────────────────────────────────
+  function setSignal(state) {
+    // state: 'checking' | 'ok' | 'error'
+    document.getElementById('sig-red').classList.toggle('on', state === 'error');
+    document.getElementById('sig-amber').classList.toggle('on', state === 'checking');
+    document.getElementById('sig-green').classList.toggle('on', state === 'ok');
+    const label = document.getElementById('sig-label');
+    label.textContent = state === 'ok' ? 'DB OK' : state === 'error' ? 'DB ERR' : 'DB...';
+    label.style.color = state === 'ok' ? '#34c759' : state === 'error' ? '#ff3b30' : '#ff9500';
+  }
+  async function checkHealth() {
+    setSignal('checking');
+    try {
+      const res = await fetch('/api/health');
+      setSignal(res.ok ? 'ok' : 'error');
+    } catch(e) { setSignal('error'); }
+  }
+  checkHealth();
+  setInterval(checkHealth, 10000);
+
+  // ── Tabs ───────────────────────────────────────────────
   function showTab(id, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
     document.getElementById(id).classList.add('active'); btn.classList.add('active');
-    if (id === 'records') { fetchScans(); startCountdown(); }
-    else { stopCountdown(); }
+    if (id === 'records') { fetchScans(); startCountdown(); } else { stopCountdown(); }
   }
-
   function startCountdown() {
-    stopCountdown();
-    countdownVal = 10; updateCountdownBar();
-    countdownTimer = setInterval(() => {
-      countdownVal--;
-      updateCountdownBar();
-      if (countdownVal <= 0) { fetchScans(); countdownVal = 10; }
-    }, 1000);
+    stopCountdown(); countdownVal = 10; updateCountdownBar();
+    countdownTimer = setInterval(() => { countdownVal--; updateCountdownBar(); if (countdownVal <= 0) { fetchScans(); countdownVal = 10; } }, 1000);
   }
   function stopCountdown() { clearInterval(countdownTimer); countdownTimer = null; }
-  function updateCountdownBar() {
-    const bar = document.getElementById('countdown-bar');
-    if (bar) bar.style.width = (countdownVal / 10 * 100) + '%';
-  }
+  function updateCountdownBar() { const b = document.getElementById('countdown-bar'); if (b) b.style.width = (countdownVal/10*100)+'%'; }
   function manualRefresh() {
     const btn = document.getElementById('refresh-btn');
-    btn.classList.add('spinning');
-    setTimeout(() => btn.classList.remove('spinning'), 600);
+    btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 600);
     fetchScans(); countdownVal = 10; updateCountdownBar();
   }
 
   function showToast(msg, type) {
     const t = document.getElementById('toast');
     t.className = 'toast ' + type; t.textContent = msg;
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
+    clearTimeout(t._timer); t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
   }
 
+  // ── Stats ──────────────────────────────────────────────
   function selectCp(cp) { document.getElementById('pit-stop').value = cp; highlightActiveCp(); }
   function highlightActiveCp() {
     const active = document.getElementById('pit-stop').value;
@@ -246,17 +283,14 @@
     const detail = document.getElementById('cp-detail');
     if (!statsCache) { detail.innerHTML = ''; return; }
     const scanners = (statsCache.byScanner || []).filter(r => r.pit_stop === cp);
-    const cpTotal = scanners.reduce((s, r) => s + r.count, 0);
+    const cpTotal = scanners.reduce((s,r) => s + r.count, 0);
     const maxCount = scanners.length ? Math.max(...scanners.map(r => r.count)) : 1;
     if (!scanners.length) {
       detail.innerHTML = '<div class="cp-detail-header"><span class="cp-title">' + cp + ' \u2014 Scanner Breakdown</span><span class="cp-detail-total">No scans yet</span></div><div class="cp-detail-empty">No scans recorded at ' + cp + ' yet.</div>';
       return;
     }
-    const rows = scanners.map(r => {
-      const pct = Math.round((r.count / maxCount) * 100);
-      return '<div class="scanner-row"><span class="s-name">' + r.scanner_name + '</span><div class="s-bar-wrap"><div class="s-bar" style="width:' + pct + '%"></div></div><span class="s-count">' + r.count + '</span></div>';
-    }).join('');
-    detail.innerHTML = '<div class="cp-detail-header"><span class="cp-title">' + cp + ' \u2014 Scanner Breakdown</span><span class="cp-detail-total">' + cpTotal + ' total scans</span></div>' + rows;
+    const rows = scanners.map(r => '<div class="scanner-row"><span class="s-name">' + r.scanner_name + '</span><div class="s-bar-wrap"><div class="s-bar" style="width:' + Math.round(r.count/maxCount*100) + '%"></div></div><span class="s-count">' + r.count + '</span></div>').join('');
+    detail.innerHTML = '<div class="cp-detail-header"><span class="cp-title">' + cp + ' \u2014 Scanner Breakdown</span><span class="cp-detail-total">' + cpTotal + ' total</span></div>' + rows;
   }
   async function fetchStats() {
     try {
@@ -271,9 +305,9 @@
       renderCpDetail(document.getElementById('pit-stop').value);
     } catch(e) {}
   }
-  fetchStats();
-  setInterval(fetchStats, 15000);
+  fetchStats(); setInterval(fetchStats, 15000);
 
+  // ── Scan ───────────────────────────────────────────────
   async function saveScan(code) {
     if (scanCooldown && code === lastScanned) return;
     scanCooldown = true; lastScanned = code;
@@ -282,72 +316,51 @@
     const scanner_name = document.getElementById('scanner-name').value.trim();
     try {
       const res = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cyclist_code: code, pit_stop, scanner_name })
       });
       const data = await res.json();
-      if (res.status === 409) {
-        playErrorBeep();
-        showToast('\u26a0 Rider ' + code + ' already scanned at ' + pit_stop, 'warning');
-      } else if (!res.ok) {
-        playErrorBeep();
-        showToast('\u26a0 ' + data.error, 'error');
-      } else {
+      if (res.status === 409) { playErrorBeep(); showToast('\u26a0 Rider ' + code + ' already scanned at ' + pit_stop, 'warning'); }
+      else if (!res.ok) { playErrorBeep(); showToast('\u26a0 ' + data.error, 'error'); }
+      else {
         playSuccessBeep();
         showToast('\u2713 ' + data.cyclist_code + ' logged at ' + pit_stop + (scanner_name ? ' by ' + scanner_name : ''), 'success');
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        if (navigator.vibrate) navigator.vibrate([100,50,100]);
         fetchStats();
       }
     } catch(e) { playErrorBeep(); showToast('Network error: ' + e.message, 'error'); }
   }
   function submitManual() {
     const code = document.getElementById('manual-code').value.trim().toUpperCase();
-    if (!code) return; saveScan(code);
-    document.getElementById('manual-code').value = '';
+    if (!code) return; saveScan(code); document.getElementById('manual-code').value = '';
   }
   document.getElementById('manual-code').addEventListener('keydown', e => { if (e.key === 'Enter') submitManual(); });
 
   const html5QrCode = new Html5Qrcode('reader', { useBarCodeDetectorIfSupported: true });
-  function onScanSuccess(decodedText) {
-    const match = decodedText.match(/CC\d+/i);
-    if (match) { saveScan(match[0].toUpperCase()); }
-    else { playErrorBeep(); showToast('QR does not contain a valid CC code', 'error'); }
-  }
   Html5Qrcode.getCameras().then(cameras => {
-    if (!cameras || cameras.length === 0) { showToast('No camera found', 'error'); return; }
+    if (!cameras?.length) { showToast('No camera found', 'error'); return; }
     const cfg = { fps: 25, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0, rememberLastUsedCamera: true, showTorchButtonIfSupported: true, experimentalFeatures: { useBarCodeDetectorIfSupported: true } };
-    html5QrCode.start({ facingMode: 'environment' }, cfg, onScanSuccess, () => {})
-      .catch(() => html5QrCode.start(cameras[0].id, cfg, onScanSuccess, () => {})
+    html5QrCode.start({ facingMode: 'environment' }, cfg, d => { const m = d.match(/CC\d+/i); if (m) saveScan(m[0].toUpperCase()); else { playErrorBeep(); showToast('Invalid QR code', 'error'); } }, () => {})
+      .catch(() => html5QrCode.start(cameras[0].id, cfg, d => { const m = d.match(/CC\d+/i); if (m) saveScan(m[0].toUpperCase()); }, () => {})
         .catch(err => showToast('Camera error: ' + err, 'error')));
   }).catch(() => showToast('Camera permission denied', 'error'));
 
+  // ── Records ────────────────────────────────────────────
   async function fetchScans() {
     try {
-      scans = await fetch('/api/scans').then(r => r.json());
-      renderTable();
+      scans = await fetch('/api/scans').then(r => r.json()); renderTable();
       const el = document.getElementById('last-refresh');
       if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString();
     } catch(e) {}
   }
   function renderTable() {
     const q = document.getElementById('search').value.toLowerCase();
-    const filtered = scans.filter(s =>
-      s.cyclist_code.toLowerCase().includes(q) ||
-      (s.pit_stop || '').toLowerCase().includes(q) ||
-      (s.scanner_name || '').toLowerCase().includes(q)
-    );
+    const filtered = scans.filter(s => s.cyclist_code.toLowerCase().includes(q) || (s.pit_stop||'').toLowerCase().includes(q) || (s.scanner_name||'').toLowerCase().includes(q));
     document.getElementById('scan-count').textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '') + ' shown';
     if (!filtered.length) { document.getElementById('table-container').innerHTML = '<div class="empty">No records found.</div>'; return; }
     const rows = filtered.map(s => {
       const dt = new Date(s.scanned_at);
-      return '<tr>' +
-        '<td>' + s.id + '</td>' +
-        '<td><span class="code-badge">' + s.cyclist_code + '</span></td>' +
-        '<td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td>' +
-        '<td>' + (s.pit_stop || '') + '</td>' +
-        '<td>' + (s.scanner_name || '<span style="color:#9ca3af">\u2014</span>') + '</td>' +
-        '</tr>';
+      return '<tr><td>' + s.id + '</td><td><span class="code-badge">' + s.cyclist_code + '</span></td><td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td><td>' + (s.pit_stop||'') + '</td><td>' + (s.scanner_name||'<span style="color:#9ca3af">\u2014</span>') + '</td></tr>';
     }).join('');
     document.getElementById('table-container').innerHTML = '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
