@@ -70,25 +70,31 @@
     .tab { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
     .tab.active { display: block; }
 
-    /* Scanner */
+    /* Scanner — smaller camera */
+    .scanner-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
     #reader {
       width: 100%;
+      max-width: 300px;
       border-radius: 12px;
       overflow: hidden;
       border: 2px solid var(--border);
       background: #000;
     }
 
-    .pit-row {
+    .field-row {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-top: 14px;
+      margin-top: 12px;
     }
 
-    .pit-row label { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+    .field-row label { font-size: 0.85rem; font-weight: 600; white-space: nowrap; min-width: 90px; }
 
-    .pit-row input {
+    .field-row input {
       flex: 1;
       padding: 10px 12px;
       border: 1px solid var(--border);
@@ -214,7 +220,7 @@
     }
 
     @media (max-width: 420px) {
-      th:nth-child(1), td:nth-child(1) { display: none; } /* hide ID on mobile */
+      th:nth-child(1), td:nth-child(1) { display: none; }
     }
   </style>
 </head>
@@ -237,15 +243,22 @@
 
 <!-- SCAN TAB -->
 <div id="scan" class="tab active">
-  <div id="reader"></div>
+  <div class="scanner-wrap">
+    <div id="reader"></div>
+  </div>
 
-  <div class="pit-row">
+  <div class="field-row">
+    <label>Scanner Name:</label>
+    <input id="scanner-name" type="text" placeholder="e.g. John, Volunteer 1">
+  </div>
+
+  <div class="field-row">
     <label>Pit Stop:</label>
     <input id="pit-stop" type="text" value="Main" placeholder="e.g. Main, KM 40">
   </div>
 
   <div class="manual-row" style="margin-top:14px;">
-    <input id="manual-code" type="text" placeholder="Manual entry: CC00000001" maxlength="10">
+    <input id="manual-code" type="text" placeholder="Manual entry: CC00000001" maxlength="12">
     <button class="primary" onclick="submitManual()">Log</button>
   </div>
 
@@ -255,7 +268,7 @@
 <!-- RECORDS TAB -->
 <div id="records" class="tab">
   <div class="toolbar">
-    <input id="search" type="text" placeholder="Search by code or pit stop…" oninput="renderTable()">
+    <input id="search" type="text" placeholder="Search by code, pit stop, or scanner…" oninput="renderTable()">
     <div class="export-btns">
       <button class="outline" onclick="location.href='/api/export/xlsx'">⬇ XLS</button>
       <button class="outline" onclick="location.href='/api/export/csv'">⬇ CSV</button>
@@ -305,23 +318,21 @@
     setTimeout(() => { scanCooldown = false; }, 3000);
 
     const pit_stop = document.getElementById('pit-stop').value.trim() || 'Main';
-    console.log('Saving scan:', code, pit_stop);
+    const scanner_name = document.getElementById('scanner-name').value.trim();
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cyclist_code: code, pit_stop })
+        body: JSON.stringify({ cyclist_code: code, pit_stop, scanner_name })
       });
       const data = await res.json();
-      console.log('Server response:', res.status, data);
       if (!res.ok) {
         showToast('⚠ ' + data.error, 'error');
       } else {
-        showToast(`✓ ${data.cyclist_code} logged at ${new Date(data.scanned_at).toLocaleTimeString()}`, 'success');
+        showToast('✓ ' + data.cyclist_code + ' logged' + (scanner_name ? ' by ' + scanner_name : ''), 'success');
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
       }
     } catch (e) {
-      console.error('Fetch error:', e);
       showToast('Network error: ' + e.message, 'error');
     }
   }
@@ -339,11 +350,11 @@
 
   // QR Scanner
   const html5QrCode = new Html5Qrcode('reader', {
-    useBarCodeDetectorIfSupported: true  // use native browser BarcodeDetector API when available (much faster)
+    useBarCodeDetectorIfSupported: true
   });
 
   function onScanSuccess(decodedText) {
-    const match = decodedText.match(/CC\d{8}/i);
+    const match = decodedText.match(/CC\d+/i);
     if (match) {
       saveScan(match[0].toUpperCase());
     } else {
@@ -352,11 +363,11 @@
   }
 
   const scanConfig = {
-    fps: 25,                          // higher fps = faster detection
-    qrbox: { width: 220, height: 220 }, // smaller box = fewer pixels processed per frame
+    fps: 25,
+    qrbox: { width: 200, height: 200 },
     aspectRatio: 1.0,
     rememberLastUsedCamera: true,
-    showTorchButtonIfSupported: true,  // torch toggle for dark environments
+    showTorchButtonIfSupported: true,
     experimentalFeatures: { useBarCodeDetectorIfSupported: true }
   };
 
@@ -391,11 +402,12 @@
     const q = document.getElementById('search').value.toLowerCase();
     const filtered = scans.filter(s =>
       s.cyclist_code.toLowerCase().includes(q) ||
-      (s.pit_stop || '').toLowerCase().includes(q)
+      (s.pit_stop || '').toLowerCase().includes(q) ||
+      (s.scanner_name || '').toLowerCase().includes(q)
     );
 
     document.getElementById('scan-count').textContent =
-      `${filtered.length} record${filtered.length !== 1 ? 's' : ''} shown`;
+      filtered.length + ' record' + (filtered.length !== 1 ? 's' : '') + ' shown';
 
     if (!filtered.length) {
       document.getElementById('table-container').innerHTML =
@@ -407,20 +419,21 @@
       const dt = new Date(s.scanned_at);
       const date = dt.toLocaleDateString();
       const time = dt.toLocaleTimeString();
-      return `<tr>
-        <td>${s.id}</td>
-        <td><span class="code-badge">${s.cyclist_code}</span></td>
-        <td>${date}<br><small style="color:#6b7280">${time}</small></td>
-        <td>${s.pit_stop}</td>
-        <td><button class="del-btn" onclick="deleteScan(${s.id})" title="Delete">✕</button></td>
-      </tr>`;
+      return '<tr>' +
+        '<td>' + s.id + '</td>' +
+        '<td><span class="code-badge">' + s.cyclist_code + '</span></td>' +
+        '<td>' + date + '<br><small style="color:#6b7280">' + time + '</small></td>' +
+        '<td>' + (s.pit_stop || '') + '</td>' +
+        '<td>' + (s.scanner_name || '<span style="color:#9ca3af">—</span>') + '</td>' +
+        '<td><button class="del-btn" onclick="deleteScan(' + s.id + ')" title="Delete">✕</button></td>' +
+        '</tr>';
     }).join('');
 
-    document.getElementById('table-container').innerHTML = `
-      <table>
-        <thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th></th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
+    document.getElementById('table-container').innerHTML =
+      '<table>' +
+      '<thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th><th></th></tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '</table>';
   }
 
   async function deleteScan(id) {
@@ -430,7 +443,6 @@
     renderTable();
   }
 
-  // Initial fetch for records if tab is active
   fetchScans();
 </script>
 </body>
