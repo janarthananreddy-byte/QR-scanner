@@ -257,6 +257,11 @@
       <div class="di-text"><span class="di-title">Buy Me a Coffee</span><span class="di-sub">Support the developer</span></div>
       <span class="di-arrow">&#8250;</span>
     </button>
+    <button class="drawer-item" onclick="openPage('resetdb')">
+      <span class="di-icon" style="color:#dc2626;">&#9888;</span>
+      <div class="di-text"><span class="di-title" style="color:#dc2626;">Reset Database</span><span class="di-sub">Delete all scan records</span></div>
+      <span class="di-arrow">&#8250;</span>
+    </button>
   </nav>
   <div class="drawer-logout">
     <button class="logout-btn" onclick="doLogout()">&#128275; Logout</button>
@@ -457,11 +462,37 @@
       <div class="coffee-big-emoji">&#9749;</div>
       <div class="coffee-devname">Janarthanan</div>
       <div class="coffee-tagline">Built this app for the Chennai Cyclothon 2026 community.<br>If it helped, consider buying me a coffee!</div>
-      <div class="coffee-actions">
-        <a class="coffee-btn" href="upi://pay?pa=9884594169@ybl&pn=Janarthanan&cu=INR">Pay via UPI</a>
-        <a class="coffee-wa" href="https://wa.me/919884594169" target="_blank">WhatsApp</a>
+      <div class="coffee-phone-display" style="margin-top:8px;font-size:0.9rem;color:#92400e;font-weight:600;">+91 98845 94169</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: Reset DB -->
+<div class="menu-page" id="page-resetdb">
+  <div class="page-hdr">
+    <button class="page-back" onclick="closePage('resetdb')">&#8592; Back</button>
+    <span class="page-ttl">&#9888; Reset Database</span>
+  </div>
+  <div class="page-body">
+    <div class="pin-gate" id="resetdb-pin-gate">
+      <div class="lock-icon">&#128274;</div>
+      <h3>Admin Required</h3>
+      <p>Enter admin PIN to access reset.</p>
+      <div class="pin-form">
+        <input id="resetdb-pin" type="password" maxlength="4" placeholder="PIN" oninput="document.getElementById('resetdb-pin-err').textContent=''" onkeydown="if(event.key==='Enter')checkResetDbPin()">
+        <button onclick="checkResetDbPin()">Enter</button>
       </div>
-      <div class="coffee-phone-display">+91 98845 94169</div>
+      <div class="pin-err" id="resetdb-pin-err"></div>
+    </div>
+    <div class="gated-content" id="resetdb-content">
+      <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;padding:20px;text-align:center;margin-bottom:16px;">
+        <div style="font-size:2rem;margin-bottom:8px;">&#9888;</div>
+        <div style="font-weight:700;color:#dc2626;font-size:0.95rem;margin-bottom:6px;">Danger Zone</div>
+        <div style="font-size:0.82rem;color:#7f1d1d;line-height:1.5;">This will permanently delete ALL scan records. This cannot be undone.</div>
+      </div>
+      <div id="resetdb-stats" style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px;text-align:center;margin-bottom:16px;font-size:0.88rem;color:#374151;">Loading...</div>
+      <button onclick="confirmReset()" style="width:100%;background:#dc2626;color:#fff;border:none;padding:14px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">&#128465; Delete All Records</button>
+      <div id="resetdb-msg" style="margin-top:10px;font-size:0.85rem;text-align:center;min-height:1.2em;"></div>
     </div>
   </div>
 </div>
@@ -607,6 +638,10 @@ Html5Qrcode.getCameras().then(function(cameras){if(!cameras||!cameras.length){sh
 function fetchScans(){fetch('/api/scans').then(function(r){return r.json();}).then(function(data){scans=data;renderTable();var el=document.getElementById('last-refresh');if(el)el.textContent='Updated '+new Date().toLocaleTimeString();}).catch(function(){});}
 function renderTable(){var q=(document.getElementById('search')?document.getElementById('search').value||'':'').toLowerCase();var f=scans.filter(function(s){return s.cyclist_code.toLowerCase().includes(q)||(s.pit_stop||'').toLowerCase().includes(q)||(s.scanner_name||'').toLowerCase().includes(q);});document.getElementById('scan-count').textContent=f.length+' record'+(f.length!==1?'s':'')+' shown';document.getElementById('table-container').innerHTML=f.length?'<table><thead><tr><th>#</th><th>Cyclist</th><th>Date/Time</th><th>CP</th><th>Scanner</th></tr></thead><tbody>'+f.map(function(s){var d=new Date(s.scanned_at);return'<tr><td>'+s.id+'</td><td><span class="code-badge">'+s.cyclist_code+'</span></td><td>'+d.toLocaleDateString()+'<br><small style="color:#6b7280">'+d.toLocaleTimeString()+'</small></td><td>'+(s.pit_stop||'')+'</td><td>'+(s.scanner_name||'-')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No records found.</div>';}
 fetchScans();
+var resetDbAuth=false;
+function checkResetDbPin(){var v=document.getElementById('resetdb-pin').value;if(v===ADMIN_PIN){resetDbAuth=true;document.getElementById('resetdb-pin-gate').style.display='none';document.getElementById('resetdb-content').classList.add('visible');loadResetDbStats();}else{document.getElementById('resetdb-pin-err').textContent='Incorrect PIN.';}}
+function loadResetDbStats(){fetch('/api/stats').then(function(r){return r.json();}).then(function(d){var el=document.getElementById('resetdb-stats');if(el)el.innerHTML='Current records: <strong style="color:#dc2626;font-size:1.2rem;">'+d.total+'</strong>';}).catch(function(){});}
+function confirmReset(){if(!confirm('Are you sure? This will delete ALL scan records and cannot be undone.'))return;var btn=document.querySelector('#resetdb-content button');btn.disabled=true;btn.textContent='Deleting...';fetch('/api/reset',{method:'POST',headers:{'Content-Type':'application/json'}}).then(function(r){return r.json();}).then(function(d){var msg=document.getElementById('resetdb-msg');if(d.ok){msg.style.color='#15803d';msg.textContent='All records deleted successfully.';loadResetDbStats();fetchStats();}else{msg.style.color='#dc2626';msg.textContent=d.error||'Reset failed.';}btn.disabled=false;btn.innerHTML='&#128465; Delete All Records';}).catch(function(){document.getElementById('resetdb-msg').style.color='#dc2626';document.getElementById('resetdb-msg').textContent='Network error.';btn.disabled=false;btn.innerHTML='&#128465; Delete All Records';});}
 </script>
 </body>
 </html>
