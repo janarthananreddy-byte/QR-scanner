@@ -59,15 +59,12 @@
     .scanner-row .s-bar-wrap { flex: 1; margin: 0 12px; height: 6px; background: var(--green-light); border-radius: 3px; overflow: hidden; }
     .scanner-row .s-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
     .cp-detail-empty { padding: 12px 14px; font-size: 0.85rem; color: var(--gray); text-align: center; }
-
-    /* Records toolbar */
     .toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
     .toolbar input { flex: 1; min-width: 120px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
     .toolbar-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
     button.outline { background: #fff; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #374151; white-space: nowrap; }
     button.outline:hover { border-color: var(--green); color: var(--green); }
     button.outline.refresh-btn { display: flex; align-items: center; gap: 4px; }
-    button.outline.refresh-btn .spin { display: inline-block; transition: transform 0.4s; }
     button.outline.refresh-btn.spinning .spin { animation: spin 0.6s linear; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .records-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -75,15 +72,12 @@
     #last-refresh { font-size: 0.75rem; color: var(--gray); }
     .countdown-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
     .countdown-bar { height: 100%; background: var(--green); border-radius: 2px; transition: width 1s linear; }
-
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     thead tr { background: #1f2937; color: #fff; }
     th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #f0fdf4; }
     .code-badge { background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 999px; font-weight: 700; letter-spacing: 0.5px; }
-    .del-btn { background: none; border: 1px solid #fca5a5; color: var(--red); cursor: pointer; font-size: 0.78rem; font-weight: 600; padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
-    .del-btn:hover { background: var(--red-light); }
     .empty { text-align: center; padding: 40px; color: var(--gray); font-size: 0.9rem; }
     @media (max-width: 420px) { th:nth-child(1), td:nth-child(1) { display: none; } }
   </style>
@@ -98,7 +92,6 @@
   <button onclick="showTab('records', this)">📋 Records</button>
 </div>
 
-<!-- SCAN TAB -->
 <div id="scan" class="tab active">
   <div class="scanner-wrap"><div id="reader"></div></div>
   <div class="fields-row">
@@ -133,7 +126,6 @@
   </div>
 </div>
 
-<!-- RECORDS TAB -->
 <div id="records" class="tab">
   <div class="toolbar">
     <input id="search" type="text" placeholder="Search by code, pit stop, or scanner…" oninput="renderTable()">
@@ -156,7 +148,7 @@
 <script>
   let scans = [], lastScanned = '', scanCooldown = false;
   let statsCache = null;
-  let recordsRefreshTimer = null, countdownTimer = null, countdownVal = 10;
+  let countdownTimer = null, countdownVal = 10;
 
   const _ac = new (window.AudioContext || window.webkitAudioContext)();
   let _chimeBuf = null;
@@ -209,31 +201,20 @@
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
     document.getElementById(id).classList.add('active'); btn.classList.add('active');
-    if (id === 'records') {
-      fetchScans();
-      startRecordsAutoRefresh();
-    } else {
-      stopRecordsAutoRefresh();
-    }
+    if (id === 'records') { fetchScans(); startCountdown(); }
+    else { stopCountdown(); }
   }
 
-  function startRecordsAutoRefresh() {
-    stopRecordsAutoRefresh();
-    countdownVal = 10;
-    updateCountdownBar();
+  function startCountdown() {
+    stopCountdown();
+    countdownVal = 10; updateCountdownBar();
     countdownTimer = setInterval(() => {
       countdownVal--;
       updateCountdownBar();
-      if (countdownVal <= 0) {
-        fetchScans();
-        countdownVal = 10;
-      }
+      if (countdownVal <= 0) { fetchScans(); countdownVal = 10; }
     }, 1000);
   }
-  function stopRecordsAutoRefresh() {
-    clearInterval(countdownTimer);
-    countdownTimer = null;
-  }
+  function stopCountdown() { clearInterval(countdownTimer); countdownTimer = null; }
   function updateCountdownBar() {
     const bar = document.getElementById('countdown-bar');
     if (bar) bar.style.width = (countdownVal / 10 * 100) + '%';
@@ -242,9 +223,7 @@
     const btn = document.getElementById('refresh-btn');
     btn.classList.add('spinning');
     setTimeout(() => btn.classList.remove('spinning'), 600);
-    fetchScans();
-    countdownVal = 10;
-    updateCountdownBar();
+    fetchScans(); countdownVal = 10; updateCountdownBar();
   }
 
   function showToast(msg, type) {
@@ -254,10 +233,7 @@
     t._timer = setTimeout(() => { t.className = 'toast'; }, 4000);
   }
 
-  function selectCp(cp) {
-    document.getElementById('pit-stop').value = cp;
-    highlightActiveCp();
-  }
+  function selectCp(cp) { document.getElementById('pit-stop').value = cp; highlightActiveCp(); }
   function highlightActiveCp() {
     const active = document.getElementById('pit-stop').value;
     ['CP1','CP2','CP3','CP4','CP5'].forEach(cp => {
@@ -348,12 +324,10 @@
 
   async function fetchScans() {
     try {
-      const res = await fetch('/api/scans');
-      scans = await res.json();
+      scans = await fetch('/api/scans').then(r => r.json());
       renderTable();
-      const now = new Date();
       const el = document.getElementById('last-refresh');
-      if (el) el.textContent = 'Updated ' + now.toLocaleTimeString();
+      if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString();
     } catch(e) {}
   }
   function renderTable() {
@@ -373,15 +347,9 @@
         '<td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td>' +
         '<td>' + (s.pit_stop || '') + '</td>' +
         '<td>' + (s.scanner_name || '<span style="color:#9ca3af">\u2014</span>') + '</td>' +
-        '<td><button class="del-btn" onclick="deleteScan(' + s.id + ')">\u1F5D1 Delete</button></td>' +
         '</tr>';
     }).join('');
-    document.getElementById('table-container').innerHTML = '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
-  }
-  async function deleteScan(id) {
-    if (!confirm('Delete this record?')) return;
-    await fetch('/api/scan/' + id, { method: 'DELETE' });
-    scans = scans.filter(s => s.id !== id); renderTable();
+    document.getElementById('table-container').innerHTML = '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
   fetchScans();
 </script>
