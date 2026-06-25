@@ -36,8 +36,6 @@
     .toast.success { background: var(--green-light); color: var(--green); display: block; }
     .toast.error   { background: var(--red-light);   color: var(--red);   display: block; }
     .toast.warning { background: var(--amber-light); color: var(--amber); display: block; }
-
-    /* Stats panel */
     .stats-panel { margin-top: 16px; background: #fff; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
     .stats-panel h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray); padding: 10px 14px 6px; }
     .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); border-bottom: 1px solid var(--border); }
@@ -49,23 +47,11 @@
     .stat-cell.active-cp { background: #f0fdf4; }
     .stats-total { font-size: 0.78rem; color: var(--gray); padding: 6px 14px; text-align: right; }
     .stats-total strong { color: #111827; }
-
-    /* Per-CP scanner detail */
     .cp-detail { border-top: 1px solid var(--border); }
-    .cp-detail-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 14px;
-      background: #07570f;
-      color: #fff;
-    }
+    .cp-detail-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: #07570f; color: #fff; }
     .cp-detail-header .cp-title { font-size: 0.82rem; font-weight: 700; }
     .cp-detail-header .cp-detail-total { font-size: 0.78rem; color: #bbf7d0; }
-    .scanner-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 14px;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.88rem;
-    }
+    .scanner-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
     .scanner-row:last-child { border-bottom: none; }
     .scanner-row .s-name { font-weight: 600; color: #111827; display: flex; align-items: center; gap: 6px; }
     .scanner-row .s-name::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
@@ -74,22 +60,31 @@
     .scanner-row .s-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
     .cp-detail-empty { padding: 12px 14px; font-size: 0.85rem; color: var(--gray); text-align: center; }
 
-    /* Records */
-    .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
-    .toolbar input { flex: 1; min-width: 140px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
-    .export-btns { display: flex; gap: 6px; }
-    button.outline { background: #fff; border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #374151; }
+    /* Records toolbar */
+    .toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+    .toolbar input { flex: 1; min-width: 120px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
+    .toolbar-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    button.outline { background: #fff; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #374151; white-space: nowrap; }
     button.outline:hover { border-color: var(--green); color: var(--green); }
+    button.outline.refresh-btn { display: flex; align-items: center; gap: 4px; }
+    button.outline.refresh-btn .spin { display: inline-block; transition: transform 0.4s; }
+    button.outline.refresh-btn.spinning .spin { animation: spin 0.6s linear; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .records-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    #scan-count { font-size: 0.8rem; color: var(--gray); }
+    #last-refresh { font-size: 0.75rem; color: var(--gray); }
+    .countdown-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+    .countdown-bar { height: 100%; background: var(--green); border-radius: 2px; transition: width 1s linear; }
+
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     thead tr { background: #1f2937; color: #fff; }
     th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #f0fdf4; }
     .code-badge { background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 999px; font-weight: 700; letter-spacing: 0.5px; }
-    .del-btn { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 4px; }
+    .del-btn { background: none; border: 1px solid #fca5a5; color: var(--red); cursor: pointer; font-size: 0.78rem; font-weight: 600; padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
     .del-btn:hover { background: var(--red-light); }
     .empty { text-align: center; padding: 40px; color: var(--gray); font-size: 0.9rem; }
-    #scan-count { font-size: 0.8rem; color: var(--gray); margin-bottom: 8px; }
     @media (max-width: 420px) { th:nth-child(1), td:nth-child(1) { display: none; } }
   </style>
 </head>
@@ -106,7 +101,6 @@
 <!-- SCAN TAB -->
 <div id="scan" class="tab active">
   <div class="scanner-wrap"><div id="reader"></div></div>
-
   <div class="fields-row">
     <label>Scanner Name</label>
     <input id="scanner-name" type="text" placeholder="e.g. John">
@@ -120,14 +114,11 @@
       <option value="CP5">CP5</option>
     </select>
   </div>
-
   <div class="manual-row" style="margin-top:12px;">
     <input id="manual-code" type="text" placeholder="Manual entry: CC00000001" maxlength="12">
     <button class="primary" onclick="submitManual()">Log</button>
   </div>
   <div id="toast" class="toast"></div>
-
-  <!-- Stats panel -->
   <div class="stats-panel">
     <h3>Pit Stop Counts</h3>
     <div class="stats-grid" id="stats-grid">
@@ -138,8 +129,6 @@
       <div class="stat-cell" id="stat-CP5" onclick="selectCp('CP5')"><div class="cp-label">CP5</div><div class="cp-count">–</div></div>
     </div>
     <div class="stats-total" id="stats-total">Loading…</div>
-
-    <!-- Per-CP scanner detail -->
     <div class="cp-detail" id="cp-detail"></div>
   </div>
 </div>
@@ -148,18 +137,26 @@
 <div id="records" class="tab">
   <div class="toolbar">
     <input id="search" type="text" placeholder="Search by code, pit stop, or scanner…" oninput="renderTable()">
-    <div class="export-btns">
+    <div class="toolbar-actions">
+      <button class="outline refresh-btn" id="refresh-btn" onclick="manualRefresh()">
+        <span class="spin">↻</span> Refresh
+      </button>
       <button class="outline" onclick="location.href='/api/export/xlsx'">⬇ XLS</button>
       <button class="outline" onclick="location.href='/api/export/csv'">⬇ CSV</button>
     </div>
   </div>
-  <div id="scan-count"></div>
+  <div class="records-meta">
+    <span id="scan-count"></span>
+    <span id="last-refresh"></span>
+  </div>
+  <div class="countdown-bar-wrap"><div class="countdown-bar" id="countdown-bar" style="width:100%"></div></div>
   <div id="table-container"><div class="empty">Loading…</div></div>
 </div>
 
 <script>
   let scans = [], lastScanned = '', scanCooldown = false;
   let statsCache = null;
+  let recordsRefreshTimer = null, countdownTimer = null, countdownVal = 10;
 
   const _ac = new (window.AudioContext || window.webkitAudioContext)();
   let _chimeBuf = null;
@@ -212,8 +209,44 @@
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
     document.getElementById(id).classList.add('active'); btn.classList.add('active');
-    if (id === 'records') fetchScans();
+    if (id === 'records') {
+      fetchScans();
+      startRecordsAutoRefresh();
+    } else {
+      stopRecordsAutoRefresh();
+    }
   }
+
+  function startRecordsAutoRefresh() {
+    stopRecordsAutoRefresh();
+    countdownVal = 10;
+    updateCountdownBar();
+    countdownTimer = setInterval(() => {
+      countdownVal--;
+      updateCountdownBar();
+      if (countdownVal <= 0) {
+        fetchScans();
+        countdownVal = 10;
+      }
+    }, 1000);
+  }
+  function stopRecordsAutoRefresh() {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+  function updateCountdownBar() {
+    const bar = document.getElementById('countdown-bar');
+    if (bar) bar.style.width = (countdownVal / 10 * 100) + '%';
+  }
+  function manualRefresh() {
+    const btn = document.getElementById('refresh-btn');
+    btn.classList.add('spinning');
+    setTimeout(() => btn.classList.remove('spinning'), 600);
+    fetchScans();
+    countdownVal = 10;
+    updateCountdownBar();
+  }
+
   function showToast(msg, type) {
     const t = document.getElementById('toast');
     t.className = 'toast ' + type; t.textContent = msg;
@@ -225,7 +258,6 @@
     document.getElementById('pit-stop').value = cp;
     highlightActiveCp();
   }
-
   function highlightActiveCp() {
     const active = document.getElementById('pit-stop').value;
     ['CP1','CP2','CP3','CP4','CP5'].forEach(cp => {
@@ -234,35 +266,22 @@
     });
     renderCpDetail(active);
   }
-
   function renderCpDetail(cp) {
     const detail = document.getElementById('cp-detail');
     if (!statsCache) { detail.innerHTML = ''; return; }
     const scanners = (statsCache.byScanner || []).filter(r => r.pit_stop === cp);
     const cpTotal = scanners.reduce((s, r) => s + r.count, 0);
     const maxCount = scanners.length ? Math.max(...scanners.map(r => r.count)) : 1;
-
     if (!scanners.length) {
-      detail.innerHTML = '<div class="cp-detail-header"><span class="cp-title">' + cp + ' — Scanner Breakdown</span><span class="cp-detail-total">No scans yet</span></div><div class="cp-detail-empty">No scans recorded at ' + cp + ' yet.</div>';
+      detail.innerHTML = '<div class="cp-detail-header"><span class="cp-title">' + cp + ' \u2014 Scanner Breakdown</span><span class="cp-detail-total">No scans yet</span></div><div class="cp-detail-empty">No scans recorded at ' + cp + ' yet.</div>';
       return;
     }
-
     const rows = scanners.map(r => {
       const pct = Math.round((r.count / maxCount) * 100);
-      return '<div class="scanner-row">' +
-        '<span class="s-name">' + r.scanner_name + '</span>' +
-        '<div class="s-bar-wrap"><div class="s-bar" style="width:' + pct + '%"></div></div>' +
-        '<span class="s-count">' + r.count + '</span>' +
-        '</div>';
+      return '<div class="scanner-row"><span class="s-name">' + r.scanner_name + '</span><div class="s-bar-wrap"><div class="s-bar" style="width:' + pct + '%"></div></div><span class="s-count">' + r.count + '</span></div>';
     }).join('');
-
-    detail.innerHTML =
-      '<div class="cp-detail-header">' +
-        '<span class="cp-title">' + cp + ' — Scanner Breakdown</span>' +
-        '<span class="cp-detail-total">' + cpTotal + ' total scans</span>' +
-      '</div>' + rows;
+    detail.innerHTML = '<div class="cp-detail-header"><span class="cp-title">' + cp + ' \u2014 Scanner Breakdown</span><span class="cp-detail-total">' + cpTotal + ' total scans</span></div>' + rows;
   }
-
   async function fetchStats() {
     try {
       statsCache = await fetch('/api/stats').then(r => r.json());
@@ -328,7 +347,14 @@
   }).catch(() => showToast('Camera permission denied', 'error'));
 
   async function fetchScans() {
-    const res = await fetch('/api/scans'); scans = await res.json(); renderTable();
+    try {
+      const res = await fetch('/api/scans');
+      scans = await res.json();
+      renderTable();
+      const now = new Date();
+      const el = document.getElementById('last-refresh');
+      if (el) el.textContent = 'Updated ' + now.toLocaleTimeString();
+    } catch(e) {}
   }
   function renderTable() {
     const q = document.getElementById('search').value.toLowerCase();
@@ -341,7 +367,14 @@
     if (!filtered.length) { document.getElementById('table-container').innerHTML = '<div class="empty">No records found.</div>'; return; }
     const rows = filtered.map(s => {
       const dt = new Date(s.scanned_at);
-      return '<tr><td>' + s.id + '</td><td><span class="code-badge">' + s.cyclist_code + '</span></td><td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td><td>' + (s.pit_stop || '') + '</td><td>' + (s.scanner_name || '<span style="color:#9ca3af">\u2014</span>') + '</td><td><button class="del-btn" onclick="deleteScan(' + s.id + ')" title="Delete">\u2715</button></td></tr>';
+      return '<tr>' +
+        '<td>' + s.id + '</td>' +
+        '<td><span class="code-badge">' + s.cyclist_code + '</span></td>' +
+        '<td>' + dt.toLocaleDateString() + '<br><small style="color:#6b7280">' + dt.toLocaleTimeString() + '</small></td>' +
+        '<td>' + (s.pit_stop || '') + '</td>' +
+        '<td>' + (s.scanner_name || '<span style="color:#9ca3af">\u2014</span>') + '</td>' +
+        '<td><button class="del-btn" onclick="deleteScan(' + s.id + ')">\u1F5D1 Delete</button></td>' +
+        '</tr>';
     }).join('');
     document.getElementById('table-container').innerHTML = '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
