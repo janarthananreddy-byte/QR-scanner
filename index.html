@@ -3,21 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PelotonAid – Pit Stop Scanner</title>
+  <title>Chennai Cyclothon 2026 – Pit Stop Scanner</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #16a34a; --green-light: #dcfce7;
+      --green: #149948; --green-light: #dcfce7;
       --red: #dc2626;   --red-light: #fee2e2;
       --amber: #d97706; --amber-light: #fef3c7;
       --gray: #6b7280;  --border: #e5e7eb; --bg: #f9fafb;
     }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: #111827; min-height: 100vh; }
-    header { background: #111827; color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
-    header h1 { font-size: 1.1rem; font-weight: 700; }
-    header span { font-size: 0.75rem; color: #9ca3af; margin-left: auto; }
-    .tab-bar { display: flex; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 52px; z-index: 99; }
+    header {
+      background: #111827;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 12px;
+    }
+    header img.logo { height: 36px; width: auto; flex-shrink: 0; }
+    header span { font-size: 0.72rem; color: #9ca3af; white-space: nowrap; }
+    .tab-bar { display: flex; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 57px; z-index: 99; }
     .tab-bar button { flex: 1; padding: 12px; border: none; background: none; font-size: 0.9rem; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s; }
     .tab-bar button.active { color: var(--green); border-bottom-color: var(--green); }
     .tab { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
@@ -54,12 +64,7 @@
 </head>
 <body>
 <header>
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-    <rect x="3" y="14" width="7" height="7"/>
-    <path d="M14 14h3v3m0 4h4v-4m-4 0h4"/>
-  </svg>
-  <h1>PelotonAid – Pit Stop Scanner</h1>
+  <img class="logo" src="CC_Logo_Green_White.svg" alt="Chennai Cyclothon 2026">
   <span id="clock"></span>
 </header>
 <div class="tab-bar">
@@ -180,7 +185,7 @@
       const data = await res.json();
       if (res.status === 409) {
         playErrorBeep();
-        showToast('\u26a0 Rider ' + code + ' is already scanned', 'warning');
+        showToast('\u26a0 Rider ' + code + ' already scanned at ' + pit_stop, 'warning');
       } else if (!res.ok) {
         playErrorBeep();
         showToast('\u26a0 ' + data.error, 'error');
