@@ -26,7 +26,7 @@
     #reader { width: 100%; max-width: 300px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); background: #000; }
     .field-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
     .field-row label { font-size: 0.85rem; font-weight: 600; white-space: nowrap; min-width: 90px; }
-    .field-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; }
+    .field-row input, .field-row select { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; background: #fff; }
     .manual-row { display: flex; gap: 8px; margin-top: 10px; }
     .manual-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; text-transform: uppercase; }
     button.primary { background: var(--green); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
@@ -75,7 +75,13 @@
   </div>
   <div class="field-row">
     <label>Pit Stop:</label>
-    <input id="pit-stop" type="text" value="Main" placeholder="e.g. Main, KM 40">
+    <select id="pit-stop">
+      <option value="CP1">CP1</option>
+      <option value="CP2">CP2</option>
+      <option value="CP3">CP3</option>
+      <option value="CP4">CP4</option>
+      <option value="CP5">CP5</option>
+    </select>
   </div>
   <div class="manual-row" style="margin-top:14px;">
     <input id="manual-code" type="text" placeholder="Manual entry: CC00000001" maxlength="12">
@@ -100,8 +106,6 @@
   // ── Audio ──────────────────────────────────────────────────────────────
   const _ac = new (window.AudioContext || window.webkitAudioContext)();
   let _chimeBuf = null;
-
-  // Pre-load chime MP3 into Web Audio buffer (allows gain > 1.0)
   fetch('freesound_community-chime-sound-7143.mp3')
     .then(r => r.arrayBuffer())
     .then(ab => _ac.decodeAudioData(ab))
@@ -111,20 +115,18 @@
   function playSuccessBeep() {
     try {
       if (!_chimeBuf) return;
-      const src  = _ac.createBufferSource();
+      const src = _ac.createBufferSource();
       const gain = _ac.createGain();
       src.buffer = _chimeBuf;
-      gain.gain.value = 2.0;   // 200% volume
-      src.connect(gain);
-      gain.connect(_ac.destination);
+      gain.gain.value = 2.0;
+      src.connect(gain); gain.connect(_ac.destination);
       src.start(0);
     } catch(e) {}
   }
 
   function playErrorBeep() {
     try {
-      const osc  = _ac.createOscillator();
-      const gain = _ac.createGain();
+      const osc = _ac.createOscillator(), gain = _ac.createGain();
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(300, _ac.currentTime);
       osc.frequency.exponentialRampToValueAtTime(150, _ac.currentTime + 0.25);
@@ -135,10 +137,9 @@
     } catch(e) {}
   }
 
-  // Unlock audio context on first interaction (mobile requirement)
   function _unlockAC() { if (_ac.state === 'suspended') _ac.resume(); }
   document.addEventListener('touchstart', _unlockAC, { once: true });
-  document.addEventListener('click',      _unlockAC, { once: true });
+  document.addEventListener('click', _unlockAC, { once: true });
 
   // ── Clock ──────────────────────────────────────────────────────────────
   setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }, 1000);
@@ -167,10 +168,10 @@
     scanCooldown = true; lastScanned = code;
     setTimeout(() => { scanCooldown = false; }, 3000);
 
-    const pit_stop     = document.getElementById('pit-stop').value.trim() || 'Main';
+    const pit_stop     = document.getElementById('pit-stop').value;
     const scanner_name = document.getElementById('scanner-name').value.trim();
     try {
-      const res  = await fetch('/api/scan', {
+      const res = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cyclist_code: code, pit_stop, scanner_name })
@@ -184,7 +185,7 @@
         showToast('⚠ ' + data.error, 'error');
       } else {
         playSuccessBeep();
-        showToast('✓ ' + data.cyclist_code + ' logged successfully' + (scanner_name ? ' by ' + scanner_name : ''), 'success');
+        showToast('✓ ' + data.cyclist_code + ' logged at ' + pit_stop + (scanner_name ? ' by ' + scanner_name : ''), 'success');
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
       }
     } catch (e) {
@@ -203,13 +204,11 @@
 
   // ── QR Scanner ─────────────────────────────────────────────────────────
   const html5QrCode = new Html5Qrcode('reader', { useBarCodeDetectorIfSupported: true });
-
   function onScanSuccess(decodedText) {
     const match = decodedText.match(/CC\d+/i);
     if (match) { saveScan(match[0].toUpperCase()); }
     else { playErrorBeep(); showToast('QR does not contain a valid CC code', 'error'); }
   }
-
   Html5Qrcode.getCameras().then(cameras => {
     if (!cameras || cameras.length === 0) { showToast('No camera found', 'error'); return; }
     const cfg = { fps: 25, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0, rememberLastUsedCamera: true, showTorchButtonIfSupported: true, experimentalFeatures: { useBarCodeDetectorIfSupported: true } };
@@ -221,10 +220,8 @@
   // ── Records ────────────────────────────────────────────────────────────
   async function fetchScans() {
     const res = await fetch('/api/scans');
-    scans = await res.json();
-    renderTable();
+    scans = await res.json(); renderTable();
   }
-
   function renderTable() {
     const q = document.getElementById('search').value.toLowerCase();
     const filtered = scans.filter(s =>
@@ -240,14 +237,11 @@
     }).join('');
     document.getElementById('table-container').innerHTML = '<table><thead><tr><th>#</th><th>Cyclist</th><th>Date / Time</th><th>Pit Stop</th><th>Scanner</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
-
   async function deleteScan(id) {
     if (!confirm('Delete this record?')) return;
     await fetch('/api/scan/' + id, { method: 'DELETE' });
-    scans = scans.filter(s => s.id !== id);
-    renderTable();
+    scans = scans.filter(s => s.id !== id); renderTable();
   }
-
   fetchScans();
 </script>
 </body>
