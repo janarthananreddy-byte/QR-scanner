@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Chennai Cyclothon 2026 - Pit Stop Scanner</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
@@ -122,7 +122,144 @@
     tbody tr:hover{background:#f0fdf4;}
     .code-badge{background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:999px;font-weight:700;}
     .empty{text-align:center;padding:40px;color:var(--gray);font-size:0.9rem;}
-    @media(max-width:420px){th:nth-child(1),td:nth-child(1){display:none;}}
+    
+    /* ====== RESPONSIVE – all Apple & Android devices ====== */
+
+    /* Prevent iOS text size adjustment */
+    body { -webkit-text-size-adjust: 100%; }
+
+    /* iPhone notch / home bar safe area */
+    body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    header {
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      padding-top: max(14px, env(safe-area-inset-top, 0px));
+    }
+
+    /* Remove 300 ms tap delay & blue flash on all interactive elements */
+    button, a, select, input { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+    /* ---- All inputs: 16 px = no iOS auto-zoom ---- */
+    #scanner-name, #pit-stop, #manual-code,
+    #search, .toolbar input, .pit-row input, .pit-row select,
+    .fields-row input, .fields-row select { font-size: 16px; }
+
+    /* ---- Minimum touch targets (Apple HIG: 44 px, Material: 48 dp) ---- */
+    #scanner-name, #pit-stop, #manual-code,
+    #search, .pit-row input, .pit-row select,
+    .fields-row input, .fields-row select { min-height: 48px; }
+    button.primary  { min-height: 50px; padding: 13px 22px; font-size: 1rem; border-radius: 10px; }
+    button.outline  { min-height: 46px; padding: 10px 16px; }
+    .del-btn        { min-width: 40px; min-height: 40px; font-size: 1.05rem; }
+    .tab-bar button { min-height: 50px; font-size: 0.9rem; }
+
+    /* ---- Scanner ---- */
+    .scanner-wrap { display: flex; justify-content: center; width: 100%; }
+    #reader { width: min(100%, 380px); max-width: 100%; }
+
+    /* ---- Records table: horizontal scroll fallback on all sizes ---- */
+    #table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
+
+    /* ============================================================
+       NARROW  ≤ 480 px  (phones in portrait)
+    ============================================================ */
+    @media (max-width: 480px) {
+      .tab { padding: 10px 12px; }
+
+      /* Scanner fills available width */
+      #reader { width: 100%; max-width: 100%; }
+
+      /* Fields stack vertically */
+      .fields-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .fields-row label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--gray);
+        margin-bottom: -4px;
+      }
+      .fields-row input,
+      .fields-row select { width: 100%; }
+      .fields-row .divider { display: none; }
+
+      /* Pit-stop select full width */
+      #pit-stop { width: 100%; }
+
+      /* Manual entry: taller input, bigger button */
+      .manual-row { gap: 8px; }
+      .manual-row input { min-height: 50px; font-size: 16px; border-radius: 10px; }
+      button.primary { min-height: 50px; white-space: nowrap; border-radius: 10px; }
+
+      /* Toast */
+      .toast { font-size: 0.95rem; border-radius: 12px; padding: 13px 16px; }
+
+      /* Toolbar: stacked */
+      .toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+      .export-btns, .toolbar-actions { display: flex; gap: 6px; }
+      .export-btns button, .toolbar-actions button { flex: 1; font-size: 0.9rem; }
+      #search { width: 100%; min-height: 46px; border-radius: 10px; }
+
+      /* Records → card layout (CSS-only, no JS change) */
+      #table-container table,
+      #table-container thead,
+      #table-container tbody,
+      #table-container th,
+      #table-container td,
+      #table-container tr { display: block; }
+      #table-container thead { display: none; }
+      #table-container tbody tr {
+        background: #fff;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        padding: 12px 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        border-bottom: none;
+      }
+      #table-container td { border: none; padding: 2px 0; }
+      /* ID – hidden */
+      #table-container td:nth-child(1) { display: none; }
+      /* Cyclist badge */
+      #table-container td:nth-child(2) { flex: 0 0 auto; }
+      /* Date/Time */
+      #table-container td:nth-child(3) { flex: 1; min-width: 100px; font-size: 0.82rem; }
+      /* Pit Stop */
+      #table-container td:nth-child(4) {
+        flex: 0 0 auto;
+        background: #f1f5f9;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #374151;
+      }
+      /* Delete */
+      #table-container td:nth-child(5) { margin-left: auto; }
+    }
+
+    /* ============================================================
+       MEDIUM  481 – 768 px  (large phones, small tablets)
+    ============================================================ */
+    @media (min-width: 481px) and (max-width: 768px) {
+      th:nth-child(1), td:nth-child(1) { display: none; }
+      .fields-row { flex-wrap: wrap; gap: 8px; }
+      #pit-stop { min-width: 140px; }
+    }
+
+    /* ============================================================
+       LARGE  ≥ 769 px  (tablets, desktop)
+    ============================================================ */
+    @media (min-width: 769px) {
+      #reader { width: min(100%, 400px); }
+      .tab { max-width: 680px; margin: 0 auto; padding: 20px 24px; }
+      .toolbar { flex-wrap: nowrap; }
+    }
     /* Menu Pages */
     .menu-page{position:fixed;inset:0;background:var(--bg);z-index:150;display:none;flex-direction:column;overflow-y:auto;}
     .menu-page.open{display:flex;}
