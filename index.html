@@ -107,23 +107,17 @@
   let scanCooldown = false;
 
   // ── Audio ──────────────────────────────────────────────────────────────
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const chimeAudio = new Audio('freesound_community-chime-sound-7143.mp3');
+  chimeAudio.volume = 0.6;
 
   function playSuccessBeep() {
     try {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.35);
+      chimeAudio.currentTime = 0;
+      chimeAudio.play().catch(() => {});
     } catch(e) {}
   }
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   function playErrorBeep() {
     try {
@@ -141,9 +135,13 @@
     } catch(e) {}
   }
 
-  // Resume audio context on first user interaction
-  document.addEventListener('touchstart', () => { if (audioCtx.state === 'suspended') audioCtx.resume(); }, { once: true });
-  document.addEventListener('click',      () => { if (audioCtx.state === 'suspended') audioCtx.resume(); }, { once: true });
+  // Unlock audio on first touch/click (required by mobile browsers)
+  function unlockAudio() {
+    chimeAudio.play().then(() => { chimeAudio.pause(); chimeAudio.currentTime = 0; }).catch(() => {});
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  document.addEventListener('touchstart', unlockAudio, { once: true });
+  document.addEventListener('click',      unlockAudio, { once: true });
 
   // ── Clock ──────────────────────────────────────────────────────────────
   function updateClock() {
@@ -177,7 +175,7 @@
     lastScanned = code;
     setTimeout(() => { scanCooldown = false; }, 3000);
 
-    const pit_stop    = document.getElementById('pit-stop').value.trim() || 'Main';
+    const pit_stop     = document.getElementById('pit-stop').value.trim() || 'Main';
     const scanner_name = document.getElementById('scanner-name').value.trim();
 
     try {
@@ -189,7 +187,6 @@
       const data = await res.json();
 
       if (res.status === 409) {
-        // Duplicate rider
         playErrorBeep();
         showToast('⚠ Rider ' + code + ' is already scanned', 'warning');
       } else if (!res.ok) {
@@ -272,7 +269,7 @@
     }
 
     const rows = filtered.map(s => {
-      const dt   = new Date(s.scanned_at);
+      const dt = new Date(s.scanned_at);
       return '<tr>' +
         '<td>' + s.id + '</td>' +
         '<td><span class="code-badge">' + s.cyclist_code + '</span></td>' +
