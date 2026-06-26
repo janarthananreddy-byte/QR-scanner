@@ -123,7 +123,7 @@
     .code-badge{background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:999px;font-weight:700;}
     .empty{text-align:center;padding:40px;color:var(--gray);font-size:0.9rem;}
     
-    /* ====== RESPONSIVE ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ all Apple & Android devices ====== */
+    /* ====== RESPONSIVE ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ all Apple & Android devices ====== */
 
     /* Prevent iOS text size adjustment */
     body { -webkit-text-size-adjust: 100%; }
@@ -161,7 +161,7 @@
     #table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
 
     /* ============================================================
-       NARROW  ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¤ 480 px  (phones in portrait)
+       NARROW  ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¤ 480 px  (phones in portrait)
     ============================================================ */
     @media (max-width: 480px) {
       .tab { padding: 10px 12px; }
@@ -202,7 +202,7 @@
       .export-btns button, .toolbar-actions button { flex: 1; font-size: 0.9rem; }
       #search { width: 100%; min-height: 46px; border-radius: 10px; }
 
-      /* Records ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ card layout (CSS-only, no JS change) */
+      /* Records ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ card layout (CSS-only, no JS change) */
       #table-container table,
       #table-container thead,
       #table-container tbody,
@@ -223,7 +223,7 @@
         border-bottom: none;
       }
       #table-container td { border: none; padding: 2px 0; }
-      /* ID ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ hidden */
+      /* ID ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ hidden */
       #table-container td:nth-child(1) { display: none; }
       /* Cyclist badge */
       #table-container td:nth-child(2) { flex: 0 0 auto; }
@@ -244,7 +244,7 @@
     }
 
     /* ============================================================
-       MEDIUM  481 ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 768 px  (large phones, small tablets)
+       MEDIUM  481 ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ 768 px  (large phones, small tablets)
     ============================================================ */
     @media (min-width: 481px) and (max-width: 768px) {
       th:nth-child(1), td:nth-child(1) { display: none; }
@@ -253,7 +253,7 @@
     }
 
     /* ============================================================
-       LARGE  ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¥ 769 px  (tablets, desktop)
+       LARGE  ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¥ 769 px  (tablets, desktop)
     ============================================================ */
     @media (min-width: 769px) {
       #reader { width: min(100%, 300px); }
@@ -323,7 +323,38 @@
     .form-msg.ok{color:var(--green);}
     .form-msg.err{color:var(--red);}
   
-</style>
+
+    /* ---- Scan tab: scanner + fields side by side ---- */
+    #scan {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    #scan .scanner-wrap {
+      flex: 0 0 auto;
+    }
+    #scan .fields-row {
+      flex: 1;
+      min-width: 130px;
+      flex-direction: column;
+      align-items: stretch;
+      margin-top: 0;
+      gap: 8px;
+    }
+    #scan .fields-row label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--gray);
+      margin-bottom: -4px;
+    }
+    #scan .fields-row input,
+    #scan .fields-row select { width: 100%; }
+    #scan .fields-row .divider { display: none; }
+    #scan .manual-row,
+    #scan #toast { flex: 0 0 100%; }
+
+  </style>
 </head>
 <body>
 
