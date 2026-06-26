@@ -123,7 +123,7 @@
     .code-badge{background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:999px;font-weight:700;}
     .empty{text-align:center;padding:40px;color:var(--gray);font-size:0.9rem;}
     
-    /* ====== RESPONSIVE â all Apple & Android devices ====== */
+    /* ====== RESPONSIVE Ã¢ÂÂ all Apple & Android devices ====== */
 
     /* Prevent iOS text size adjustment */
     body { -webkit-text-size-adjust: 100%; }
@@ -161,7 +161,7 @@
     #table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
 
     /* ============================================================
-       NARROW  â¤ 480 px  (phones in portrait)
+       NARROW  Ã¢ÂÂ¤ 480 px  (phones in portrait)
     ============================================================ */
     @media (max-width: 480px) {
       .tab { padding: 10px 12px; }
@@ -202,7 +202,7 @@
       .export-btns button, .toolbar-actions button { flex: 1; font-size: 0.9rem; }
       #search { width: 100%; min-height: 46px; border-radius: 10px; }
 
-      /* Records â card layout (CSS-only, no JS change) */
+      /* Records Ã¢ÂÂ card layout (CSS-only, no JS change) */
       #table-container table,
       #table-container thead,
       #table-container tbody,
@@ -223,7 +223,7 @@
         border-bottom: none;
       }
       #table-container td { border: none; padding: 2px 0; }
-      /* ID â hidden */
+      /* ID Ã¢ÂÂ hidden */
       #table-container td:nth-child(1) { display: none; }
       /* Cyclist badge */
       #table-container td:nth-child(2) { flex: 0 0 auto; }
@@ -244,7 +244,7 @@
     }
 
     /* ============================================================
-       MEDIUM  481 â 768 px  (large phones, small tablets)
+       MEDIUM  481 Ã¢ÂÂ 768 px  (large phones, small tablets)
     ============================================================ */
     @media (min-width: 481px) and (max-width: 768px) {
       th:nth-child(1), td:nth-child(1) { display: none; }
@@ -253,7 +253,7 @@
     }
 
     /* ============================================================
-       LARGE  â¥ 769 px  (tablets, desktop)
+       LARGE  Ã¢ÂÂ¥ 769 px  (tablets, desktop)
     ============================================================ */
     @media (min-width: 769px) {
       #reader { width: min(100%, 400px); }
@@ -433,10 +433,11 @@
     <div class="divider"></div>
     <label>Pit Stop</label>
     <select id="pit-stop" onchange="highlightActiveCp()">
+      <option value="Start">Start</option>
       <option value="CP1">CP1</option><option value="CP2">CP2</option>
       <option value="CP3">CP3</option><option value="CP4">CP4</option>
       <option value="CP5">CP5</option>
-      <option value="Start &amp; Finish">Start &amp; Finish</option>
+      <option value="Finish">Finish</option>
     </select>
   </div>
   <div class="manual-row" style="margin-top:12px;">
