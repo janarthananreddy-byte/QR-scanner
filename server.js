@@ -61,8 +61,7 @@ app.delete('/api/users/:id', async (req, res) => {
 app.post('/api/scan', async (req, res) => {
   const { cyclist_code, pit_stop, scanner_name } = req.body;
   if (!cyclist_code) return res.status(400).json({ error: 'Missing cyclist_code' });
-  const code = cyclist_code.trim().toUpperCase();
-  if (!/^CC\d+$/.test(code)) return res.status(400).json({ error: 'Invalid code' });
+  const code = cyclist_code.trim();
   const cp = pit_stop || 'CP1';
   try {
     const { data: dup } = await supabase.from('scans').select('id').eq('cyclist_code', code).eq('pit_stop', cp).maybeSingle();
