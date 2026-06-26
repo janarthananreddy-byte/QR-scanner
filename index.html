@@ -67,7 +67,7 @@
     .tab{display:none;padding:16px;max-width:600px;margin:0 auto;}
     .tab.active{display:block;}
     .scanner-wrap{display:flex;justify-content:center;}
-    #reader{width:100%;max-width:300px;border-radius:12px;overflow:hidden;border:2px solid var(--border);background:#000;}
+    #reader{width:100%;max-width:200px;border-radius:12px;overflow:hidden;border:2px solid var(--border);background:#000;}
     .fields-row{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:nowrap;}
     .fields-row label{font-size:0.8rem;font-weight:600;white-space:nowrap;color:#374151;}
     .fields-row input{flex:2;min-width:0;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;background:#fff;}
@@ -123,7 +123,7 @@
     .code-badge{background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:999px;font-weight:700;}
     .empty{text-align:center;padding:40px;color:var(--gray);font-size:0.9rem;}
     
-    /* ====== RESPONSIVE Ã¢ÂÂ all Apple & Android devices ====== */
+    /* ====== RESPONSIVE ÃÂ¢ÃÂÃÂ all Apple & Android devices ====== */
 
     /* Prevent iOS text size adjustment */
     body { -webkit-text-size-adjust: 100%; }
@@ -155,19 +155,19 @@
 
     /* ---- Scanner ---- */
     .scanner-wrap { display: flex; justify-content: center; width: 100%; }
-    #reader { width: min(100%, 380px); max-width: 100%; }
+    #reader { width: min(100%, 200px); max-width: 100%; }
 
     /* ---- Records table: horizontal scroll fallback on all sizes ---- */
     #table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
 
     /* ============================================================
-       NARROW  Ã¢ÂÂ¤ 480 px  (phones in portrait)
+       NARROW  ÃÂ¢ÃÂÃÂ¤ 480 px  (phones in portrait)
     ============================================================ */
     @media (max-width: 480px) {
       .tab { padding: 10px 12px; }
 
       /* Scanner fills available width */
-      #reader { width: 100%; max-width: 100%; }
+      #reader { width: 100%; max-width: 200px; }
 
       /* Fields stack vertically */
       .fields-row {
@@ -202,7 +202,7 @@
       .export-btns button, .toolbar-actions button { flex: 1; font-size: 0.9rem; }
       #search { width: 100%; min-height: 46px; border-radius: 10px; }
 
-      /* Records Ã¢ÂÂ card layout (CSS-only, no JS change) */
+      /* Records ÃÂ¢ÃÂÃÂ card layout (CSS-only, no JS change) */
       #table-container table,
       #table-container thead,
       #table-container tbody,
@@ -223,7 +223,7 @@
         border-bottom: none;
       }
       #table-container td { border: none; padding: 2px 0; }
-      /* ID Ã¢ÂÂ hidden */
+      /* ID ÃÂ¢ÃÂÃÂ hidden */
       #table-container td:nth-child(1) { display: none; }
       /* Cyclist badge */
       #table-container td:nth-child(2) { flex: 0 0 auto; }
@@ -244,7 +244,7 @@
     }
 
     /* ============================================================
-       MEDIUM  481 Ã¢ÂÂ 768 px  (large phones, small tablets)
+       MEDIUM  481 ÃÂ¢ÃÂÃÂ 768 px  (large phones, small tablets)
     ============================================================ */
     @media (min-width: 481px) and (max-width: 768px) {
       th:nth-child(1), td:nth-child(1) { display: none; }
@@ -253,10 +253,10 @@
     }
 
     /* ============================================================
-       LARGE  Ã¢ÂÂ¥ 769 px  (tablets, desktop)
+       LARGE  ÃÂ¢ÃÂÃÂ¥ 769 px  (tablets, desktop)
     ============================================================ */
     @media (min-width: 769px) {
-      #reader { width: min(100%, 400px); }
+      #reader { width: min(100%, 220px); }
       .tab { max-width: 680px; margin: 0 auto; padding: 20px 24px; }
       .toolbar { flex-wrap: nowrap; }
     }
