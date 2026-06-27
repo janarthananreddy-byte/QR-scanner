@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+.<!DOCTYPE html>
 <!-- v2 -->
 <html lang="en">
 <head>
@@ -811,7 +811,7 @@ function submitManual(){var c=document.getElementById('manual-code').value.trim(
 document.getElementById('manual-code').addEventListener('keydown',function(e){if(e.key==='Enter')submitManual();});
 
 var html5QrCode=new Html5Qrcode('reader',{useBarCodeDetectorIfSupported:true});
-Html5Qrcode.getCameras().then(function(cameras){if(!cameras||!cameras.length){showToast('No camera found','error');return;}var cfg={fps:25,qrbox:{width:200,height:200},aspectRatio:1.0,rememberLastUsedCamera:true,showTorchButtonIfSupported:true};function onDecode(d){var m=d.match(/CC[0-9]+/i);if(m)saveScan(m[0].toUpperCase());else{playErrorBeep();showToast('Invalid QR code','error');}}html5QrCode.start({facingMode:'environment'},cfg,onDecode,function(){}).catch(function(){html5QrCode.start(cameras[0].id,cfg,onDecode,function(){}).catch(function(err){showToast('Camera error: '+err,'error');});});}).catch(function(){showToast('Camera permission denied','error');});
+Html5Qrcode.getCameras().then(function(cameras){if(!cameras||!cameras.length){showToast('No camera found','error');return;}var cfg={fps:25,qrbox:{width:200,height:200},aspectRatio:1.0,rememberLastUsedCamera:true,showTorchButtonIfSupported:true};function onDecode(d){var code=d.trim();if(code)saveScan(code);else{playErrorBeep();showToast('Invalid QR code','error');}}html5QrCode.start({facingMode:'environment'},cfg,onDecode,function(){}).catch(function(){html5QrCode.start(cameras[0].id,cfg,onDecode,function(){}).catch(function(err){showToast('Camera error: '+err,'error');});});}).catch(function(){showToast('Camera permission denied','error');});
 
 function fetchScans(){fetch('/api/scans').then(function(r){return r.json();}).then(function(data){scans=data;renderTable();var el=document.getElementById('last-refresh');if(el)el.textContent='Updated '+new Date().toLocaleTimeString();}).catch(function(){});}
 function renderTable(){var q=(document.getElementById('search')?document.getElementById('search').value||'':'').toLowerCase();var f=scans.filter(function(s){return s.cyclist_code.toLowerCase().includes(q)||(s.pit_stop||'').toLowerCase().includes(q)||(s.scanner_name||'').toLowerCase().includes(q);});document.getElementById('scan-count').textContent=f.length+' record'+(f.length!==1?'s':'')+' shown';document.getElementById('table-container').innerHTML=f.length?'<table><thead><tr><th>#</th><th>Cyclist</th><th>Date/Time</th><th>CP</th><th>Scanner</th></tr></thead><tbody>'+f.map(function(s){var d=new Date(s.scanned_at);return'<tr><td>'+s.id+'</td><td><span class="code-badge">'+s.cyclist_code+'</span></td><td>'+d.toLocaleDateString()+'<br><small style="color:#6b7280">'+d.toLocaleTimeString()+'</small></td><td>'+(s.pit_stop||'')+'</td><td>'+(s.scanner_name||'-')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No records found.</div>';}
