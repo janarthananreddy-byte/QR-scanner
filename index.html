@@ -423,6 +423,16 @@
     .ts-table .ts-btn{background:none;border:1px solid var(--border);border-radius:5px;width:28px;height:28px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;}
     .ts-table .ts-btn.edit:hover{background:#eef2ff;border-color:#6366f1;}
     .ts-table .ts-btn.del:hover{background:#fee2e2;border-color:#dc2626;}
+    #page-tshirt .page-body{max-width:100%;padding:12px;}
+    @media(min-width:768px){#page-tshirt .page-body{max-width:900px;}}
+    @media(max-width:480px){
+      .ts-form-grid{grid-template-columns:1fr;}
+      .ts-stat-card .ts-stat-num{font-size:1.2rem;}
+      .ts-stat-card .ts-stat-lbl{font-size:0.68rem;}
+      .ts-table{font-size:0.75rem;}
+      .ts-table th,.ts-table td{padding:6px 6px;}
+      .ts-detail-grid{grid-template-columns:1fr;}
+    }
   </style>
 </head>
 <body>
