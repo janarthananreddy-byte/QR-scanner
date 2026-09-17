@@ -109,6 +109,54 @@ app.post('/api/reset', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// PIT STOPS CRUD
+app.get('/api/pit-stops', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('pit_stops').select('*').order('sort_order').order('name');
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/pit-stops', async (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Name is required' });
+  try {
+    const { data: existing } = await supabase.from('pit_stops').select('id').eq('name', name.trim()).maybeSingle();
+    if (existing) return res.status(409).json({ error: 'Pit stop "' + name.trim() + '" already exists' });
+    const { data: maxOrder } = await supabase.from('pit_stops').select('sort_order').order('sort_order', { ascending: false }).limit(1);
+    const nextOrder = (maxOrder && maxOrder.length ? maxOrder[0].sort_order : 0) + 1;
+    const { data, error } = await supabase.from('pit_stops').insert({ name: name.trim(), sort_order: nextOrder }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/pit-stops/:id', async (req, res) => {
+  const { name, sort_order } = req.body;
+  const updates = {};
+  if (name !== undefined) updates.name = name.trim();
+  if (sort_order !== undefined) updates.sort_order = sort_order;
+  if (!Object.keys(updates).length) return res.status(400).json({ error: 'Nothing to update' });
+  try {
+    if (updates.name) {
+      const { data: existing } = await supabase.from('pit_stops').select('id').eq('name', updates.name).neq('id', req.params.id).maybeSingle();
+      if (existing) return res.status(409).json({ error: 'Pit stop "' + updates.name + '" already exists' });
+    }
+    const { data, error } = await supabase.from('pit_stops').update(updates).eq('id', req.params.id).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/pit-stops/:id', async (req, res) => {
+  try {
+    const { error } = await supabase.from('pit_stops').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // T-SHIRT ENDPOINTS
 app.get('/api/tshirt/:cc_id', async (req, res) => {
   const cc_id = req.params.cc_id.trim().toUpperCase();
