@@ -26,8 +26,15 @@ app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Missing credentials' });
   try {
-    const { data } = await supabase.from('app_users').select('id,username').eq('username', username.trim()).eq('password', password).maybeSingle();
-    if (data) res.json({ ok: true, username: data.username });
+    const { data } = await supabase.from('app_users').select('id,username,role').eq('username', username.trim()).eq('password', password).maybeSingle();
+    if (data) {
+      let permissions = [];
+      if (data.role) {
+        const { data: roleData } = await supabase.from('roles').select('permissions').eq('name', data.role).maybeSingle();
+        if (roleData && roleData.permissions) permissions = roleData.permissions;
+      }
+      res.json({ ok: true, username: data.username, role: data.role || '', permissions });
+    }
     else res.status(401).json({ error: 'Invalid username or password' });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -141,13 +148,14 @@ app.get('/api/roles', async (req, res) => {
 });
 
 app.post('/api/roles', async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, permissions } = req.body;
   if (!name || !name.trim()) return res.status(400).json({ error: 'Role name is required' });
   try {
     const { data: existing } = await supabase.from('roles').select('id').eq('name', name.trim()).maybeSingle();
     if (existing) return res.status(409).json({ error: 'Role "' + name.trim() + '" already exists' });
     const record = { name: name.trim() };
     if (description) record.description = description.trim();
+    if (permissions) record.permissions = permissions;
     const { data, error } = await supabase.from('roles').insert(record).select().single();
     if (error) throw error;
     res.json(data);
@@ -155,10 +163,11 @@ app.post('/api/roles', async (req, res) => {
 });
 
 app.put('/api/roles/:id', async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, permissions } = req.body;
   const updates = {};
   if (name !== undefined) updates.name = name.trim();
   if (description !== undefined) updates.description = description.trim();
+  if (permissions !== undefined) updates.permissions = permissions;
   if (!Object.keys(updates).length) return res.status(400).json({ error: 'Nothing to update' });
   try {
     if (updates.name) {
