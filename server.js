@@ -237,6 +237,42 @@ app.delete('/api/pit-stops/:id', async (req, res) => {
 });
 
 // T-SHIRT ENDPOINTS
+app.post('/api/tshirt', async (req, res) => {
+  const { cc_id, name, first_name, last_name, cycle, cycle_brand, size, payment_date, payment_status, payment_method, distance, event_name, event_date, preferred_collection_center } = req.body;
+  if (!cc_id) return res.status(400).json({ error: 'CC ID is required' });
+  const code = cc_id.trim().toUpperCase();
+  try {
+    const { data: existing } = await supabase.from('tshirts').select('id').eq('cc_id', code).maybeSingle();
+    if (existing) return res.status(409).json({ error: 'Rider ' + code + ' already exists' });
+    const { data, error } = await supabase.from('tshirts').insert({ cc_id: code, name: name || '', first_name: first_name || '', last_name: last_name || '', cycle: cycle || '', cycle_brand: cycle_brand || '', size: (size || '').toUpperCase(), payment_date: payment_date || '', payment_status: payment_status || '', payment_method: payment_method || '', distance: distance || '', event_name: event_name || '', event_date: event_date || '', preferred_collection_center: preferred_collection_center || '' }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/tshirt/:cc_id', async (req, res) => {
+  const cc_id = req.params.cc_id.trim().toUpperCase();
+  const fields = {};
+  ['name','first_name','last_name','cycle','cycle_brand','size','payment_date','payment_status','payment_method','distance','event_name','event_date','preferred_collection_center'].forEach(f => {
+    if (req.body[f] !== undefined) fields[f] = f === 'size' ? (req.body[f] || '').toUpperCase() : (req.body[f] || '');
+  });
+  try {
+    const { data, error } = await supabase.from('tshirts').update(fields).eq('cc_id', cc_id).select().single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Rider not found' });
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/tshirt/:cc_id', async (req, res) => {
+  const cc_id = req.params.cc_id.trim().toUpperCase();
+  try {
+    const { error } = await supabase.from('tshirts').delete().eq('cc_id', cc_id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/tshirt/:cc_id', async (req, res) => {
   const cc_id = req.params.cc_id.trim().toUpperCase();
   try {

@@ -415,6 +415,14 @@
     .ts-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:0.85rem;}
     .ts-dlbl{display:block;font-size:0.72rem;color:var(--gray);text-transform:uppercase;font-weight:600;}
     .ts-dval{display:block;font-weight:600;color:#374151;}
+    .ts-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    .ts-form-grid label{display:block;font-size:0.75rem;font-weight:600;color:#374151;margin-bottom:3px;}
+    .ts-form-grid input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;}
+    .ts-form-grid input:focus{outline:none;border-color:var(--green);}
+    .ts-table .ts-act{display:flex;gap:3px;}
+    .ts-table .ts-btn{background:none;border:1px solid var(--border);border-radius:5px;width:28px;height:28px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;}
+    .ts-table .ts-btn.edit:hover{background:#eef2ff;border-color:#6366f1;}
+    .ts-table .ts-btn.del:hover{background:#fee2e2;border-color:#dc2626;}
   </style>
 </head>
 <body>
@@ -857,6 +865,32 @@
       <div class="ts-stat-card pending" id="ts-pending"><div class="ts-stat-num">0</div><div class="ts-stat-lbl">Pending</div></div>
     </div>
 
+    <!-- Add / Edit Rider -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-weight:700;font-size:0.9rem;" id="ts-form-title">&#10133; Add Rider</span>
+        <button id="ts-form-cancel" onclick="tsCancelEdit()" style="display:none;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:0.8rem;cursor:pointer;">Cancel Edit</button>
+      </div>
+      <div class="ts-form-grid">
+        <div><label>CC ID *</label><input id="ts-f-ccid" type="text" placeholder="CC ID" style="text-transform:uppercase;"></div>
+        <div><label>Name</label><input id="ts-f-name" type="text" placeholder="Full Name"></div>
+        <div><label>First Name</label><input id="ts-f-fname" type="text" placeholder="First Name"></div>
+        <div><label>Last Name</label><input id="ts-f-lname" type="text" placeholder="Last Name"></div>
+        <div><label>Size</label><input id="ts-f-size" type="text" placeholder="S/M/L/XL/XXL" style="text-transform:uppercase;"></div>
+        <div><label>Distance</label><input id="ts-f-distance" type="text" placeholder="Distance"></div>
+        <div><label>Cycle</label><input id="ts-f-cycle" type="text" placeholder="Cycle Number"></div>
+        <div><label>Cycle Brand</label><input id="ts-f-cbrand" type="text" placeholder="Cycle Brand"></div>
+        <div><label>Payment Status</label><input id="ts-f-pstatus" type="text" placeholder="Paid/Pending"></div>
+        <div><label>Payment Method</label><input id="ts-f-pmethod" type="text" placeholder="UPI/Cash/Card"></div>
+        <div><label>Payment Date</label><input id="ts-f-pdate" type="text" placeholder="Payment Date"></div>
+        <div><label>Event Name</label><input id="ts-f-event" type="text" placeholder="Event Name"></div>
+        <div><label>Event Date</label><input id="ts-f-edate" type="text" placeholder="Event Date"></div>
+        <div><label>Collection Center</label><input id="ts-f-center" type="text" placeholder="Preferred Center"></div>
+      </div>
+      <button id="ts-form-btn" onclick="tsSaveRider()" style="width:100%;margin-top:10px;background:var(--green);color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">Add Rider</button>
+      <div id="ts-form-msg" style="margin-top:8px;font-size:0.85rem;min-height:1.2em;text-align:center;"></div>
+    </div>
+
     <!-- Lookup -->
     <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
       <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;">&#128269; Lookup Rider</div>
@@ -1168,14 +1202,23 @@ function sLoadDbSize(){var el=document.getElementById('s-dbsize-content');el.inn
 
 // T-Shirt functions
 var tsAllData=[];
+var tsEditingCcId=null;
 function tsLoadStats(){fetch('/api/tshirts/stats').then(function(r){return r.json();}).then(function(d){document.querySelector('#ts-total .ts-stat-num').textContent=d.total||0;document.querySelector('#ts-delivered .ts-stat-num').textContent=d.delivered||0;document.querySelector('#ts-pending .ts-stat-num').textContent=d.pending||0;}).catch(function(){});}
 function tsLoadAll(){fetch('/api/tshirts').then(function(r){return r.json();}).then(function(data){tsAllData=data;tsRenderTable(data);}).catch(function(){document.getElementById('ts-table-wrap').innerHTML='<div class="empty">Failed to load.</div>';});}
-function tsRenderTable(data){if(!data.length){document.getElementById('ts-table-wrap').innerHTML='<div class="empty" style="padding:20px;">No riders found. Upload data first.</div>';return;}
-var html='<table class="ts-table"><thead><tr><th>#</th><th>CC ID</th><th>Name</th><th>Size</th><th>Distance</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead><tbody>';
-data.forEach(function(r,i){var status=r.delivered?'<span style="color:var(--green);font-weight:700;">Delivered</span>':'<span style="color:var(--amber);font-weight:700;">Pending</span>';
-html+='<tr><td>'+(i+1)+'</td><td><strong>'+r.cc_id+'</strong></td><td>'+(r.name||r.first_name+' '+r.last_name||'-')+'</td><td>'+(r.size||'-')+'</td><td>'+(r.distance||'-')+'</td><td>'+(r.payment_status||'-')+'</td><td>'+status+'</td><td>'+(r.delivered?'<span style="color:var(--gray);font-size:0.8rem;">Done</span>':'<button onclick="tsDeliver(\''+r.cc_id+'\')" style="background:var(--green);color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;">Deliver</button>')+'</td></tr>';});
+function tsRenderTable(data){if(!data.length){document.getElementById('ts-table-wrap').innerHTML='<div class="empty" style="padding:20px;">No riders found. Add one above or upload data.</div>';return;}
+var html='<table class="ts-table"><thead><tr><th>#</th><th>CC ID</th><th>Name</th><th>Size</th><th>Distance</th><th>Payment</th><th>Delivery</th><th>Actions</th></tr></thead><tbody>';
+data.forEach(function(r,i){var status=r.delivered?'<span style="color:var(--green);font-weight:600;font-size:0.78rem;">Delivered</span>':'<span style="color:var(--amber);font-weight:600;font-size:0.78rem;">Pending</span>';
+html+='<tr><td>'+(i+1)+'</td><td><strong>'+r.cc_id+'</strong></td><td>'+(r.name||(r.first_name?r.first_name+' '+r.last_name:'-'))+'</td><td>'+(r.size||'-')+'</td><td>'+(r.distance||'-')+'</td><td>'+(r.payment_status||'-')+'</td><td>'+status+'</td><td><div class="ts-act">'+(r.delivered?'':'<button class="ts-btn" title="Deliver" onclick="tsDeliver(\''+r.cc_id+'\')" style="color:var(--green);">&#10004;</button>')+'<button class="ts-btn edit" title="Edit" onclick="tsEditRider(\''+r.cc_id+'\')">&#9998;</button><button class="ts-btn del" title="Delete" onclick="tsDeleteRider(\''+r.cc_id+'\')">&#128465;</button></div></td></tr>';});
 html+='</tbody></table>';document.getElementById('ts-table-wrap').innerHTML=html;}
 function tsFilterTable(){var q=document.getElementById('ts-filter').value.trim().toLowerCase();if(!q){tsRenderTable(tsAllData);return;}var filtered=tsAllData.filter(function(r){return (r.cc_id||'').toLowerCase().indexOf(q)!==-1||(r.name||'').toLowerCase().indexOf(q)!==-1||(r.first_name||'').toLowerCase().indexOf(q)!==-1||(r.last_name||'').toLowerCase().indexOf(q)!==-1;});tsRenderTable(filtered);}
+function tsGetFormData(){return{cc_id:document.getElementById('ts-f-ccid').value.trim(),name:document.getElementById('ts-f-name').value.trim(),first_name:document.getElementById('ts-f-fname').value.trim(),last_name:document.getElementById('ts-f-lname').value.trim(),size:document.getElementById('ts-f-size').value.trim(),distance:document.getElementById('ts-f-distance').value.trim(),cycle:document.getElementById('ts-f-cycle').value.trim(),cycle_brand:document.getElementById('ts-f-cbrand').value.trim(),payment_status:document.getElementById('ts-f-pstatus').value.trim(),payment_method:document.getElementById('ts-f-pmethod').value.trim(),payment_date:document.getElementById('ts-f-pdate').value.trim(),event_name:document.getElementById('ts-f-event').value.trim(),event_date:document.getElementById('ts-f-edate').value.trim(),preferred_collection_center:document.getElementById('ts-f-center').value.trim()};}
+function tsClearForm(){['ts-f-ccid','ts-f-name','ts-f-fname','ts-f-lname','ts-f-size','ts-f-distance','ts-f-cycle','ts-f-cbrand','ts-f-pstatus','ts-f-pmethod','ts-f-pdate','ts-f-event','ts-f-edate','ts-f-center'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('ts-form-msg').textContent='';}
+function tsCancelEdit(){tsEditingCcId=null;tsClearForm();document.getElementById('ts-f-ccid').readOnly=false;document.getElementById('ts-form-title').innerHTML='&#10133; Add Rider';document.getElementById('ts-form-btn').textContent='Add Rider';document.getElementById('ts-form-btn').style.background='var(--green)';document.getElementById('ts-form-cancel').style.display='none';}
+function tsSaveRider(){var d=tsGetFormData();var msg=document.getElementById('ts-form-msg');if(!d.cc_id){msg.style.color='var(--red)';msg.textContent='CC ID is required.';return;}
+if(tsEditingCcId){fetch('/api/tshirt/'+encodeURIComponent(tsEditingCcId),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(r){return r.json().then(function(j){return{status:r.status,data:j};});}).then(function(res){if(res.status===200){msg.style.color='var(--green)';msg.textContent='Rider '+tsEditingCcId+' updated!';tsCancelEdit();tsLoadStats();tsLoadAll();}else{msg.style.color='var(--red)';msg.textContent=res.data.error||'Update failed.';}}).catch(function(){msg.style.color='var(--red)';msg.textContent='Network error.';});}
+else{fetch('/api/tshirt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(r){return r.json().then(function(j){return{status:r.status,data:j};});}).then(function(res){if(res.status===200||res.status===201){msg.style.color='var(--green)';msg.textContent='Rider '+d.cc_id+' added!';tsClearForm();tsLoadStats();tsLoadAll();}else{msg.style.color='var(--red)';msg.textContent=res.data.error||'Failed.';}}).catch(function(){msg.style.color='var(--red)';msg.textContent='Network error.';});}}
+function tsEditRider(ccId){var r=tsAllData.find(function(x){return x.cc_id===ccId;});if(!r)return;tsEditingCcId=ccId;document.getElementById('ts-f-ccid').value=r.cc_id;document.getElementById('ts-f-ccid').readOnly=true;document.getElementById('ts-f-name').value=r.name||'';document.getElementById('ts-f-fname').value=r.first_name||'';document.getElementById('ts-f-lname').value=r.last_name||'';document.getElementById('ts-f-size').value=r.size||'';document.getElementById('ts-f-distance').value=r.distance||'';document.getElementById('ts-f-cycle').value=r.cycle||'';document.getElementById('ts-f-cbrand').value=r.cycle_brand||'';document.getElementById('ts-f-pstatus').value=r.payment_status||'';document.getElementById('ts-f-pmethod').value=r.payment_method||'';document.getElementById('ts-f-pdate').value=r.payment_date||'';document.getElementById('ts-f-event').value=r.event_name||'';document.getElementById('ts-f-edate').value=r.event_date||'';document.getElementById('ts-f-center').value=r.preferred_collection_center||'';document.getElementById('ts-form-title').innerHTML='&#9998; Edit Rider: '+ccId;document.getElementById('ts-form-btn').textContent='Update Rider';document.getElementById('ts-form-btn').style.background='#4f46e5';document.getElementById('ts-form-cancel').style.display='';document.getElementById('page-tshirt').querySelector('.page-body').scrollTop=0;}
+function tsDeleteRider(ccId){if(!confirm('Delete rider '+ccId+'? This cannot be undone.'))return;fetch('/api/tshirt/'+encodeURIComponent(ccId),{method:'DELETE'}).then(function(r){return r.json().then(function(j){return{status:r.status,data:j};});}).then(function(res){if(res.data.ok){tsLoadStats();tsLoadAll();}else{alert(res.data.error||'Delete failed.');}}).catch(function(){alert('Network error.');});}
 function tsLookup(){var id=document.getElementById('ts-lookup-id').value.trim();var el=document.getElementById('ts-lookup-result');if(!id){el.innerHTML='<span style="color:var(--red);font-size:0.85rem;">Enter a CC ID</span>';return;}
 el.innerHTML='<span style="color:var(--gray);font-size:0.85rem;">Searching...</span>';
 fetch('/api/tshirt/'+encodeURIComponent(id)).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(res){if(res.status===404){el.innerHTML='<span style="color:var(--red);font-size:0.85rem;">'+res.data.error+'</span>';return;}
