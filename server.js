@@ -266,9 +266,13 @@ app.post('/api/tshirts/bulk', async (req, res) => {
   const records = rows.map(r => ({
     cc_id: String(r.cc_id || r.CC_ID || r['CC ID'] || r['CC_ID'] || '').trim().toUpperCase(),
     name: String(r.name || r.Name || r.NAME || r['Rider Name'] || '').trim(),
+    first_name: String(r.first_name || r['First Name'] || r.FirstName || r.FIRST_NAME || '').trim(),
+    last_name: String(r.last_name || r['Last Name'] || r.LastName || r.LAST_NAME || '').trim(),
+    cycle: String(r.cycle || r.Cycle || r.CYCLE || r['Cycle Number'] || '').trim(),
+    cycle_brand: String(r.cycle_brand || r['Cycle Brand'] || r.CycleBrand || r.CYCLE_BRAND || '').trim(),
     size: String(r.size || r.Size || r.SIZE || r['T-Shirt Size'] || r['Tshirt Size'] || r.tshirt_size || '').trim().toUpperCase()
   })).filter(r => r.cc_id && r.cc_id.length > 0);
-  if (!records.length) return res.status(400).json({ error: 'No valid rows found. Check column names: cc_id, name, size' });
+  if (!records.length) return res.status(400).json({ error: 'No valid rows found. Check column names: cc_id, name, first_name, last_name, cycle, cycle_brand, size' });
   try {
     const { error } = await supabase.from('tshirts').upsert(records, { onConflict: 'cc_id' });
     if (error) throw error;
