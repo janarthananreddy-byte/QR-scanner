@@ -950,38 +950,29 @@
     <button class="page-back" onclick="closePage('transaction')">&#8592; Back</button>
     <span class="page-ttl">&#128230; Transaction</span>
   </div>
-  <div class="page-body">
-    <div class="ts-tabs">
-      <button class="ts-tab active" onclick="txSwitchTab('list',this)">&#128196; Transactions</button>
-      <button class="ts-tab" onclick="txSwitchTab('issue',this)">&#10133; Issue Item</button>
+  <div class="page-body" style="padding:12px;">
+    <!-- Issue Item Form -->
+    <div class="ts-section" style="margin-bottom:16px;">
+      <span class="ts-section-title">&#10133; Issue Free Goods</span>
+      <div class="ts-form-grid">
+        <div><label>CC ID *</label><input id="tx-f-ccid" type="text" placeholder="e.g. CC001" style="text-transform:uppercase;" oninput="txLookupRider()"></div>
+        <div><label>Rider Name</label><input id="tx-f-rider" type="text" placeholder="Auto-filled from CC ID" readonly style="background:#f3f4f6;"></div>
+        <div><label>Item *</label><input id="tx-f-item" type="text" placeholder="e.g. Water Bottle, Energy Bar"></div>
+        <div><label>Quantity</label><input id="tx-f-qty" type="number" value="1" min="1"></div>
+        <div><label>Issued By</label><input id="tx-f-issuedby" type="text" placeholder="Your name"></div>
+        <div><label>Pit Stop / Location</label><input id="tx-f-pitstop" type="text" placeholder="e.g. Start Pitstop"></div>
+      </div>
+      <button onclick="txIssueItem()" style="width:100%;margin-top:14px;background:var(--green);color:#fff;border:none;padding:12px;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;">Issue Item</button>
+      <div id="tx-form-msg" style="margin-top:8px;font-size:0.85rem;min-height:1.2em;text-align:center;"></div>
     </div>
 
-    <!-- TAB: Transaction List -->
-    <div class="ts-tab-panel active" id="tx-panel-list">
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-        <input id="tx-filter" type="text" placeholder="Search CC ID, item, rider..." oninput="txFilterTable()" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;">
-        <button onclick="txLoadAll()" style="background:#07570f;color:#fff;border:none;padding:9px 14px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">&#8635; Refresh</button>
-      </div>
-      <div id="tx-table-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;max-height:70vh;overflow-y:auto;">
-        <div class="empty" style="padding:20px;">Loading...</div>
-      </div>
+    <!-- Transactions List -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+      <input id="tx-filter" type="text" placeholder="Search CC ID, item, rider..." oninput="txFilterTable()" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;">
+      <button onclick="txLoadAll()" style="background:#07570f;color:#fff;border:none;padding:9px 14px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">&#8635; Refresh</button>
     </div>
-
-    <!-- TAB: Issue Item -->
-    <div class="ts-tab-panel" id="tx-panel-issue">
-      <div class="ts-section">
-        <span class="ts-section-title">&#10133; Issue Free Goods</span>
-        <div class="ts-form-grid">
-          <div><label>CC ID *</label><input id="tx-f-ccid" type="text" placeholder="e.g. CC001" style="text-transform:uppercase;" oninput="txLookupRider()"></div>
-          <div><label>Rider Name</label><input id="tx-f-rider" type="text" placeholder="Auto-filled from CC ID" readonly style="background:#f3f4f6;"></div>
-          <div><label>Item *</label><input id="tx-f-item" type="text" placeholder="e.g. Water Bottle, Energy Bar"></div>
-          <div><label>Quantity</label><input id="tx-f-qty" type="number" value="1" min="1"></div>
-          <div><label>Issued By</label><input id="tx-f-issuedby" type="text" placeholder="Your name"></div>
-          <div><label>Pit Stop / Location</label><input id="tx-f-pitstop" type="text" placeholder="e.g. Start Pitstop"></div>
-        </div>
-        <button onclick="txIssueItem()" style="width:100%;margin-top:14px;background:var(--green);color:#fff;border:none;padding:12px;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;">Issue Item</button>
-        <div id="tx-form-msg" style="margin-top:8px;font-size:0.85rem;min-height:1.2em;text-align:center;"></div>
-      </div>
+    <div id="tx-table-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;max-height:50vh;overflow-y:auto;">
+      <div class="empty" style="padding:20px;">Loading...</div>
     </div>
   </div>
 </div>
@@ -1120,7 +1111,7 @@ function openPage(id){closeDrawer();document.getElementById('page-'+id).classLis
 if(id==='admin'&&!adminAuth&&hasPerm('admin')){adminAuth=true;document.getElementById('admin-pin-gate').style.display='none';document.getElementById('admin-content').classList.add('visible');}
 if(id==='report'&&!reportAuth&&hasPerm('report')){reportAuth=true;var rg=document.getElementById('report-pin-gate');if(rg)rg.style.display='none';var rc=document.getElementById('report-content');if(rc)rc.classList.add('visible');}
 if(id==='settings'&&!settingsAuth&&hasPerm('settings')){settingsAuth=true;document.getElementById('settings-pin-gate').style.display='none';document.getElementById('settings-content').classList.add('visible');}
-if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();if(id==='tshirt'){tsLoadAll();}if(id==='transaction'){txLoadAll();}if(id==='settings'&&settingsAuth){sLoadRolesCache();sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}}
+if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();if(id==='tshirt'){tsLoadAll();}if(id==='transaction'){txLoadAll();var ib=document.getElementById('tx-f-issuedby');if(ib&&!ib.value)ib.value=sessionStorage.getItem('cc_user')||'';}if(id==='settings'&&settingsAuth){sLoadRolesCache();sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}}
 function closePage(id){document.getElementById('page-'+id).classList.remove('open');}
 
 // Admin PIN
@@ -1311,7 +1302,6 @@ fetch('/api/tshirts/bulk',{method:'POST',headers:{'Content-Type':'application/js
 
 // Transaction functions
 var txAllData=[];
-function txSwitchTab(name,btn){document.querySelectorAll('#page-transaction .ts-tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('#page-transaction .ts-tab-panel').forEach(function(p){p.classList.remove('active');});if(btn)btn.classList.add('active');var panel=document.getElementById('tx-panel-'+name);if(panel)panel.classList.add('active');if(name==='issue'){var ib=document.getElementById('tx-f-issuedby');if(ib&&!ib.value)ib.value=sessionStorage.getItem('cc_user')||'';}}
 function txLoadAll(){fetch('/api/transactions').then(function(r){return r.json();}).then(function(data){txAllData=data;txRenderTable(data);}).catch(function(){document.getElementById('tx-table-wrap').innerHTML='<div class="empty">Failed to load.</div>';});}
 function txRenderTable(data){if(!data.length){document.getElementById('tx-table-wrap').innerHTML='<div class="empty" style="padding:20px;">No transactions yet. Issue an item above.</div>';return;}
 var html='<table class="ts-table"><thead><tr><th>#</th><th>CC ID</th><th>Rider</th><th>Item</th><th>Qty</th><th>Issued By</th><th>Pit Stop</th><th>Time</th><th>Actions</th></tr></thead><tbody>';
