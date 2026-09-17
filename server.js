@@ -270,9 +270,15 @@ app.post('/api/tshirts/bulk', async (req, res) => {
     last_name: String(r.last_name || r['Last Name'] || r.LastName || r.LAST_NAME || '').trim(),
     cycle: String(r.cycle || r.Cycle || r.CYCLE || r['Cycle Number'] || '').trim(),
     cycle_brand: String(r.cycle_brand || r['Cycle Brand'] || r.CycleBrand || r.CYCLE_BRAND || '').trim(),
-    size: String(r.size || r.Size || r.SIZE || r['T-Shirt Size'] || r['Tshirt Size'] || r.tshirt_size || '').trim().toUpperCase()
+    size: String(r.size || r.Size || r.SIZE || r['T-Shirt Size'] || r['Tshirt Size'] || r.tshirt_size || '').trim().toUpperCase(),
+    payment_date: String(r.payment_date || r['Payment Date'] || r.PaymentDate || r.PAYMENT_DATE || '').trim(),
+    payment_status: String(r.payment_status || r['Payment Status'] || r.PaymentStatus || r.PAYMENT_STATUS || '').trim(),
+    distance: String(r.distance || r.Distance || r.DISTANCE || r['Distance'] || '').trim(),
+    event_name: String(r.event_name || r['Event Name'] || r.EventName || r.EVENT_NAME || '').trim(),
+    event_date: String(r.event_date || r['Event Date'] || r.EventDate || r.EVENT_DATE || '').trim(),
+    preferred_collection_center: String(r.preferred_collection_center || r['Preferred Collection Center'] || r.PreferredCollectionCenter || r.PREFERRED_COLLECTION_CENTER || r['Collection Center'] || '').trim()
   })).filter(r => r.cc_id && r.cc_id.length > 0);
-  if (!records.length) return res.status(400).json({ error: 'No valid rows found. Check column names: cc_id, name, first_name, last_name, cycle, cycle_brand, size' });
+  if (!records.length) return res.status(400).json({ error: 'No valid rows found. Check column names: cc_id, name, first_name, last_name, cycle, cycle_brand, size, payment_date, payment_status, distance, event_name, event_date, preferred_collection_center' });
   try {
     const { error } = await supabase.from('tshirts').upsert(records, { onConflict: 'cc_id' });
     if (error) throw error;
