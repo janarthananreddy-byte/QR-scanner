@@ -34,14 +34,14 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('app_users').select('id,username,first_name,last_name,email,mobile,created_at').order('id');
+    const { data, error } = await supabase.from('app_users').select('id,username,first_name,last_name,email,mobile,role,created_at').order('id');
     if (error) throw error;
     res.json(data);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/users', async (req, res) => {
-  const { username, password, first_name, last_name, email, mobile } = req.body;
+  const { username, password, first_name, last_name, email, mobile, role } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Missing username or password' });
   try {
     const record = { username: username.trim(), password };
@@ -49,6 +49,7 @@ app.post('/api/users', async (req, res) => {
     if (last_name) record.last_name = last_name.trim();
     if (email) record.email = email.trim().toLowerCase();
     if (mobile) record.mobile = mobile.trim();
+    if (role) record.role = role.trim();
     const { data, error } = await supabase.from('app_users').insert(record).select().single();
     if (error) throw error;
     res.json(data);
@@ -56,12 +57,13 @@ app.post('/api/users', async (req, res) => {
 });
 
 app.put('/api/users/:id', async (req, res) => {
-  const { first_name, last_name, email, mobile } = req.body;
+  const { first_name, last_name, email, mobile, role } = req.body;
   const updates = {};
   if (first_name !== undefined) updates.first_name = first_name.trim();
   if (last_name !== undefined) updates.last_name = last_name.trim();
   if (email !== undefined) updates.email = email.trim().toLowerCase();
   if (mobile !== undefined) updates.mobile = mobile.trim();
+  if (role !== undefined) updates.role = role.trim();
   if (!Object.keys(updates).length) return res.status(400).json({ error: 'Nothing to update' });
   try {
     const { data, error } = await supabase.from('app_users').update(updates).eq('id', req.params.id).select().single();
@@ -124,6 +126,54 @@ app.get('/api/stats', async (req, res) => {
 app.post('/api/reset', async (req, res) => {
   try {
     const { error } = await supabase.from('scans').delete().neq('id', 0);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ROLES CRUD
+app.get('/api/roles', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('roles').select('*').order('name');
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/roles', async (req, res) => {
+  const { name, description } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Role name is required' });
+  try {
+    const { data: existing } = await supabase.from('roles').select('id').eq('name', name.trim()).maybeSingle();
+    if (existing) return res.status(409).json({ error: 'Role "' + name.trim() + '" already exists' });
+    const record = { name: name.trim() };
+    if (description) record.description = description.trim();
+    const { data, error } = await supabase.from('roles').insert(record).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/roles/:id', async (req, res) => {
+  const { name, description } = req.body;
+  const updates = {};
+  if (name !== undefined) updates.name = name.trim();
+  if (description !== undefined) updates.description = description.trim();
+  if (!Object.keys(updates).length) return res.status(400).json({ error: 'Nothing to update' });
+  try {
+    if (updates.name) {
+      const { data: existing } = await supabase.from('roles').select('id').eq('name', updates.name).neq('id', req.params.id).maybeSingle();
+      if (existing) return res.status(409).json({ error: 'Role "' + updates.name + '" already exists' });
+    }
+    const { data, error } = await supabase.from('roles').update(updates).eq('id', req.params.id).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/roles/:id', async (req, res) => {
+  try {
+    const { error } = await supabase.from('roles').delete().eq('id', req.params.id);
     if (error) throw error;
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
