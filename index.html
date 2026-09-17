@@ -402,36 +402,38 @@
     .coffee-hire-text{font-size:0.88rem;color:var(--muted);line-height:1.5;margin-bottom:12px;}
     .coffee-hire-btn{display:inline-block;background:var(--primary);color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600;}
     /* T-Shirt page */
-    .ts-stat-card{flex:1;min-width:80px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
-    .ts-stat-card .ts-stat-num{font-size:1.5rem;font-weight:800;color:#374151;}
-    .ts-stat-card .ts-stat-lbl{font-size:0.75rem;color:var(--gray);font-weight:600;text-transform:uppercase;}
-    .ts-stat-card.delivered .ts-stat-num{color:var(--green);}
-    .ts-stat-card.pending .ts-stat-num{color:var(--amber);}
+    /* T-Shirt page */
+    #page-tshirt .page-body{max-width:100%;padding:0;}
+    @media(min-width:768px){#page-tshirt .page-body{max-width:960px;margin:0 auto;}}
+    .ts-tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);overflow-x:auto;padding:0 4px;}
+    .ts-tab{flex:1;min-width:0;padding:10px 6px;font-size:0.78rem;font-weight:700;color:var(--gray);background:none;border:none;border-bottom:2.5px solid transparent;cursor:pointer;text-align:center;white-space:nowrap;transition:all 0.15s;}
+    .ts-tab.active{color:#07570f;border-bottom-color:#07570f;}
+    .ts-tab-panel{display:none;padding:14px;}
+    .ts-tab-panel.active{display:block;}
     .ts-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
-    .ts-table thead{background:#07570f;color:#fff;position:sticky;top:0;}
+    .ts-table thead{background:#07570f;color:#fff;position:sticky;top:0;z-index:2;}
     .ts-table th{padding:8px 10px;text-align:left;font-size:0.72rem;font-weight:700;text-transform:uppercase;white-space:nowrap;}
     .ts-table td{padding:8px 10px;border-bottom:1px solid #f3f4f6;color:#374151;white-space:nowrap;}
     .ts-table tbody tr:hover{background:#f0fdf4;}
-    .ts-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:0.85rem;}
-    .ts-dlbl{display:block;font-size:0.72rem;color:var(--gray);text-transform:uppercase;font-weight:600;}
-    .ts-dval{display:block;font-weight:600;color:#374151;}
-    .ts-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-    .ts-form-grid label{display:block;font-size:0.75rem;font-weight:600;color:#374151;margin-bottom:3px;}
-    .ts-form-grid input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;}
-    .ts-form-grid input:focus{outline:none;border-color:var(--green);}
     .ts-table .ts-act{display:flex;gap:3px;}
     .ts-table .ts-btn{background:none;border:1px solid var(--border);border-radius:5px;width:28px;height:28px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;}
     .ts-table .ts-btn.edit:hover{background:#eef2ff;border-color:#6366f1;}
     .ts-table .ts-btn.del:hover{background:#fee2e2;border-color:#dc2626;}
-    #page-tshirt .page-body{max-width:100%;padding:12px;}
-    @media(min-width:768px){#page-tshirt .page-body{max-width:900px;}}
+    .ts-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:0.85rem;}
+    .ts-dlbl{display:block;font-size:0.72rem;color:var(--gray);text-transform:uppercase;font-weight:600;}
+    .ts-dval{display:block;font-weight:600;color:#374151;}
+    .ts-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .ts-form-grid label{display:block;font-size:0.75rem;font-weight:600;color:#374151;margin-bottom:3px;}
+    .ts-form-grid input,.ts-form-grid select{width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;background:#fff;}
+    .ts-form-grid input:focus,.ts-form-grid select:focus{outline:none;border-color:var(--green);}
+    .ts-section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+    .ts-section-title{font-weight:700;font-size:0.88rem;color:#111827;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
     @media(max-width:480px){
       .ts-form-grid{grid-template-columns:1fr;}
-      .ts-stat-card .ts-stat-num{font-size:1.2rem;}
-      .ts-stat-card .ts-stat-lbl{font-size:0.68rem;}
       .ts-table{font-size:0.75rem;}
       .ts-table th,.ts-table td{padding:6px 6px;}
       .ts-detail-grid{grid-template-columns:1fr;}
+      .ts-tab{font-size:0.72rem;padding:10px 4px;}
     }
   </style>
 </head>
@@ -868,68 +870,80 @@
     <span class="page-ttl">&#128085; T-Shirt Management</span>
   </div>
   <div class="page-body">
-    <!-- Stats -->
-    <div id="tshirt-stats" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-      <div class="ts-stat-card" id="ts-total"><div class="ts-stat-num">0</div><div class="ts-stat-lbl">Total</div></div>
-      <div class="ts-stat-card delivered" id="ts-delivered"><div class="ts-stat-num">0</div><div class="ts-stat-lbl">Delivered</div></div>
-      <div class="ts-stat-card pending" id="ts-pending"><div class="ts-stat-num">0</div><div class="ts-stat-lbl">Pending</div></div>
+    <!-- Tabs -->
+    <div class="ts-tabs">
+      <button class="ts-tab active" onclick="tsSwitchTab('riders',this)">&#128101; Riders</button>
+      <button class="ts-tab" onclick="tsSwitchTab('add',this)">&#10133; Add Rider</button>
+      <button class="ts-tab" onclick="tsSwitchTab('lookup',this)">&#128269; Lookup</button>
+      <button class="ts-tab" onclick="tsSwitchTab('upload',this)">&#128228; Upload</button>
     </div>
 
-    <!-- Add / Edit Rider -->
-    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="font-weight:700;font-size:0.9rem;" id="ts-form-title">&#10133; Add Rider</span>
-        <button id="ts-form-cancel" onclick="tsCancelEdit()" style="display:none;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:0.8rem;cursor:pointer;">Cancel Edit</button>
+    <!-- TAB: Riders List -->
+    <div class="ts-tab-panel active" id="ts-panel-riders">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input id="ts-filter" type="text" placeholder="Search CC ID, name..." oninput="tsFilterTable()" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;">
+        <button onclick="tsLoadAll()" style="background:#07570f;color:#fff;border:none;padding:9px 14px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">&#8635; Refresh</button>
       </div>
-      <div class="ts-form-grid">
-        <div><label>CC ID *</label><input id="ts-f-ccid" type="text" placeholder="CC ID" style="text-transform:uppercase;"></div>
-        <div><label>Name</label><input id="ts-f-name" type="text" placeholder="Full Name"></div>
-        <div><label>First Name</label><input id="ts-f-fname" type="text" placeholder="First Name"></div>
-        <div><label>Last Name</label><input id="ts-f-lname" type="text" placeholder="Last Name"></div>
-        <div><label>Size</label><select id="ts-f-size" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;background:#fff;"><option value="">-- Select --</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option></select></div>
-        <div><label>Distance</label><input id="ts-f-distance" type="text" placeholder="Distance"></div>
-        <div><label>Cycle</label><input id="ts-f-cycle" type="text" placeholder="Cycle Number"></div>
-        <div><label>Cycle Brand</label><input id="ts-f-cbrand" type="text" placeholder="Cycle Brand"></div>
-        <div><label>Payment Status</label><select id="ts-f-pstatus" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;background:#fff;"><option value="">-- Select --</option><option value="Paid">Paid</option><option value="Pending">Pending</option></select></div>
-        <div><label>Payment Method</label><select id="ts-f-pmethod" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;background:#fff;"><option value="">-- Select --</option><option value="UPI">UPI</option><option value="Cash">Cash</option><option value="Card">Card</option></select></div>
-        <div><label>Payment Date</label><input id="ts-f-pdate" type="date" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;"></div>
-        <div><label>Event Name</label><input id="ts-f-event" type="text" placeholder="Event Name"></div>
-        <div><label>Event Date</label><input id="ts-f-edate" type="date" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;"></div>
-        <div><label>Collection Center</label><input id="ts-f-center" type="text" placeholder="Preferred Center"></div>
-      </div>
-      <button id="ts-form-btn" onclick="tsSaveRider()" style="width:100%;margin-top:10px;background:var(--green);color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">Add Rider</button>
-      <div id="ts-form-msg" style="margin-top:8px;font-size:0.85rem;min-height:1.2em;text-align:center;"></div>
-    </div>
-
-    <!-- Lookup -->
-    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
-      <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;">&#128269; Lookup Rider</div>
-      <div style="display:flex;gap:8px;">
-        <input id="ts-lookup-id" type="text" placeholder="Enter CC ID" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;text-transform:uppercase;" onkeydown="if(event.key==='Enter')tsLookup()">
-        <button onclick="tsLookup()" style="background:var(--green);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Search</button>
-      </div>
-      <div id="ts-lookup-result" style="margin-top:10px;"></div>
-    </div>
-
-    <!-- Bulk Upload -->
-    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
-      <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;">&#128228; Bulk Upload</div>
-      <div style="font-size:0.8rem;color:var(--gray);margin-bottom:8px;">Upload CSV/JSON with columns: cc_id, name, first_name, last_name, cycle, cycle_brand, size, payment_date, payment_status, payment_method, distance, event_name, event_date, preferred_collection_center</div>
-      <input type="file" id="ts-file" accept=".csv,.json" onchange="tsBulkUpload()" style="font-size:0.85rem;">
-      <div id="ts-upload-msg" style="margin-top:8px;font-size:0.85rem;min-height:1.2em;"></div>
-    </div>
-
-    <!-- Table -->
-    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);">
-        <span style="font-weight:700;font-size:0.9rem;">All Riders</span>
-        <button onclick="tsLoadAll()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:0.8rem;cursor:pointer;">&#8635; Refresh</button>
-      </div>
-      <div style="padding:8px 14px;">
-        <input id="ts-filter" type="text" placeholder="Filter by CC ID, name..." oninput="tsFilterTable()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;">
-      </div>
-      <div id="ts-table-wrap" style="overflow-x:auto;max-height:60vh;overflow-y:auto;">
+      <div id="ts-table-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;max-height:70vh;overflow-y:auto;">
         <div class="empty" style="padding:20px;">Loading...</div>
+      </div>
+    </div>
+
+    <!-- TAB: Add / Edit Rider -->
+    <div class="ts-tab-panel" id="ts-panel-add">
+      <div class="ts-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span class="ts-section-title" id="ts-form-title" style="margin-bottom:0;">&#10133; Add New Rider</span>
+          <button id="ts-form-cancel" onclick="tsCancelEdit()" style="display:none;background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:5px 12px;font-size:0.8rem;font-weight:600;cursor:pointer;">Cancel</button>
+        </div>
+        <div class="ts-form-grid">
+          <div><label>CC ID *</label><input id="ts-f-ccid" type="text" placeholder="e.g. CC001" style="text-transform:uppercase;"></div>
+          <div><label>Name</label><input id="ts-f-name" type="text" placeholder="Full Name"></div>
+          <div><label>First Name</label><input id="ts-f-fname" type="text" placeholder="First Name"></div>
+          <div><label>Last Name</label><input id="ts-f-lname" type="text" placeholder="Last Name"></div>
+          <div><label>Size</label><select id="ts-f-size"><option value="">-- Select --</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option></select></div>
+          <div><label>Distance</label><input id="ts-f-distance" type="text" placeholder="e.g. 25km"></div>
+          <div><label>Cycle</label><input id="ts-f-cycle" type="text" placeholder="Cycle Number"></div>
+          <div><label>Cycle Brand</label><input id="ts-f-cbrand" type="text" placeholder="Cycle Brand"></div>
+          <div><label>Payment Status</label><select id="ts-f-pstatus"><option value="">-- Select --</option><option value="Paid">Paid</option><option value="Pending">Pending</option></select></div>
+          <div><label>Payment Method</label><select id="ts-f-pmethod"><option value="">-- Select --</option><option value="UPI">UPI</option><option value="Cash">Cash</option><option value="Card">Card</option></select></div>
+          <div><label>Payment Date</label><input id="ts-f-pdate" type="date"></div>
+          <div><label>Event Name</label><input id="ts-f-event" type="text" placeholder="Event Name"></div>
+          <div><label>Event Date</label><input id="ts-f-edate" type="date"></div>
+          <div><label>Collection Center</label><input id="ts-f-center" type="text" placeholder="Preferred Center"></div>
+        </div>
+        <button id="ts-form-btn" onclick="tsSaveRider()" style="width:100%;margin-top:14px;background:var(--green);color:#fff;border:none;padding:12px;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;">Add Rider</button>
+        <div id="ts-form-msg" style="margin-top:8px;font-size:0.85rem;min-height:1.2em;text-align:center;"></div>
+      </div>
+    </div>
+
+    <!-- TAB: Lookup -->
+    <div class="ts-tab-panel" id="ts-panel-lookup">
+      <div class="ts-section">
+        <div class="ts-section-title">&#128269; Lookup Rider by CC ID</div>
+        <div style="display:flex;gap:8px;">
+          <input id="ts-lookup-id" type="text" placeholder="Enter CC ID" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;text-transform:uppercase;" onkeydown="if(event.key==='Enter')tsLookup()">
+          <button onclick="tsLookup()" style="background:var(--green);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;">Search</button>
+        </div>
+        <div id="ts-lookup-result" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- TAB: Bulk Upload -->
+    <div class="ts-tab-panel" id="ts-panel-upload">
+      <div class="ts-section">
+        <div class="ts-section-title">&#128228; Bulk Upload Riders</div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:0.8rem;color:#15803d;font-weight:600;margin-bottom:4px;">Accepted formats: CSV or JSON</div>
+          <div style="font-size:0.75rem;color:#374151;line-height:1.5;">Columns: cc_id, name, first_name, last_name, cycle, cycle_brand, size, payment_date, payment_status, payment_method, distance, event_name, event_date, preferred_collection_center</div>
+        </div>
+        <label style="display:block;background:#fff;border:2px dashed var(--border);border-radius:10px;padding:28px 14px;text-align:center;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:1.5rem;margin-bottom:6px;">&#128193;</div>
+          <div style="font-size:0.88rem;font-weight:600;color:#374151;">Tap to select file</div>
+          <div style="font-size:0.78rem;color:var(--gray);margin-top:2px;">.csv or .json</div>
+          <input type="file" id="ts-file" accept=".csv,.json" onchange="tsBulkUpload()" style="display:none;">
+        </label>
+        <div id="ts-upload-msg" style="margin-top:10px;font-size:0.85rem;min-height:1.2em;text-align:center;"></div>
       </div>
     </div>
   </div>
@@ -1069,7 +1083,7 @@ function openPage(id){closeDrawer();document.getElementById('page-'+id).classLis
 if(id==='admin'&&!adminAuth&&hasPerm('admin')){adminAuth=true;document.getElementById('admin-pin-gate').style.display='none';document.getElementById('admin-content').classList.add('visible');}
 if(id==='report'&&!reportAuth&&hasPerm('report')){reportAuth=true;var rg=document.getElementById('report-pin-gate');if(rg)rg.style.display='none';var rc=document.getElementById('report-content');if(rc)rc.classList.add('visible');}
 if(id==='settings'&&!settingsAuth&&hasPerm('settings')){settingsAuth=true;document.getElementById('settings-pin-gate').style.display='none';document.getElementById('settings-content').classList.add('visible');}
-if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();if(id==='tshirt'){tsLoadStats();tsLoadAll();}if(id==='settings'&&settingsAuth){sLoadRolesCache();sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}}
+if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();if(id==='tshirt'){tsLoadAll();}if(id==='settings'&&settingsAuth){sLoadRolesCache();sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}}
 function closePage(id){document.getElementById('page-'+id).classList.remove('open');}
 
 // Admin PIN
@@ -1213,7 +1227,7 @@ function sLoadDbSize(){var el=document.getElementById('s-dbsize-content');el.inn
 // T-Shirt functions
 var tsAllData=[];
 var tsEditingCcId=null;
-function tsLoadStats(){fetch('/api/tshirts/stats').then(function(r){return r.json();}).then(function(d){document.querySelector('#ts-total .ts-stat-num').textContent=d.total||0;document.querySelector('#ts-delivered .ts-stat-num').textContent=d.delivered||0;document.querySelector('#ts-pending .ts-stat-num').textContent=d.pending||0;}).catch(function(){});}
+function tsSwitchTab(name,btn){document.querySelectorAll('.ts-tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.ts-tab-panel').forEach(function(p){p.classList.remove('active');});if(btn)btn.classList.add('active');var panel=document.getElementById('ts-panel-'+name);if(panel)panel.classList.add('active');}
 function tsLoadAll(){fetch('/api/tshirts').then(function(r){return r.json();}).then(function(data){tsAllData=data;tsRenderTable(data);}).catch(function(){document.getElementById('ts-table-wrap').innerHTML='<div class="empty">Failed to load.</div>';});}
 function tsRenderTable(data){if(!data.length){document.getElementById('ts-table-wrap').innerHTML='<div class="empty" style="padding:20px;">No riders found. Add one above or upload data.</div>';return;}
 var html='<table class="ts-table"><thead><tr><th>#</th><th>CC ID</th><th>Name</th><th>Size</th><th>Distance</th><th>Payment</th><th>Delivery</th><th>Actions</th></tr></thead><tbody>';
@@ -1223,11 +1237,11 @@ html+='</tbody></table>';document.getElementById('ts-table-wrap').innerHTML=html
 function tsFilterTable(){var q=document.getElementById('ts-filter').value.trim().toLowerCase();if(!q){tsRenderTable(tsAllData);return;}var filtered=tsAllData.filter(function(r){return (r.cc_id||'').toLowerCase().indexOf(q)!==-1||(r.name||'').toLowerCase().indexOf(q)!==-1||(r.first_name||'').toLowerCase().indexOf(q)!==-1||(r.last_name||'').toLowerCase().indexOf(q)!==-1;});tsRenderTable(filtered);}
 function tsGetFormData(){return{cc_id:document.getElementById('ts-f-ccid').value.trim(),name:document.getElementById('ts-f-name').value.trim(),first_name:document.getElementById('ts-f-fname').value.trim(),last_name:document.getElementById('ts-f-lname').value.trim(),size:document.getElementById('ts-f-size').value.trim(),distance:document.getElementById('ts-f-distance').value.trim(),cycle:document.getElementById('ts-f-cycle').value.trim(),cycle_brand:document.getElementById('ts-f-cbrand').value.trim(),payment_status:document.getElementById('ts-f-pstatus').value.trim(),payment_method:document.getElementById('ts-f-pmethod').value.trim(),payment_date:document.getElementById('ts-f-pdate').value.trim(),event_name:document.getElementById('ts-f-event').value.trim(),event_date:document.getElementById('ts-f-edate').value.trim(),preferred_collection_center:document.getElementById('ts-f-center').value.trim()};}
 function tsClearForm(){['ts-f-ccid','ts-f-name','ts-f-fname','ts-f-lname','ts-f-size','ts-f-distance','ts-f-cycle','ts-f-cbrand','ts-f-pstatus','ts-f-pmethod','ts-f-pdate','ts-f-event','ts-f-edate','ts-f-center'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('ts-form-msg').textContent='';}
-function tsCancelEdit(){tsEditingCcId=null;tsClearForm();document.getElementById('ts-f-ccid').readOnly=false;document.getElementById('ts-form-title').innerHTML='&#10133; Add Rider';document.getElementById('ts-form-btn').textContent='Add Rider';document.getElementById('ts-form-btn').style.background='var(--green)';document.getElementById('ts-form-cancel').style.display='none';}
+function tsCancelEdit(){tsEditingCcId=null;tsClearForm();document.getElementById('ts-f-ccid').readOnly=false;document.getElementById('ts-form-title').innerHTML='&#10133; Add New Rider';document.getElementById('ts-form-btn').textContent='Add Rider';document.getElementById('ts-form-btn').style.background='var(--green)';document.getElementById('ts-form-cancel').style.display='none';tsSwitchTab('riders',document.querySelectorAll('.ts-tab')[0]);}
 function tsSaveRider(){var d=tsGetFormData();var msg=document.getElementById('ts-form-msg');if(!d.cc_id){msg.style.color='var(--red)';msg.textContent='CC ID is required.';return;}
 if(tsEditingCcId){fetch('/api/tshirt/'+encodeURIComponent(tsEditingCcId),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(r){return r.json().then(function(j){return{status:r.status,data:j};});}).then(function(res){if(res.status===200){msg.style.color='var(--green)';msg.textContent='Rider '+tsEditingCcId+' updated!';tsCancelEdit();tsLoadStats();tsLoadAll();}else{msg.style.color='var(--red)';msg.textContent=res.data.error||'Update failed.';}}).catch(function(){msg.style.color='var(--red)';msg.textContent='Network error.';});}
 else{fetch('/api/tshirt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(r){return r.json().then(function(j){return{status:r.status,data:j};});}).then(function(res){if(res.status===200||res.status===201){msg.style.color='var(--green)';msg.textContent='Rider '+d.cc_id+' added!';tsClearForm();tsLoadStats();tsLoadAll();}else{msg.style.color='var(--red)';msg.textContent=res.data.error||'Failed.';}}).catch(function(){msg.style.color='var(--red)';msg.textContent='Network error.';});}}
-function tsEditRider(ccId){var r=tsAllData.find(function(x){return x.cc_id===ccId;});if(!r)return;tsEditingCcId=ccId;document.getElementById('ts-f-ccid').value=r.cc_id;document.getElementById('ts-f-ccid').readOnly=true;document.getElementById('ts-f-name').value=r.name||'';document.getElementById('ts-f-fname').value=r.first_name||'';document.getElementById('ts-f-lname').value=r.last_name||'';document.getElementById('ts-f-size').value=r.size||'';document.getElementById('ts-f-distance').value=r.distance||'';document.getElementById('ts-f-cycle').value=r.cycle||'';document.getElementById('ts-f-cbrand').value=r.cycle_brand||'';document.getElementById('ts-f-pstatus').value=r.payment_status||'';document.getElementById('ts-f-pmethod').value=r.payment_method||'';document.getElementById('ts-f-pdate').value=r.payment_date||'';document.getElementById('ts-f-event').value=r.event_name||'';document.getElementById('ts-f-edate').value=r.event_date||'';document.getElementById('ts-f-center').value=r.preferred_collection_center||'';document.getElementById('ts-form-title').innerHTML='&#9998; Edit Rider: '+ccId;document.getElementById('ts-form-btn').textContent='Update Rider';document.getElementById('ts-form-btn').style.background='#4f46e5';document.getElementById('ts-form-cancel').style.display='';document.getElementById('page-tshirt').querySelector('.page-body').scrollTop=0;}
+function tsEditRider(ccId){var r=tsAllData.find(function(x){return x.cc_id===ccId;});if(!r)return;tsEditingCcId=ccId;document.getElementById('ts-f-ccid').value=r.cc_id;document.getElementById('ts-f-ccid').readOnly=true;document.getElementById('ts-f-name').value=r.name||'';document.getElementById('ts-f-fname').value=r.first_name||'';document.getElementById('ts-f-lname').value=r.last_name||'';document.getElementById('ts-f-size').value=r.size||'';document.getElementById('ts-f-distance').value=r.distance||'';document.getElementById('ts-f-cycle').value=r.cycle||'';document.getElementById('ts-f-cbrand').value=r.cycle_brand||'';document.getElementById('ts-f-pstatus').value=r.payment_status||'';document.getElementById('ts-f-pmethod').value=r.payment_method||'';document.getElementById('ts-f-pdate').value=r.payment_date||'';document.getElementById('ts-f-event').value=r.event_name||'';document.getElementById('ts-f-edate').value=r.event_date||'';document.getElementById('ts-f-center').value=r.preferred_collection_center||'';document.getElementById('ts-form-title').innerHTML='&#9998; Edit Rider: '+ccId;document.getElementById('ts-form-btn').textContent='Update Rider';document.getElementById('ts-form-btn').style.background='#4f46e5';document.getElementById('ts-form-cancel').style.display='';tsSwitchTab('add',document.querySelectorAll('.ts-tab')[1]);}
 function tsDeleteRider(ccId){if(!confirm('Delete rider '+ccId+'? This cannot be undone.'))return;fetch('/api/tshirt/'+encodeURIComponent(ccId),{method:'DELETE'}).then(function(r){return r.json().then(function(j){return{status:r.status,data:j};});}).then(function(res){if(res.data.ok){tsLoadStats();tsLoadAll();}else{alert(res.data.error||'Delete failed.');}}).catch(function(){alert('Network error.');});}
 function tsLookup(){var id=document.getElementById('ts-lookup-id').value.trim();var el=document.getElementById('ts-lookup-result');if(!id){el.innerHTML='<span style="color:var(--red);font-size:0.85rem;">Enter a CC ID</span>';return;}
 el.innerHTML='<span style="color:var(--gray);font-size:0.85rem;">Searching...</span>';
