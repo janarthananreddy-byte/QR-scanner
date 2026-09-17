@@ -82,7 +82,7 @@
     .toast.warning{background:var(--amber-light);color:var(--amber);display:block;}
     .stats-panel{margin-top:16px;background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;}
     .stats-panel h3{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray);padding:10px 14px 6px;}
-    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));border-bottom:1px solid var(--border);}
     .stat-cell{text-align:center;padding:10px 4px;border-right:1px solid var(--border);cursor:pointer;}
     .stat-cell:last-child{border-right:none;}
     .stat-cell .cp-label{font-size:0.7rem;font-weight:700;color:var(--gray);margin-bottom:4px;}
@@ -279,6 +279,19 @@
     .pin-err{color:var(--red);font-size:0.82rem;min-height:1.2em;}
     .gated-content{display:none;}
     .gated-content.visible{display:block;}
+    .settings-tabs{display:flex;gap:0;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+    .s-tab{flex:1;padding:10px 4px;border:none;background:none;font-size:0.72rem;font-weight:600;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;}
+    .s-tab.active{color:var(--green);background:#f0fdf4;border-bottom-color:var(--green);}
+    .s-tab-content{display:none;}
+    .s-tab-content.active{display:block;}
+    .pitstop-card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+    .pitstop-card .ps-order{width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:0.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .pitstop-card .ps-name{flex:1;font-weight:600;font-size:0.9rem;color:#111827;}
+    .pitstop-card .ps-actions{display:flex;gap:6px;}
+    .pitstop-card .ps-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:0.78rem;cursor:pointer;color:var(--gray);}
+    .pitstop-card .ps-btn:hover{background:#f3f4f6;}
+    .pitstop-card .ps-btn.del{color:#dc2626;border-color:#fca5a5;}
+    .pitstop-card .ps-btn.del:hover{background:#fee2e2;}
     /* Admin stats */
     .admin-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px;}
     .admin-stat{background:#fff;border-radius:10px;border:1px solid var(--border);padding:16px;text-align:center;}
@@ -380,9 +393,9 @@
     <button class="drawer-close" onclick="closeDrawer()">&#10005;</button>
   </div>
   <nav class="drawer-nav">
-    <button class="drawer-item" onclick="openPage('users')">
-      <span class="di-icon">&#128100;</span>
-      <div class="di-text"><span class="di-title">Users</span><span class="di-sub">Manage access</span></div>
+    <button class="drawer-item" onclick="openPage('settings')">
+      <span class="di-icon">&#9881;</span>
+      <div class="di-text"><span class="di-title">Settings</span><span class="di-sub">Users, Pit Stops, DB &amp; more</span></div>
       <span class="di-arrow">&#8250;</span>
     </button>
     <button class="drawer-item" onclick="openPage('admin')">
@@ -406,17 +419,6 @@
       <div class="di-text"><span class="di-title">Buy Me a Coffee</span><span class="di-sub">Support the developer</span></div>
       <span class="di-arrow">&#8250;</span>
     </button>
-    <button class="drawer-item" onclick="openPage('resetdb')">
-      <span class="di-icon" style="color:#dc2626;">&#9888;</span>
-      <div class="di-text"><span class="di-title" style="color:#dc2626;">Reset Database</span><span class="di-sub">Delete all scan records</span></div>
-      <span class="di-arrow">&#8250;</span>
-    </button>
-    <button class="drawer-item" onclick="openPage('dbsize')">
-      <span class="di-icon">&#128200;</span>
-      <div class="di-text"><span class="di-title">DB Size</span><span class="di-sub">Storage &amp; record counts</span></div>
-      <span class="di-arrow">&#8250;</span>
-    </button>
-    <div class="drawer-divider"></div>
     <button class="drawer-item" onclick="doLogout()">
       <span class="di-icon">&#128275;</span>
       <div class="di-text"><span class="di-title" style="color:#dc2626;">Logout</span><span class="di-sub">Sign out of the app</span></div>
@@ -473,7 +475,81 @@
   <div id="table-container"><div class="empty">Loading...</div></div>
 </div>
 
-<!-- PAGE: Users -->
+<!-- PAGE: Settings -->
+<div class="menu-page" id="page-settings">
+  <div class="page-hdr">
+    <button class="page-back" onclick="closePage('settings')">&#8592; Back</button>
+    <span class="page-ttl">&#9881; Settings</span>
+  </div>
+  <div class="page-body">
+    <div class="pin-gate" id="settings-pin-gate">
+      <div class="lock-icon">&#128274;</div>
+      <h3>Admin Required</h3>
+      <p>Enter admin PIN to access settings.</p>
+      <div class="pin-form">
+        <input id="settings-pin" type="password" maxlength="8" placeholder="PIN" oninput="document.getElementById('settings-pin-err').textContent=''" onkeydown="if(event.key==='Enter')checkSettingsPin()">
+        <button onclick="checkSettingsPin()">Enter</button>
+      </div>
+      <div class="pin-err" id="settings-pin-err"></div>
+    </div>
+    <div class="gated-content" id="settings-content">
+      <div class="settings-tabs">
+        <button class="s-tab active" onclick="showSettingsTab('s-users',this)">&#128100; Users</button>
+        <button class="s-tab" onclick="showSettingsTab('s-pitstops',this)">&#128205; Pit Stops</button>
+        <button class="s-tab" onclick="showSettingsTab('s-resetdb',this)">&#9888; Reset</button>
+        <button class="s-tab" onclick="showSettingsTab('s-dbsize',this)">&#128200; DB Size</button>
+      </div>
+
+      <!-- Users Tab -->
+      <div class="s-tab-content active" id="s-users">
+        <div class="add-user-form">
+          <h4>&#43; Add New User</h4>
+          <div class="form-row">
+            <input id="s-new-username" type="text" placeholder="Username">
+            <input id="s-new-password" type="password" placeholder="Password">
+          </div>
+          <button class="primary" onclick="sAddUser()" style="width:100%;">Add User</button>
+          <div class="form-msg" id="s-add-user-msg"></div>
+        </div>
+        <div class="section-title">Current Users</div>
+        <div id="s-users-list"><div class="empty">Loading...</div></div>
+      </div>
+
+      <!-- Pit Stops Tab -->
+      <div class="s-tab-content" id="s-pitstops">
+        <div class="add-user-form">
+          <h4>&#43; Add Pit Stop</h4>
+          <div class="form-row">
+            <input id="s-new-pitstop" type="text" placeholder="Pit stop name (e.g. Start, U-turn, Finish)">
+          </div>
+          <button class="primary" onclick="sAddPitStop()" style="width:100%;">Add Pit Stop</button>
+          <div class="form-msg" id="s-add-pitstop-msg"></div>
+        </div>
+        <div class="section-title">Current Pit Stops</div>
+        <div id="s-pitstops-list"><div class="empty">Loading...</div></div>
+      </div>
+
+      <!-- Reset DB Tab -->
+      <div class="s-tab-content" id="s-resetdb">
+        <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;padding:20px;text-align:center;margin-bottom:16px;">
+          <div style="font-size:2rem;margin-bottom:8px;">&#9888;</div>
+          <div style="font-weight:700;color:#dc2626;font-size:0.95rem;margin-bottom:6px;">Danger Zone</div>
+          <div style="font-size:0.82rem;color:#7f1d1d;line-height:1.5;">This will permanently delete ALL scan records. This cannot be undone.</div>
+        </div>
+        <div id="s-resetdb-stats" style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px;text-align:center;margin-bottom:16px;font-size:0.88rem;color:#374151;">Loading...</div>
+        <button id="s-reset-btn" onclick="sConfirmReset()" style="width:100%;background:#dc2626;color:#fff;border:none;padding:14px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">&#128465; Delete All Records</button>
+        <div id="s-resetdb-msg" style="margin-top:10px;font-size:0.85rem;text-align:center;min-height:1.2em;"></div>
+      </div>
+
+      <!-- DB Size Tab -->
+      <div class="s-tab-content" id="s-dbsize">
+        <div id="s-dbsize-content"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: Users (legacy, kept for backward compat) -->
 <div class="menu-page" id="page-users">
   <div class="page-hdr">
     <button class="page-back" onclick="closePage('users')">&#8592; Back</button>
@@ -526,12 +602,10 @@
     <div class="gated-content" id="admin-content">
       <div class="admin-stat-grid">
         <div class="admin-stat"><div class="as-value" id="adm-total">0</div><div class="as-label">Total Scans</div></div>
-        <div class="admin-stat"><div class="as-value" id="adm-start">0</div><div class="as-label">Start</div></div>
-        <div class="admin-stat"><div class="as-value" id="adm-uturn">0</div><div class="as-label">U-turn</div></div>
-        <div class="admin-stat"><div class="as-value" id="adm-finish">0</div><div class="as-label">Finish</div></div>
         <div class="admin-stat"><div class="as-value" id="adm-scanners">0</div><div class="as-label">Scanners</div></div>
         <div class="admin-stat"><div class="as-value" id="adm-last">-</div><div class="as-label">Last Scan</div></div>
       </div>
+      <div class="admin-stat-grid" id="adm-cp-grid"></div>
       <div class="toolbar-actions" style="margin-bottom:14px;">
         <button class="outline" onclick="location.href='/api/export/xlsx'">Export XLS</button>
         <button class="outline" onclick="location.href='/api/export/csv'">Export CSV</button>
@@ -729,7 +803,7 @@ function doLogout(){
 // Drawer
 function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('drawer-overlay').classList.add('open');}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawer-overlay').classList.remove('open');}
-function openPage(id){closeDrawer();document.getElementById('page-'+id).classList.add('open');if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();}
+function openPage(id){closeDrawer();document.getElementById('page-'+id).classList.add('open');if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();if(id==='settings'&&settingsAuth){sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}}
 function closePage(id){document.getElementById('page-'+id).classList.remove('open');}
 
 // Admin PIN
@@ -748,9 +822,7 @@ function loadAdminData(){
     var st=res[0],sc=res[1];
     document.getElementById('adm-total').textContent=st.total||0;
     var _bps={};(st.byPitStop||[]).forEach(function(r){_bps[r.pit_stop]=r.count;});
-    document.getElementById('adm-start').textContent=_bps['Start']||0;
-    document.getElementById('adm-uturn').textContent=_bps['U-turn']||0;
-    document.getElementById('adm-finish').textContent=_bps['Finish']||0;
+    var admGrid=document.getElementById('adm-cp-grid');if(admGrid){admGrid.innerHTML='';Object.keys(_bps).sort().forEach(function(cp){admGrid.innerHTML+='<div class="admin-stat"><div class="as-value">'+_bps[cp]+'</div><div class="as-label">'+cp+'</div></div>';});}
     document.getElementById('adm-scanners').textContent=new Set((st.byScanner||[]).map(function(r){return r.scanner_name;})).size;
     document.getElementById('adm-last').textContent=sc[0]?new Date(sc[0].scanned_at).toLocaleTimeString():'-';
     if(!sc.length){document.getElementById('admin-table').innerHTML='<div class="empty">No records.</div>';return;}
@@ -800,9 +872,9 @@ function showToast(msg,type){var t=document.getElementById('toast');t.className=
 
 // Stats
 function selectCp(cp){document.getElementById('pit-stop').value=cp;highlightActiveCp();}
-function highlightActiveCp(){var a=document.getElementById('pit-stop').value;var _m={'Start':'stat-Start','U-turn':'stat-Uturn','Finish':'stat-Finish'};Object.keys(_m).forEach(function(cp){var el=document.getElementById(_m[cp]);if(el)el.classList.toggle('active-cp',cp===a);});renderCpDetail(a);}
+function highlightActiveCp(){var a=document.getElementById('pit-stop').value;document.querySelectorAll('.stats-grid .stat-cell').forEach(function(el){var cpName=el.querySelector('.cp-label').textContent;el.classList.toggle('active-cp',cpName===a);});renderCpDetail(a);}
 function renderCpDetail(cp){var d=document.getElementById('cp-detail');if(!statsCache){d.innerHTML='';return;}var sc=(statsCache.byScanner||[]).filter(function(r){return r.pit_stop===cp;});var tot=sc.reduce(function(s,r){return s+r.count;},0);var mx=sc.length?Math.max.apply(null,sc.map(function(r){return r.count;})):1;if(!sc.length){d.innerHTML='<div class="cp-detail-header"><span class="cp-title">'+cp+' - Scanner Breakdown</span><span class="cp-detail-total">No scans yet</span></div><div class="cp-detail-empty">No scans at '+cp+' yet.</div>';return;}d.innerHTML='<div class="cp-detail-header"><span class="cp-title">'+cp+' - Scanner Breakdown</span><span class="cp-detail-total">'+tot+' total</span></div>'+sc.map(function(r){return'<div class="scanner-row"><span class="s-name">'+r.scanner_name+'</span><div class="s-bar-wrap"><div class="s-bar" style="width:'+Math.round(r.count/mx*100)+'%"></div></div><span class="s-count">'+r.count+'</span></div>';}).join('');}
-function fetchStats(){fetch('/api/stats').then(function(r){return r.json();}).then(function(data){statsCache=data;var c={};(data.byPitStop||[]).forEach(function(r){c[r.pit_stop]=r.count;});var _si={'Start':'stat-Start','U-turn':'stat-Uturn','Finish':'stat-Finish'};['Start','U-turn','Finish'].forEach(function(cp){var el=document.getElementById(_si[cp]);if(el)el.querySelector('.cp-count').textContent=c[cp]||0;});document.getElementById('stats-total').innerHTML='Total scans: <strong>'+(data.total||0)+'</strong>';renderCpDetail(document.getElementById('pit-stop').value);}).catch(function(){});}
+function fetchStats(){fetch('/api/stats').then(function(r){return r.json();}).then(function(data){statsCache=data;var c={};(data.byPitStop||[]).forEach(function(r){c[r.pit_stop]=r.count;});document.querySelectorAll('.stats-grid .stat-cell').forEach(function(el){var cpName=el.querySelector('.cp-label').textContent;el.querySelector('.cp-count').textContent=c[cpName]||0;});document.getElementById('stats-total').innerHTML='Total scans: <strong>'+(data.total||0)+'</strong>';renderCpDetail(document.getElementById('pit-stop').value);}).catch(function(){});}
 fetchStats();setInterval(fetchStats,15000);
 
 // Scan
@@ -820,6 +892,37 @@ var resetDbAuth=false;
 function checkResetDbPin(){var v=document.getElementById('resetdb-pin').value;if(v==='jana1986'){resetDbAuth=true;document.getElementById('resetdb-pin-gate').style.display='none';document.getElementById('resetdb-content').classList.add('visible');loadResetDbStats();}else{document.getElementById('resetdb-pin-err').textContent='Incorrect PIN.';}}
 function loadResetDbStats(){fetch('/api/stats').then(function(r){return r.json();}).then(function(d){var el=document.getElementById('resetdb-stats');if(el)el.innerHTML='Current records: <strong style="color:#dc2626;font-size:1.2rem;">'+d.total+'</strong>';}).catch(function(){});}
 function confirmReset(){if(!confirm('Are you sure? This will delete ALL scan records and cannot be undone.'))return;var btn=document.querySelector('#resetdb-content button');btn.disabled=true;btn.textContent='Deleting...';fetch('/api/reset',{method:'POST',headers:{'Content-Type':'application/json'}}).then(function(r){return r.json();}).then(function(d){var msg=document.getElementById('resetdb-msg');if(d.ok){msg.style.color='#15803d';msg.textContent='All records deleted successfully.';loadResetDbStats();fetchStats();}else{msg.style.color='#dc2626';msg.textContent=d.error||'Reset failed.';}btn.disabled=false;btn.innerHTML='&#128465; Delete All Records';}).catch(function(){document.getElementById('resetdb-msg').style.color='#dc2626';document.getElementById('resetdb-msg').textContent='Network error.';btn.disabled=false;btn.innerHTML='&#128465; Delete All Records';});}
+// Settings page
+var settingsAuth=false;
+function checkSettingsPin(){var v=document.getElementById('settings-pin').value;if(v==='jana1986'){settingsAuth=true;document.getElementById('settings-pin-gate').style.display='none';document.getElementById('settings-content').classList.add('visible');sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}else{document.getElementById('settings-pin-err').textContent='Incorrect PIN.';}}
+function showSettingsTab(id,btn){document.querySelectorAll('.s-tab-content').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.s-tab').forEach(function(b){b.classList.remove('active');});document.getElementById(id).classList.add('active');btn.classList.add('active');if(id==='s-users')sLoadUsers();if(id==='s-pitstops')sLoadPitStops();if(id==='s-resetdb')sLoadResetStats();if(id==='s-dbsize')sLoadDbSize();}
+
+// Settings - Users
+function sLoadUsers(){fetch('/api/users').then(function(r){return r.json();}).catch(function(){return[];}).then(function(users){var currentUser=sessionStorage.getItem('cc_user')||'';document.getElementById('s-users-list').innerHTML=users.length?users.map(function(u){var ini=u.username.substring(0,2).toUpperCase();var isMe=u.username===currentUser;return'<div class="user-card"><div class="user-avatar">'+ini+'</div><div class="user-info"><div class="user-name">'+u.username+(isMe?' (you)':'')+'</div><div class="user-meta">Added '+new Date(u.created_at).toLocaleDateString()+'</div></div>'+(isMe?'':'<button class="user-del" onclick="sDeleteUser('+u.id+',this)">Remove</button>')+'</div>';}).join(''):'<div class="empty">No users found.</div>';});}
+function sAddUser(){var u=document.getElementById('s-new-username').value.trim();var p=document.getElementById('s-new-password').value;var msg=document.getElementById('s-add-user-msg');if(!u||!p){msg.className='form-msg err';msg.textContent='Username and password are required.';return;}fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(r){if(r.status===200||r.status===201){msg.className='form-msg ok';msg.textContent='User "'+u+'" added.';document.getElementById('s-new-username').value='';document.getElementById('s-new-password').value='';sLoadUsers();}else{msg.className='form-msg err';msg.textContent=r.data.error||'Failed to add user.';}}).catch(function(){msg.className='form-msg err';msg.textContent='Network error.';});}
+function sDeleteUser(id,btn){if(!confirm('Remove this user?'))return;btn.disabled=true;fetch('/api/users/'+id,{method:'DELETE'}).then(function(){sLoadUsers();}).catch(function(){btn.disabled=false;});}
+
+// Settings - Pit Stops
+var pitStopsCache=[];
+function sLoadPitStops(){fetch('/api/pit-stops').then(function(r){return r.json();}).catch(function(){return[];}).then(function(ps){pitStopsCache=ps;renderPitStopsList();updatePitStopDropdown();});}
+function renderPitStopsList(){var ps=pitStopsCache;document.getElementById('s-pitstops-list').innerHTML=ps.length?ps.map(function(p,i){return'<div class="pitstop-card"><div class="ps-order">'+(i+1)+'</div><div class="ps-name" id="ps-name-'+p.id+'">'+p.name+'</div><div class="ps-actions">'+(i>0?'<button class="ps-btn" onclick="sMovePitStop('+p.id+',\'up\')">&#9650;</button>':'')+(i<ps.length-1?'<button class="ps-btn" onclick="sMovePitStop('+p.id+',\'down\')">&#9660;</button>':'')+'<button class="ps-btn" onclick="sEditPitStop('+p.id+')">&#9998;</button><button class="ps-btn del" onclick="sDeletePitStop('+p.id+')">&#10005;</button></div></div>';}).join(''):'<div class="empty">No pit stops configured. Add one above.</div>';}
+function sAddPitStop(){var n=document.getElementById('s-new-pitstop').value.trim();var msg=document.getElementById('s-add-pitstop-msg');if(!n){msg.className='form-msg err';msg.textContent='Name is required.';return;}fetch('/api/pit-stops',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(r){if(r.status===200||r.status===201){msg.className='form-msg ok';msg.textContent='Pit stop "'+n+'" added.';document.getElementById('s-new-pitstop').value='';sLoadPitStops();}else{msg.className='form-msg err';msg.textContent=r.data.error||'Failed.';}}).catch(function(){msg.className='form-msg err';msg.textContent='Network error.';});}
+function sEditPitStop(id){var current=pitStopsCache.find(function(p){return p.id===id;});if(!current)return;var newName=prompt('Rename pit stop:',current.name);if(!newName||newName.trim()===current.name)return;fetch('/api/pit-stops/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:newName.trim()})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(r){if(r.status===200)sLoadPitStops();else alert(r.data.error||'Failed.');}).catch(function(){alert('Network error.');});}
+function sDeletePitStop(id){var ps=pitStopsCache.find(function(p){return p.id===id;});if(!confirm('Delete pit stop "'+ps.name+'"?'))return;fetch('/api/pit-stops/'+id,{method:'DELETE'}).then(function(){sLoadPitStops();}).catch(function(){alert('Network error.');});}
+function sMovePitStop(id,dir){var idx=pitStopsCache.findIndex(function(p){return p.id===id;});if(idx<0)return;var swapIdx=dir==='up'?idx-1:idx+1;if(swapIdx<0||swapIdx>=pitStopsCache.length)return;var a=pitStopsCache[idx],b=pitStopsCache[swapIdx];Promise.all([fetch('/api/pit-stops/'+a.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({sort_order:b.sort_order})}),fetch('/api/pit-stops/'+b.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({sort_order:a.sort_order})})]).then(function(){sLoadPitStops();});}
+function updatePitStopDropdown(){var sel=document.getElementById('pit-stop');var current=sel.value;sel.innerHTML='';if(pitStopsCache.length){pitStopsCache.forEach(function(p){var o=document.createElement('option');o.value=p.name;o.textContent=p.name;sel.appendChild(o);});if(pitStopsCache.some(function(p){return p.name===current;}))sel.value=current;else sel.selectedIndex=0;}else{['Start','U-turn','Finish'].forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});if(current)sel.value=current;}updateStatsCells();}
+function updateStatsCells(){var grid=document.querySelector('.stats-grid');if(!grid)return;grid.innerHTML='';var stops=pitStopsCache.length?pitStopsCache:([{name:'Start'},{name:'U-turn'},{name:'Finish'}]);var selVal=document.getElementById('pit-stop').value;stops.forEach(function(p){var safeId='stat-'+p.name.replace(/[^a-zA-Z0-9]/g,'');var div=document.createElement('div');div.className='stat-cell'+(p.name===selVal?' active-cp':'');div.id=safeId;div.onclick=function(){selectCp(p.name);};div.innerHTML='<div class="cp-label">'+p.name+'</div><div class="cp-count">0</div>';grid.appendChild(div);});fetchStats();}
+
+// Settings - Reset DB
+function sLoadResetStats(){fetch('/api/stats').then(function(r){return r.json();}).then(function(d){var el=document.getElementById('s-resetdb-stats');if(el)el.innerHTML='Current records: <strong style="color:#dc2626;font-size:1.2rem;">'+d.total+'</strong>';}).catch(function(){});}
+function sConfirmReset(){if(!confirm('Are you sure? This will delete ALL scan records and cannot be undone.'))return;var btn=document.getElementById('s-reset-btn');btn.disabled=true;btn.textContent='Deleting...';fetch('/api/reset',{method:'POST',headers:{'Content-Type':'application/json'}}).then(function(r){return r.json();}).then(function(d){var msg=document.getElementById('s-resetdb-msg');if(d.ok){msg.style.color='#15803d';msg.textContent='All records deleted successfully.';sLoadResetStats();fetchStats();}else{msg.style.color='#dc2626';msg.textContent=d.error||'Reset failed.';}btn.disabled=false;btn.innerHTML='&#128465; Delete All Records';}).catch(function(){document.getElementById('s-resetdb-msg').style.color='#dc2626';document.getElementById('s-resetdb-msg').textContent='Network error.';btn.disabled=false;btn.innerHTML='&#128465; Delete All Records';});}
+
+// Settings - DB Size
+function sLoadDbSize(){var el=document.getElementById('s-dbsize-content');el.innerHTML='<div class="empty">Loading...</div>';Promise.all([fetch('/api/stats').then(function(r){return r.json();}).catch(function(){return{};}),fetch('/api/users').then(function(r){return r.json();}).catch(function(){return[];})]).then(function(res){var st=res[0],users=res[1];var total=st.total||0;var byCP=st.byPitStop||[];var scanBytes=total*120;var userBytes=(users.length||0)*80;var totalBytes=scanBytes+userBytes;function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return (b/1024).toFixed(1)+'KB';return (b/1048576).toFixed(2)+'MB';}var cpRows=byCP.map(function(c){return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:0.88rem;"><span style="font-weight:600;">'+c.pit_stop+'</span><span style="color:var(--green);font-weight:700;">'+c.count+' records</span></div>';}).join('');el.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:14px;"><div style="background:#07570f;padding:10px 14px;color:#fff;font-size:0.78rem;font-weight:700;text-transform:uppercase;">Scans Table</div><div style="padding:14px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:0.85rem;color:#374151;">Total Records</span><span style="font-size:1.6rem;font-weight:800;color:var(--green);">'+total+'</span></div>'+cpRows+'<div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:0.82rem;color:#6b7280;"><span>Est. size</span><span>'+fmtSize(scanBytes)+'</span></div></div></div><div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:14px;"><div style="background:#1d4ed8;padding:10px 14px;color:#fff;font-size:0.78rem;font-weight:700;text-transform:uppercase;">Users Table</div><div style="padding:14px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:0.85rem;color:#374151;">Total Users</span><span style="font-size:1.6rem;font-weight:800;color:#1d4ed8;">'+users.length+'</span></div><div style="padding:0 14px 12px;font-size:0.82rem;color:#6b7280;display:flex;justify-content:space-between;"><span>Est. size</span><span>'+fmtSize(userBytes)+'</span></div></div><div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:0.85rem;font-weight:600;color:#15803d;">Total DB Size (est.)</span><span style="font-size:1.1rem;font-weight:800;color:#15803d;">'+fmtSize(totalBytes)+'</span></div><div style="text-align:center;"><button class="outline" onclick="sLoadDbSize()" style="font-size:0.8rem;">&#8635; Refresh</button></div>';});}
+
+// Load pit stops on startup
+fetch('/api/pit-stops').then(function(r){return r.json();}).catch(function(){return[];}).then(function(ps){if(ps.length){pitStopsCache=ps;updatePitStopDropdown();}});
+
 function loadDbSize(){var el=document.getElementById('dbsize-content');el.innerHTML='<div class="empty">Loading...</div>';Promise.all([fetch('/api/stats').then(function(r){return r.json();}).catch(function(){return{};}),fetch('/api/users').then(function(r){return r.json();}).catch(function(){return[];})]).then(function(res){var st=res[0],users=res[1];var total=st.total||0;var byCP=st.byPitStop||[];var scanBytes=total*120;var userBytes=(users.length||0)*80;var totalBytes=scanBytes+userBytes;function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return (b/1024).toFixed(1)+'KB';return (b/1048576).toFixed(2)+'MB';}var cpRows=byCP.map(function(c){return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:0.88rem;"><span style="font-weight:600;">'+c.pit_stop+'</span><span style="color:var(--green);font-weight:700;">'+c.count+' records</span></div>';}).join('');el.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:14px;"><div style="background:#07570f;padding:10px 14px;color:#fff;font-size:0.78rem;font-weight:700;text-transform:uppercase;">Scans Table</div><div style="padding:14px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:0.85rem;color:#374151;">Total Records</span><span style="font-size:1.6rem;font-weight:800;color:var(--green);">'+total+'</span></div>'+cpRows+'<div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:0.82rem;color:#6b7280;"><span>Est. size</span><span>'+fmtSize(scanBytes)+'</span></div></div></div><div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:14px;"><div style="background:#1d4ed8;padding:10px 14px;color:#fff;font-size:0.78rem;font-weight:700;text-transform:uppercase;">Users Table</div><div style="padding:14px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:0.85rem;color:#374151;">Total Users</span><span style="font-size:1.6rem;font-weight:800;color:#1d4ed8;">'+users.length+'</span></div><div style="padding:0 14px 12px;font-size:0.82rem;color:#6b7280;display:flex;justify-content:space-between;"><span>Est. size</span><span>'+fmtSize(userBytes)+'</span></div></div><div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:0.85rem;font-weight:600;color:#15803d;">Total DB Size (est.)</span><span style="font-size:1.1rem;font-weight:800;color:#15803d;">'+fmtSize(totalBytes)+'</span></div><div style="text-align:center;"><button class="outline" onclick="loadDbSize()" style="font-size:0.8rem;">&#8635; Refresh</button></div>';});}
 
 </script>
