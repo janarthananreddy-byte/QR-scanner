@@ -366,10 +366,13 @@
     .perm-check.sub{border-style:dashed;font-size:0.78rem;}
     .perm-check:has(input:checked){background:#eef2ff;border-color:#6366f1;color:#3730a3;}
     .perm-check.sub:has(input:checked){background:#f0fdf4;border-color:#22c55e;color:#15803d;}
+    .perm-check.home:has(input:checked){background:#fef3c7;border-color:#f59e0b;color:#92400e;}
     .perm-check input{accent-color:#6366f1;}
     .perm-check.sub input{accent-color:#22c55e;}
+    .perm-check.home input{accent-color:#f59e0b;}
     .perm-tags{display:flex;flex-wrap:wrap;gap:4px;}
     .perm-tag{background:#eef2ff;color:#3730a3;font-size:0.72rem;padding:2px 8px;border-radius:10px;font-weight:600;}
+    .perm-tag.home-tag{background:#fef3c7;color:#92400e;}
     .perm-tag.sub-tag{background:#f0fdf4;color:#15803d;}
     .perm-tag.none{background:#f3f4f6;color:#9ca3af;}
     .roles-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:#fff;}
@@ -485,8 +488,8 @@
 </div>
 
 <div class="tab-bar">
-  <button class="active" onclick="showTab('scan',this)">&#128247; Scan</button>
-  <button onclick="showTab('records',this)">&#128203; Records</button>
+  <button class="active" id="hometab-scan" onclick="showTab('scan',this)">&#128247; Scan</button>
+  <button id="hometab-records" onclick="showTab('records',this)">&#128203; Records</button>
 </div>
 
 <div id="scan" class="tab active">
@@ -606,6 +609,9 @@
           <div class="form-row">
             <label style="font-weight:600;font-size:0.85rem;margin-bottom:6px;display:block;">Screen Permissions</label>
             <div class="perm-checks" id="s-new-role-perms">
+              <div class="perm-group-label">Home</div>
+              <label class="perm-check home"><input type="checkbox" value="scanner"> <span>Scanner</span></label>
+              <label class="perm-check home"><input type="checkbox" value="records"> <span>Records</span></label>
               <div class="perm-group-label">Pages</div>
               <label class="perm-check"><input type="checkbox" value="settings"> <span>Settings</span></label>
               <label class="perm-check"><input type="checkbox" value="admin"> <span>Admin</span></label>
@@ -913,6 +919,7 @@ function doLogout(){
 }
 // Permissions
 var ALL_SCREENS=[
+{key:'scanner',label:'Scanner',group:'home'},{key:'records',label:'Records',group:'home'},
 {key:'settings',label:'Settings',group:'page'},{key:'admin',label:'Admin',group:'page'},{key:'report',label:'Report',group:'page'},{key:'support',label:'Support',group:'page'},{key:'coffee',label:'Buy Me a Coffee',group:'page'},
 {key:'tab-users',label:'Users',group:'tab'},{key:'tab-roles',label:'Roles',group:'tab'},{key:'tab-pitstops',label:'Pit Stops',group:'tab'},{key:'tab-resetdb',label:'Reset DB',group:'tab'},{key:'tab-dbsize',label:'DB Size',group:'tab'}
 ];
@@ -920,14 +927,22 @@ var SETTINGS_TABS=[{key:'tab-users',elTab:'stab-users',elContent:'s-users'},{key
 function getUserPerms(){try{return JSON.parse(sessionStorage.getItem('cc_perms')||'[]');}catch(e){return[];}}
 function hasPerm(screen){var p=getUserPerms();return p.indexOf(screen)!==-1;}
 function applyPermissions(){var perms=getUserPerms();if(!perms.length)return;
+var scanTab=document.getElementById('hometab-scan');var scanContent=document.getElementById('scan');
+var recTab=document.getElementById('hometab-records');var recContent=document.getElementById('records');
+if(scanTab)scanTab.style.display=perms.indexOf('scanner')!==-1?'':'none';
+if(scanContent&&perms.indexOf('scanner')===-1)scanContent.classList.remove('active');
+if(recTab)recTab.style.display=perms.indexOf('records')!==-1?'':'none';
+if(recContent&&perms.indexOf('records')===-1)recContent.classList.remove('active');
+applyHomeFirstTab();
 ALL_SCREENS.forEach(function(s){if(s.group==='page'){var el=document.getElementById('drawer-'+s.key);if(el)el.style.display=perms.indexOf(s.key)!==-1?'':'none';}});
 SETTINGS_TABS.forEach(function(t){var tab=document.getElementById(t.elTab);var content=document.getElementById(t.elContent);if(tab)tab.style.display=perms.indexOf(t.key)!==-1?'':'none';if(content&&perms.indexOf(t.key)===-1)content.classList.remove('active');});
 applySettingsFirstTab();
 if(perms.indexOf('settings')!==-1){settingsAuth=true;}
 if(perms.indexOf('admin')!==-1){adminAuth=true;}
 if(perms.indexOf('report')!==-1){reportAuth=true;}}
+function applyHomeFirstTab(){var perms=getUserPerms();if(!perms.length)return;var homeTabs=[{key:'scanner',elTab:'hometab-scan',elContent:'scan'},{key:'records',elTab:'hometab-records',elContent:'records'}];var anyVisible=false;homeTabs.forEach(function(t){if(perms.indexOf(t.key)!==-1&&!anyVisible){var tab=document.getElementById(t.elTab);var content=document.getElementById(t.elContent);if(tab){tab.classList.add('active');anyVisible=true;}if(content)content.classList.add('active');}});}
 function applySettingsFirstTab(){var perms=getUserPerms();if(!perms.length)return;var first=null;SETTINGS_TABS.forEach(function(t){var tab=document.getElementById(t.elTab);if(tab&&tab.style.display!=='none'&&!first)first=t;});if(first){var tab=document.getElementById(first.elTab);var content=document.getElementById(first.elContent);if(tab&&!document.querySelector('.s-tab.active[style*="display"]')){document.querySelectorAll('.s-tab').forEach(function(b){b.classList.remove('active');});document.querySelectorAll('.s-tab-content').forEach(function(c){c.classList.remove('active');});tab.classList.add('active');if(content)content.classList.add('active');}}}
-function resetPermissions(){settingsAuth=false;adminAuth=false;reportAuth=false;ALL_SCREENS.forEach(function(s){if(s.group==='page'){var el=document.getElementById('drawer-'+s.key);if(el)el.style.display='';}});SETTINGS_TABS.forEach(function(t){var tab=document.getElementById(t.elTab);if(tab)tab.style.display='';});}
+function resetPermissions(){settingsAuth=false;adminAuth=false;reportAuth=false;ALL_SCREENS.forEach(function(s){if(s.group==='page'){var el=document.getElementById('drawer-'+s.key);if(el)el.style.display='';}});SETTINGS_TABS.forEach(function(t){var tab=document.getElementById(t.elTab);if(tab)tab.style.display='';});['hometab-scan','hometab-records'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});}
 
 // Check session on load
 (function(){
@@ -1002,7 +1017,7 @@ function refreshReport(){fetch('/api/scans').then(function(r){return r.json();})
 function renderReportTable(){var q=(document.getElementById('r-search')?document.getElementById('r-search').value||'':'').toLowerCase();var f=reportScans.filter(function(s){return s.cyclist_code.toLowerCase().includes(q)||(s.pit_stop||'').toLowerCase().includes(q)||(s.scanner_name||'').toLowerCase().includes(q);});var c=document.getElementById('r-count');if(c)c.textContent=f.length+' records';document.getElementById('report-table').innerHTML=f.length?'<table><thead><tr><th>#</th><th>Cyclist</th><th>Date/Time</th><th>CP</th><th>Scanner</th></tr></thead><tbody>'+f.map(function(s){var d=new Date(s.scanned_at);return'<tr><td>'+s.id+'</td><td><span class="code-badge">'+s.cyclist_code+'</span></td><td>'+d.toLocaleDateString()+'<br><small>'+d.toLocaleTimeString()+'</small></td><td>'+(s.pit_stop||'')+'</td><td>'+(s.scanner_name||'-')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No records found.</div>';}
 
 // Tabs
-function showTab(id,btn){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.tab-bar button').forEach(function(b){b.classList.remove('active');});document.getElementById(id).classList.add('active');btn.classList.add('active');if(id==='records'){fetchScans();startCountdown();}else{stopCountdown();}}
+function showTab(id,btn){var perms=getUserPerms();var permKey=id==='scan'?'scanner':id;if(perms.length&&perms.indexOf(permKey)===-1)return;document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.tab-bar button').forEach(function(b){b.classList.remove('active');});document.getElementById(id).classList.add('active');btn.classList.add('active');if(id==='records'){fetchScans();startCountdown();}else{stopCountdown();}}
 function startCountdown(){stopCountdown();countdownVal=10;updateCountdownBar();countdownTimer=setInterval(function(){countdownVal--;updateCountdownBar();if(countdownVal<=0){fetchScans();countdownVal=10;}},1000);}
 function stopCountdown(){clearInterval(countdownTimer);countdownTimer=null;}
 function updateCountdownBar(){var b=document.getElementById('countdown-bar');if(b)b.style.width=(countdownVal/10*100)+'%';}
@@ -1057,8 +1072,8 @@ function toggleAddUser(){var f=document.getElementById('s-add-user-fields');var 
 // Settings - Roles
 function sLoadRoles(){fetch('/api/roles').then(function(r){return r.json();}).catch(function(){return[];}).then(function(roles){sRolesCache=roles;sRenderRoles();});}
 var sEditingRoleId=null;
-function permLabel(p){var m={'settings':'Settings','admin':'Admin','report':'Report','support':'Support','coffee':'Coffee','tab-users':'Users','tab-roles':'Roles','tab-pitstops':'Pit Stops','tab-resetdb':'Reset DB','tab-dbsize':'DB Size'};return m[p]||p;}
-function sRenderRoles(){var roles=sRolesCache;var userCounts={};sUsersCache.forEach(function(u){if(u.role){userCounts[u.role]=(userCounts[u.role]||0)+1;}});if(!roles.length){document.getElementById('s-roles-list').innerHTML='<div class="empty">No roles created yet. Add one above.</div>';return;}var html='<div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>#</th><th>Role Name</th><th>Description</th><th>Permissions</th><th>Users</th><th>Actions</th></tr></thead><tbody>';roles.forEach(function(r,i){var perms=r.permissions||[];var pages=perms.filter(function(p){return p.indexOf('tab-')!==0;});var tabs=perms.filter(function(p){return p.indexOf('tab-')===0;});var permHtml='';if(pages.length)permHtml+=pages.map(function(p){return '<span class="perm-tag">'+permLabel(p)+'</span>';}).join('');if(tabs.length)permHtml+=tabs.map(function(p){return '<span class="perm-tag sub-tag">'+permLabel(p)+'</span>';}).join('');if(!perms.length)permHtml='<span class="perm-tag none">No access</span>';var isEditing=sEditingRoleId===r.id;html+='<tr><td>'+(i+1)+'</td><td><strong>'+r.name+'</strong></td><td>'+(r.description||'<span style="color:#9ca3af">-</span>')+'</td><td><div class="perm-tags">'+permHtml+'</div></td><td><span class="role-user-count">'+(userCounts[r.name]||0)+'</span></td><td class="rt-actions"><button class="rt-btn edit" onclick="sToggleRoleEdit('+r.id+')">'+(isEditing?'&#10005;':'&#9998;')+'</button><button class="rt-btn del" onclick="sDeleteRole('+r.id+')">&#128465;</button></td></tr>';if(isEditing){var editPermsHtml='<div class="perm-group-label">Pages</div>'+ALL_SCREENS.filter(function(s){return s.group==="page";}).map(function(s){return '<label class="perm-check"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('')+'<div class="perm-group-label">Settings Sub-tabs</div>'+ALL_SCREENS.filter(function(s){return s.group==="tab";}).map(function(s){return '<label class="perm-check sub"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('');html+='<tr class="edit-row"><td colspan="6"><div class="user-edit-form"><div class="ue-grid"><div><label>Role Name</label><input id="re-name-'+r.id+'" type="text" value="'+(r.name||'').replace(/"/g,'&quot;')+'"></div><div><label>Description</label><input id="re-desc-'+r.id+'" type="text" value="'+(r.description||'').replace(/"/g,'&quot;')+'"></div></div><div style="margin-top:10px;"><label style="font-weight:600;font-size:0.85rem;margin-bottom:6px;display:block;">Screen Permissions</label><div class="perm-checks" id="re-perms-'+r.id+'">'+editPermsHtml+'</div></div><div class="user-edit-btns"><button class="cancel-btn" onclick="sToggleRoleEdit(null)">Cancel</button><button class="save-btn" onclick="sSaveRole('+r.id+')">Save</button></div></div></td></tr>';}});html+='</tbody></table></div>';document.getElementById('s-roles-list').innerHTML=html;}
+function permLabel(p){var m={'scanner':'Scanner','records':'Records','settings':'Settings','admin':'Admin','report':'Report','support':'Support','coffee':'Coffee','tab-users':'Users','tab-roles':'Roles','tab-pitstops':'Pit Stops','tab-resetdb':'Reset DB','tab-dbsize':'DB Size'};return m[p]||p;}
+function sRenderRoles(){var roles=sRolesCache;var userCounts={};sUsersCache.forEach(function(u){if(u.role){userCounts[u.role]=(userCounts[u.role]||0)+1;}});if(!roles.length){document.getElementById('s-roles-list').innerHTML='<div class="empty">No roles created yet. Add one above.</div>';return;}var html='<div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>#</th><th>Role Name</th><th>Description</th><th>Permissions</th><th>Users</th><th>Actions</th></tr></thead><tbody>';roles.forEach(function(r,i){var perms=r.permissions||[];var homePerms=perms.filter(function(p){return p==='scanner'||p==='records';});var pages=perms.filter(function(p){return p.indexOf('tab-')!==0&&p!=='scanner'&&p!=='records';});var tabs=perms.filter(function(p){return p.indexOf('tab-')===0;});var permHtml='';if(homePerms.length)permHtml+=homePerms.map(function(p){return '<span class="perm-tag home-tag">'+permLabel(p)+'</span>';}).join('');if(pages.length)permHtml+=pages.map(function(p){return '<span class="perm-tag">'+permLabel(p)+'</span>';}).join('');if(tabs.length)permHtml+=tabs.map(function(p){return '<span class="perm-tag sub-tag">'+permLabel(p)+'</span>';}).join('');if(!perms.length)permHtml='<span class="perm-tag none">No access</span>';var isEditing=sEditingRoleId===r.id;html+='<tr><td>'+(i+1)+'</td><td><strong>'+r.name+'</strong></td><td>'+(r.description||'<span style="color:#9ca3af">-</span>')+'</td><td><div class="perm-tags">'+permHtml+'</div></td><td><span class="role-user-count">'+(userCounts[r.name]||0)+'</span></td><td class="rt-actions"><button class="rt-btn edit" onclick="sToggleRoleEdit('+r.id+')">'+(isEditing?'&#10005;':'&#9998;')+'</button><button class="rt-btn del" onclick="sDeleteRole('+r.id+')">&#128465;</button></td></tr>';if(isEditing){var editPermsHtml='<div class="perm-group-label">Home</div>'+ALL_SCREENS.filter(function(s){return s.group==="home";}).map(function(s){return '<label class="perm-check home"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('')+'<div class="perm-group-label">Pages</div>'+ALL_SCREENS.filter(function(s){return s.group==="page";}).map(function(s){return '<label class="perm-check"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('')+'<div class="perm-group-label">Settings Sub-tabs</div>'+ALL_SCREENS.filter(function(s){return s.group==="tab";}).map(function(s){return '<label class="perm-check sub"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('');html+='<tr class="edit-row"><td colspan="6"><div class="user-edit-form"><div class="ue-grid"><div><label>Role Name</label><input id="re-name-'+r.id+'" type="text" value="'+(r.name||'').replace(/"/g,'&quot;')+'"></div><div><label>Description</label><input id="re-desc-'+r.id+'" type="text" value="'+(r.description||'').replace(/"/g,'&quot;')+'"></div></div><div style="margin-top:10px;"><label style="font-weight:600;font-size:0.85rem;margin-bottom:6px;display:block;">Screen Permissions</label><div class="perm-checks" id="re-perms-'+r.id+'">'+editPermsHtml+'</div></div><div class="user-edit-btns"><button class="cancel-btn" onclick="sToggleRoleEdit(null)">Cancel</button><button class="save-btn" onclick="sSaveRole('+r.id+')">Save</button></div></div></td></tr>';}});html+='</tbody></table></div>';document.getElementById('s-roles-list').innerHTML=html;}
 function sToggleRoleEdit(id){sEditingRoleId=sEditingRoleId===id?null:id;sRenderRoles();}
 function sSaveRole(id){var name=document.getElementById('re-name-'+id).value.trim();var desc=document.getElementById('re-desc-'+id).value.trim();var perms=getCheckedPerms('re-perms-'+id);fetch('/api/roles/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,description:desc,permissions:perms})}).then(function(res){return res.json().then(function(d){return{status:res.status,data:d};});}).then(function(res){if(res.status===200){sEditingRoleId=null;sLoadRoles();sLoadRolesCache();}else{alert(res.data.error||'Failed.');}}).catch(function(){alert('Network error.');});}
 function getCheckedPerms(containerId){var checks=document.querySelectorAll('#'+containerId+' input[type=checkbox]:checked');var perms=[];checks.forEach(function(c){perms.push(c.value);});return perms;}
