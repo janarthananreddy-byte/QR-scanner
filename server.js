@@ -342,6 +342,41 @@ app.get('/api/tshirts/stats', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// TRANSACTION ENDPOINTS
+app.get('/api/transactions', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('transactions').select('*').order('issued_at', { ascending: false });
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/transaction', async (req, res) => {
+  const { cc_id, rider_name, item, quantity, issued_by, pitstop } = req.body;
+  if (!cc_id || !item) return res.status(400).json({ error: 'CC ID and Item are required' });
+  try {
+    const { data, error } = await supabase.from('transactions').insert({
+      cc_id: cc_id.trim().toUpperCase(),
+      rider_name: rider_name || '',
+      item: item.trim(),
+      quantity: parseInt(quantity) || 1,
+      issued_by: issued_by || '',
+      pitstop: pitstop || '',
+      issued_at: new Date().toISOString()
+    }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/transaction/:id', async (req, res) => {
+  try {
+    const { error } = await supabase.from('transactions').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/export/csv', async (req, res) => {
   try {
     const { data, error } = await supabase.from('scans').select('*').order('id');

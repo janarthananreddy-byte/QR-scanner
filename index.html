@@ -403,8 +403,8 @@
     .coffee-hire-btn{display:inline-block;background:var(--primary);color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600;}
     /* T-Shirt page */
     /* T-Shirt page */
-    #page-tshirt .page-body{max-width:100%;padding:0;}
-    @media(min-width:768px){#page-tshirt .page-body{max-width:960px;margin:0 auto;}}
+    #page-tshirt .page-body,#page-transaction .page-body{max-width:100%;padding:0;}
+    @media(min-width:768px){#page-tshirt .page-body,#page-transaction .page-body{max-width:960px;margin:0 auto;}}
     .ts-tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);overflow-x:auto;padding:0 4px;}
     .ts-tab{flex:1;min-width:0;padding:10px 6px;font-size:0.78rem;font-weight:700;color:var(--gray);background:none;border:none;border-bottom:2.5px solid transparent;cursor:pointer;text-align:center;white-space:nowrap;transition:all 0.15s;}
     .ts-tab.active{color:#07570f;border-bottom-color:#07570f;}
@@ -504,6 +504,11 @@
     <button class="drawer-item" id="drawer-tshirt" onclick="openPage('tshirt')">
       <span class="di-icon">&#128085;</span>
       <div class="di-text"><span class="di-title">T-Shirts</span><span class="di-sub">Rider t-shirt management</span></div>
+      <span class="di-arrow">&#8250;</span>
+    </button>
+    <button class="drawer-item" id="drawer-transaction" onclick="openPage('transaction')">
+      <span class="di-icon">&#128230;</span>
+      <div class="di-text"><span class="di-title">Transaction</span><span class="di-sub">Issue free goods</span></div>
       <span class="di-arrow">&#8250;</span>
     </button>
     <div class="drawer-divider"></div>
@@ -658,6 +663,7 @@
               <label class="perm-check"><input type="checkbox" value="support"> <span>Support</span></label>
               <label class="perm-check"><input type="checkbox" value="coffee"> <span>Buy Me a Coffee</span></label>
               <label class="perm-check"><input type="checkbox" value="tshirt"> <span>T-Shirts</span></label>
+              <label class="perm-check"><input type="checkbox" value="transaction"> <span>Transaction</span></label>
               <div class="perm-group-label">Settings Sub-tabs</div>
               <label class="perm-check sub"><input type="checkbox" value="tab-users"> <span>Users</span></label>
               <label class="perm-check sub"><input type="checkbox" value="tab-roles"> <span>Roles</span></label>
@@ -938,6 +944,48 @@
   </div>
 </div>
 
+<!-- PAGE: Transaction -->
+<div class="menu-page" id="page-transaction">
+  <div class="page-hdr">
+    <button class="page-back" onclick="closePage('transaction')">&#8592; Back</button>
+    <span class="page-ttl">&#128230; Transaction</span>
+  </div>
+  <div class="page-body">
+    <div class="ts-tabs">
+      <button class="ts-tab active" onclick="txSwitchTab('list',this)">&#128196; Transactions</button>
+      <button class="ts-tab" onclick="txSwitchTab('issue',this)">&#10133; Issue Item</button>
+    </div>
+
+    <!-- TAB: Transaction List -->
+    <div class="ts-tab-panel active" id="tx-panel-list">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input id="tx-filter" type="text" placeholder="Search CC ID, item, rider..." oninput="txFilterTable()" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;">
+        <button onclick="txLoadAll()" style="background:#07570f;color:#fff;border:none;padding:9px 14px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">&#8635; Refresh</button>
+      </div>
+      <div id="tx-table-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;max-height:70vh;overflow-y:auto;">
+        <div class="empty" style="padding:20px;">Loading...</div>
+      </div>
+    </div>
+
+    <!-- TAB: Issue Item -->
+    <div class="ts-tab-panel" id="tx-panel-issue">
+      <div class="ts-section">
+        <span class="ts-section-title">&#10133; Issue Free Goods</span>
+        <div class="ts-form-grid">
+          <div><label>CC ID *</label><input id="tx-f-ccid" type="text" placeholder="e.g. CC001" style="text-transform:uppercase;" oninput="txLookupRider()"></div>
+          <div><label>Rider Name</label><input id="tx-f-rider" type="text" placeholder="Auto-filled from CC ID" readonly style="background:#f3f4f6;"></div>
+          <div><label>Item *</label><input id="tx-f-item" type="text" placeholder="e.g. Water Bottle, Energy Bar"></div>
+          <div><label>Quantity</label><input id="tx-f-qty" type="number" value="1" min="1"></div>
+          <div><label>Issued By</label><input id="tx-f-issuedby" type="text" placeholder="Your name"></div>
+          <div><label>Pit Stop / Location</label><input id="tx-f-pitstop" type="text" placeholder="e.g. Start Pitstop"></div>
+        </div>
+        <button onclick="txIssueItem()" style="width:100%;margin-top:14px;background:var(--green);color:#fff;border:none;padding:12px;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;">Issue Item</button>
+        <div id="tx-form-msg" style="margin-top:8px;font-size:0.85rem;min-height:1.2em;text-align:center;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- PAGE: Reset DB -->
 <div class="menu-page" id="page-resetdb">
   <div class="page-hdr">
@@ -1035,7 +1083,7 @@ function doLogout(){
 // Permissions
 var ALL_SCREENS=[
 {key:'scanner',label:'Scanner',group:'home'},{key:'records',label:'Records',group:'home'},
-{key:'settings',label:'Settings',group:'page'},{key:'admin',label:'Admin',group:'page'},{key:'report',label:'Report',group:'page'},{key:'support',label:'Support',group:'page'},{key:'coffee',label:'Buy Me a Coffee',group:'page'},{key:'tshirt',label:'T-Shirts',group:'page'},
+{key:'settings',label:'Settings',group:'page'},{key:'admin',label:'Admin',group:'page'},{key:'report',label:'Report',group:'page'},{key:'support',label:'Support',group:'page'},{key:'coffee',label:'Buy Me a Coffee',group:'page'},{key:'tshirt',label:'T-Shirts',group:'page'},{key:'transaction',label:'Transaction',group:'page'},
 {key:'tab-users',label:'Users',group:'tab'},{key:'tab-roles',label:'Roles',group:'tab'},{key:'tab-pitstops',label:'Pit Stops',group:'tab'},{key:'tab-resetdb',label:'Reset DB',group:'tab'},{key:'tab-dbsize',label:'DB Size',group:'tab'}
 ];
 var SETTINGS_TABS=[{key:'tab-users',elTab:'stab-users',elContent:'s-users'},{key:'tab-roles',elTab:'stab-roles',elContent:'s-roles'},{key:'tab-pitstops',elTab:'stab-pitstops',elContent:'s-pitstops'},{key:'tab-resetdb',elTab:'stab-resetdb',elContent:'s-resetdb'},{key:'tab-dbsize',elTab:'stab-dbsize',elContent:'s-dbsize'}];
@@ -1072,7 +1120,7 @@ function openPage(id){closeDrawer();document.getElementById('page-'+id).classLis
 if(id==='admin'&&!adminAuth&&hasPerm('admin')){adminAuth=true;document.getElementById('admin-pin-gate').style.display='none';document.getElementById('admin-content').classList.add('visible');}
 if(id==='report'&&!reportAuth&&hasPerm('report')){reportAuth=true;var rg=document.getElementById('report-pin-gate');if(rg)rg.style.display='none';var rc=document.getElementById('report-content');if(rc)rc.classList.add('visible');}
 if(id==='settings'&&!settingsAuth&&hasPerm('settings')){settingsAuth=true;document.getElementById('settings-pin-gate').style.display='none';document.getElementById('settings-content').classList.add('visible');}
-if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();if(id==='tshirt'){tsLoadAll();}if(id==='settings'&&settingsAuth){sLoadRolesCache();sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}}
+if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();if(id==='tshirt'){tsLoadAll();}if(id==='transaction'){txLoadAll();}if(id==='settings'&&settingsAuth){sLoadRolesCache();sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}}
 function closePage(id){document.getElementById('page-'+id).classList.remove('open');}
 
 // Admin PIN
@@ -1188,7 +1236,7 @@ function toggleAddUser(){var f=document.getElementById('s-add-user-fields');var 
 // Settings - Roles
 function sLoadRoles(){fetch('/api/roles').then(function(r){return r.json();}).catch(function(){return[];}).then(function(roles){sRolesCache=roles;sRenderRoles();});}
 var sEditingRoleId=null;
-function permLabel(p){var m={'scanner':'Scanner','records':'Records','settings':'Settings','admin':'Admin','report':'Report','support':'Support','coffee':'Coffee','tshirt':'T-Shirts','tab-users':'Users','tab-roles':'Roles','tab-pitstops':'Pit Stops','tab-resetdb':'Reset DB','tab-dbsize':'DB Size'};return m[p]||p;}
+function permLabel(p){var m={'scanner':'Scanner','records':'Records','settings':'Settings','admin':'Admin','report':'Report','support':'Support','coffee':'Coffee','tshirt':'T-Shirts','transaction':'Transaction','tab-users':'Users','tab-roles':'Roles','tab-pitstops':'Pit Stops','tab-resetdb':'Reset DB','tab-dbsize':'DB Size'};return m[p]||p;}
 function sRenderRoles(){var roles=sRolesCache;var userCounts={};sUsersCache.forEach(function(u){if(u.role){userCounts[u.role]=(userCounts[u.role]||0)+1;}});if(!roles.length){document.getElementById('s-roles-list').innerHTML='<div class="empty">No roles created yet. Add one above.</div>';return;}var html='<div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>#</th><th>Role Name</th><th>Description</th><th>Permissions</th><th>Users</th><th>Actions</th></tr></thead><tbody>';roles.forEach(function(r,i){var perms=r.permissions||[];var homePerms=perms.filter(function(p){return p==='scanner'||p==='records';});var pages=perms.filter(function(p){return p.indexOf('tab-')!==0&&p!=='scanner'&&p!=='records';});var tabs=perms.filter(function(p){return p.indexOf('tab-')===0;});var permHtml='';if(homePerms.length)permHtml+=homePerms.map(function(p){return '<span class="perm-tag home-tag">'+permLabel(p)+'</span>';}).join('');if(pages.length)permHtml+=pages.map(function(p){return '<span class="perm-tag">'+permLabel(p)+'</span>';}).join('');if(tabs.length)permHtml+=tabs.map(function(p){return '<span class="perm-tag sub-tag">'+permLabel(p)+'</span>';}).join('');if(!perms.length)permHtml='<span class="perm-tag none">No access</span>';var isEditing=sEditingRoleId===r.id;html+='<tr><td>'+(i+1)+'</td><td><strong>'+r.name+'</strong></td><td>'+(r.description||'<span style="color:#9ca3af">-</span>')+'</td><td><div class="perm-tags">'+permHtml+'</div></td><td><span class="role-user-count">'+(userCounts[r.name]||0)+'</span></td><td class="rt-actions"><button class="rt-btn edit" onclick="sToggleRoleEdit('+r.id+')">'+(isEditing?'&#10005;':'&#9998;')+'</button><button class="rt-btn del" onclick="sDeleteRole('+r.id+')">&#128465;</button></td></tr>';if(isEditing){var editPermsHtml='<div class="perm-group-label">Home</div>'+ALL_SCREENS.filter(function(s){return s.group==="home";}).map(function(s){return '<label class="perm-check home"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('')+'<div class="perm-group-label">Pages</div>'+ALL_SCREENS.filter(function(s){return s.group==="page";}).map(function(s){return '<label class="perm-check"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('')+'<div class="perm-group-label">Settings Sub-tabs</div>'+ALL_SCREENS.filter(function(s){return s.group==="tab";}).map(function(s){return '<label class="perm-check sub"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('');html+='<tr class="edit-row"><td colspan="6"><div class="user-edit-form"><div class="ue-grid"><div><label>Role Name</label><input id="re-name-'+r.id+'" type="text" value="'+(r.name||'').replace(/"/g,'&quot;')+'"></div><div><label>Description</label><input id="re-desc-'+r.id+'" type="text" value="'+(r.description||'').replace(/"/g,'&quot;')+'"></div></div><div style="margin-top:10px;"><label style="font-weight:600;font-size:0.85rem;margin-bottom:6px;display:block;">Screen Permissions</label><div class="perm-checks" id="re-perms-'+r.id+'">'+editPermsHtml+'</div></div><div class="user-edit-btns"><button class="cancel-btn" onclick="sToggleRoleEdit(null)">Cancel</button><button class="save-btn" onclick="sSaveRole('+r.id+')">Save</button></div></div></td></tr>';}});html+='</tbody></table></div>';document.getElementById('s-roles-list').innerHTML=html;}
 function sToggleRoleEdit(id){sEditingRoleId=sEditingRoleId===id?null:id;sRenderRoles();}
 function sSaveRole(id){var name=document.getElementById('re-name-'+id).value.trim();var desc=document.getElementById('re-desc-'+id).value.trim();var perms=getCheckedPerms('re-perms-'+id);fetch('/api/roles/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,description:desc,permissions:perms})}).then(function(res){return res.json().then(function(d){return{status:res.status,data:d};});}).then(function(res){if(res.status===200){sEditingRoleId=null;sLoadRoles();sLoadRolesCache();}else{alert(res.data.error||'Failed.');}}).catch(function(){alert('Network error.');});}
@@ -1260,6 +1308,21 @@ function tsDeliver(ccId){var by=sessionStorage.getItem('cc_user')||'';if(!confir
 function tsBulkUpload(){var file=document.getElementById('ts-file').files[0];var msg=document.getElementById('ts-upload-msg');if(!file){msg.innerHTML='<span style="color:var(--red);">No file selected</span>';return;}msg.innerHTML='<span style="color:var(--gray);">Processing...</span>';
 var reader=new FileReader();reader.onload=function(e){try{var rows;if(file.name.endsWith('.json')){rows=JSON.parse(e.target.result);}else{var lines=e.target.result.split('\n').filter(function(l){return l.trim();});if(lines.length<2){msg.innerHTML='<span style="color:var(--red);">CSV needs header + data rows</span>';return;}var headers=lines[0].split(',').map(function(h){return h.trim().replace(/^"|"$/g,'');});rows=[];for(var i=1;i<lines.length;i++){var vals=lines[i].split(',').map(function(v){return v.trim().replace(/^"|"$/g,'');});var obj={};headers.forEach(function(h,j){obj[h]=vals[j]||'';});rows.push(obj);}}
 fetch('/api/tshirts/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rows:rows})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(res){if(res.data.ok){msg.innerHTML='<span style="color:var(--green);font-weight:700;">Uploaded '+res.data.count+' riders!</span>';tsLoadStats();tsLoadAll();}else{msg.innerHTML='<span style="color:var(--red);">'+res.data.error+'</span>';}}).catch(function(){msg.innerHTML='<span style="color:var(--red);">Network error</span>';});}catch(ex){msg.innerHTML='<span style="color:var(--red);">Parse error: '+ex.message+'</span>';}};reader.readAsText(file);}
+
+// Transaction functions
+var txAllData=[];
+function txSwitchTab(name,btn){document.querySelectorAll('#page-transaction .ts-tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('#page-transaction .ts-tab-panel').forEach(function(p){p.classList.remove('active');});if(btn)btn.classList.add('active');var panel=document.getElementById('tx-panel-'+name);if(panel)panel.classList.add('active');if(name==='issue'){var ib=document.getElementById('tx-f-issuedby');if(ib&&!ib.value)ib.value=sessionStorage.getItem('cc_user')||'';}}
+function txLoadAll(){fetch('/api/transactions').then(function(r){return r.json();}).then(function(data){txAllData=data;txRenderTable(data);}).catch(function(){document.getElementById('tx-table-wrap').innerHTML='<div class="empty">Failed to load.</div>';});}
+function txRenderTable(data){if(!data.length){document.getElementById('tx-table-wrap').innerHTML='<div class="empty" style="padding:20px;">No transactions yet. Issue an item above.</div>';return;}
+var html='<table class="ts-table"><thead><tr><th>#</th><th>CC ID</th><th>Rider</th><th>Item</th><th>Qty</th><th>Issued By</th><th>Pit Stop</th><th>Time</th><th>Actions</th></tr></thead><tbody>';
+data.forEach(function(r,i){var t=r.issued_at?new Date(r.issued_at).toLocaleString():'';html+='<tr><td>'+(i+1)+'</td><td><strong>'+(r.cc_id||'')+'</strong></td><td>'+(r.rider_name||'')+'</td><td>'+(r.item||'')+'</td><td>'+(r.quantity||1)+'</td><td>'+(r.issued_by||'')+'</td><td>'+(r.pitstop||'')+'</td><td style="font-size:0.78rem;">'+t+'</td><td class="rt-actions"><button class="rt-btn del" onclick="txDelete('+r.id+')">&#128465;</button></td></tr>';});
+html+='</tbody></table>';document.getElementById('tx-table-wrap').innerHTML=html;}
+function txFilterTable(){var q=document.getElementById('tx-filter').value.trim().toLowerCase();if(!q){txRenderTable(txAllData);return;}var filtered=txAllData.filter(function(r){return (r.cc_id||'').toLowerCase().indexOf(q)!==-1||(r.rider_name||'').toLowerCase().indexOf(q)!==-1||(r.item||'').toLowerCase().indexOf(q)!==-1;});txRenderTable(filtered);}
+function txLookupRider(){var ccid=document.getElementById('tx-f-ccid').value.trim().toUpperCase();var el=document.getElementById('tx-f-rider');if(ccid.length<3){el.value='';return;}fetch('/api/tshirt/'+encodeURIComponent(ccid)).then(function(r){if(r.ok)return r.json();throw new Error();}).then(function(d){el.value=d.name||((d.first_name||'')+' '+(d.last_name||'')).trim();}).catch(function(){el.value='';});}
+function txIssueItem(){var ccid=document.getElementById('tx-f-ccid').value.trim().toUpperCase();var item=document.getElementById('tx-f-item').value.trim();var msg=document.getElementById('tx-form-msg');if(!ccid||!item){msg.style.color='var(--red)';msg.textContent='CC ID and Item are required.';return;}
+var body={cc_id:ccid,rider_name:document.getElementById('tx-f-rider').value.trim(),item:item,quantity:document.getElementById('tx-f-qty').value||1,issued_by:document.getElementById('tx-f-issuedby').value.trim(),pitstop:document.getElementById('tx-f-pitstop').value.trim()};
+fetch('/api/transaction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(res){if(res.status===200||res.status===201){msg.style.color='var(--green)';msg.textContent='Item issued to '+ccid+'!';['tx-f-ccid','tx-f-rider','tx-f-item','tx-f-pitstop'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('tx-f-qty').value='1';txLoadAll();}else{msg.style.color='var(--red)';msg.textContent=res.data.error||'Failed.';}}).catch(function(){msg.style.color='var(--red)';msg.textContent='Network error.';});}
+function txDelete(id){if(!confirm('Delete this transaction?'))return;fetch('/api/transaction/'+id,{method:'DELETE'}).then(function(r){return r.json();}).then(function(d){if(d.ok)txLoadAll();else alert(d.error||'Delete failed.');}).catch(function(){alert('Network error.');});}
 
 // Load pit stops on startup
 fetch('/api/pit-stops').then(function(r){return r.json();}).catch(function(){return[];}).then(function(ps){if(ps.length){pitStopsCache=ps;updatePitStopDropdown();}});
