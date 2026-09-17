@@ -874,7 +874,6 @@
     <div class="ts-tabs">
       <button class="ts-tab active" onclick="tsSwitchTab('riders',this)">&#128101; Riders</button>
       <button class="ts-tab" onclick="tsSwitchTab('add',this)">&#10133; Add Rider</button>
-      <button class="ts-tab" onclick="tsSwitchTab('lookup',this)">&#128269; Lookup</button>
       <button class="ts-tab" onclick="tsSwitchTab('upload',this)">&#128228; Upload</button>
     </div>
 
@@ -918,16 +917,6 @@
     </div>
 
     <!-- TAB: Lookup -->
-    <div class="ts-tab-panel" id="ts-panel-lookup">
-      <div class="ts-section">
-        <div class="ts-section-title">&#128269; Lookup Rider by CC ID</div>
-        <div style="display:flex;gap:8px;">
-          <input id="ts-lookup-id" type="text" placeholder="Enter CC ID" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;text-transform:uppercase;" onkeydown="if(event.key==='Enter')tsLookup()">
-          <button onclick="tsLookup()" style="background:var(--green);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;">Search</button>
-        </div>
-        <div id="ts-lookup-result" style="margin-top:12px;"></div>
-      </div>
-    </div>
 
     <!-- TAB: Bulk Upload -->
     <div class="ts-tab-panel" id="ts-panel-upload">
