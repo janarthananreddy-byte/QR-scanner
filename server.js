@@ -273,6 +273,7 @@ app.post('/api/tshirts/bulk', async (req, res) => {
     size: String(r.size || r.Size || r.SIZE || r['T-Shirt Size'] || r['Tshirt Size'] || r.tshirt_size || '').trim().toUpperCase(),
     payment_date: String(r.payment_date || r['Payment Date'] || r.PaymentDate || r.PAYMENT_DATE || '').trim(),
     payment_status: String(r.payment_status || r['Payment Status'] || r.PaymentStatus || r.PAYMENT_STATUS || '').trim(),
+    payment_method: String(r.payment_method || r['Payment Method'] || r.PaymentMethod || r.PAYMENT_METHOD || '').trim(),
     distance: String(r.distance || r.Distance || r.DISTANCE || r['Distance'] || '').trim(),
     event_name: String(r.event_name || r['Event Name'] || r.EventName || r.EVENT_NAME || '').trim(),
     event_date: String(r.event_date || r['Event Date'] || r.EventDate || r.EVENT_DATE || '').trim(),
