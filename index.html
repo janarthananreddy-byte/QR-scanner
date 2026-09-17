@@ -401,6 +401,20 @@
     .coffee-hire-title{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:6px;}
     .coffee-hire-text{font-size:0.88rem;color:var(--muted);line-height:1.5;margin-bottom:12px;}
     .coffee-hire-btn{display:inline-block;background:var(--primary);color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:0.9rem;font-weight:600;}
+    /* T-Shirt page */
+    .ts-stat-card{flex:1;min-width:80px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+    .ts-stat-card .ts-stat-num{font-size:1.5rem;font-weight:800;color:#374151;}
+    .ts-stat-card .ts-stat-lbl{font-size:0.75rem;color:var(--gray);font-weight:600;text-transform:uppercase;}
+    .ts-stat-card.delivered .ts-stat-num{color:var(--green);}
+    .ts-stat-card.pending .ts-stat-num{color:var(--amber);}
+    .ts-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+    .ts-table thead{background:#07570f;color:#fff;position:sticky;top:0;}
+    .ts-table th{padding:8px 10px;text-align:left;font-size:0.72rem;font-weight:700;text-transform:uppercase;white-space:nowrap;}
+    .ts-table td{padding:8px 10px;border-bottom:1px solid #f3f4f6;color:#374151;white-space:nowrap;}
+    .ts-table tbody tr:hover{background:#f0fdf4;}
+    .ts-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:0.85rem;}
+    .ts-dlbl{display:block;font-size:0.72rem;color:var(--gray);text-transform:uppercase;font-weight:600;}
+    .ts-dval{display:block;font-weight:600;color:#374151;}
   </style>
 </head>
 <body>
@@ -465,6 +479,11 @@
     <button class="drawer-item" id="drawer-report" onclick="openPage('report')">
       <span class="di-icon">&#128202;</span>
       <div class="di-text"><span class="di-title">Report</span><span class="di-sub">Scan records</span></div>
+      <span class="di-arrow">&#8250;</span>
+    </button>
+    <button class="drawer-item" id="drawer-tshirt" onclick="openPage('tshirt')">
+      <span class="di-icon">&#128085;</span>
+      <div class="di-text"><span class="di-title">T-Shirts</span><span class="di-sub">Rider t-shirt management</span></div>
       <span class="di-arrow">&#8250;</span>
     </button>
     <div class="drawer-divider"></div>
@@ -823,6 +842,54 @@
   </div>
 </div>
 
+<!-- PAGE: T-Shirts -->
+<div class="menu-page" id="page-tshirt">
+  <div class="page-hdr">
+    <button class="page-back" onclick="closePage('tshirt')">&#8592; Back</button>
+    <span class="page-ttl">&#128085; T-Shirt Management</span>
+  </div>
+  <div class="page-body">
+    <!-- Stats -->
+    <div id="tshirt-stats" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <div class="ts-stat-card" id="ts-total"><div class="ts-stat-num">0</div><div class="ts-stat-lbl">Total</div></div>
+      <div class="ts-stat-card delivered" id="ts-delivered"><div class="ts-stat-num">0</div><div class="ts-stat-lbl">Delivered</div></div>
+      <div class="ts-stat-card pending" id="ts-pending"><div class="ts-stat-num">0</div><div class="ts-stat-lbl">Pending</div></div>
+    </div>
+
+    <!-- Lookup -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;">&#128269; Lookup Rider</div>
+      <div style="display:flex;gap:8px;">
+        <input id="ts-lookup-id" type="text" placeholder="Enter CC ID" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;text-transform:uppercase;" onkeydown="if(event.key==='Enter')tsLookup()">
+        <button onclick="tsLookup()" style="background:var(--green);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Search</button>
+      </div>
+      <div id="ts-lookup-result" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Bulk Upload -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;">&#128228; Bulk Upload</div>
+      <div style="font-size:0.8rem;color:var(--gray);margin-bottom:8px;">Upload CSV/JSON with columns: cc_id, name, first_name, last_name, cycle, cycle_brand, size, payment_date, payment_status, payment_method, distance, event_name, event_date, preferred_collection_center</div>
+      <input type="file" id="ts-file" accept=".csv,.json" onchange="tsBulkUpload()" style="font-size:0.85rem;">
+      <div id="ts-upload-msg" style="margin-top:8px;font-size:0.85rem;min-height:1.2em;"></div>
+    </div>
+
+    <!-- Table -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);">
+        <span style="font-weight:700;font-size:0.9rem;">All Riders</span>
+        <button onclick="tsLoadAll()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:0.8rem;cursor:pointer;">&#8635; Refresh</button>
+      </div>
+      <div style="padding:8px 14px;">
+        <input id="ts-filter" type="text" placeholder="Filter by CC ID, name..." oninput="tsFilterTable()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;">
+      </div>
+      <div id="ts-table-wrap" style="overflow-x:auto;max-height:60vh;overflow-y:auto;">
+        <div class="empty" style="padding:20px;">Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- PAGE: Reset DB -->
 <div class="menu-page" id="page-resetdb">
   <div class="page-hdr">
@@ -920,7 +987,7 @@ function doLogout(){
 // Permissions
 var ALL_SCREENS=[
 {key:'scanner',label:'Scanner',group:'home'},{key:'records',label:'Records',group:'home'},
-{key:'settings',label:'Settings',group:'page'},{key:'admin',label:'Admin',group:'page'},{key:'report',label:'Report',group:'page'},{key:'support',label:'Support',group:'page'},{key:'coffee',label:'Buy Me a Coffee',group:'page'},
+{key:'settings',label:'Settings',group:'page'},{key:'admin',label:'Admin',group:'page'},{key:'report',label:'Report',group:'page'},{key:'support',label:'Support',group:'page'},{key:'coffee',label:'Buy Me a Coffee',group:'page'},{key:'tshirt',label:'T-Shirts',group:'page'},
 {key:'tab-users',label:'Users',group:'tab'},{key:'tab-roles',label:'Roles',group:'tab'},{key:'tab-pitstops',label:'Pit Stops',group:'tab'},{key:'tab-resetdb',label:'Reset DB',group:'tab'},{key:'tab-dbsize',label:'DB Size',group:'tab'}
 ];
 var SETTINGS_TABS=[{key:'tab-users',elTab:'stab-users',elContent:'s-users'},{key:'tab-roles',elTab:'stab-roles',elContent:'s-roles'},{key:'tab-pitstops',elTab:'stab-pitstops',elContent:'s-pitstops'},{key:'tab-resetdb',elTab:'stab-resetdb',elContent:'s-resetdb'},{key:'tab-dbsize',elTab:'stab-dbsize',elContent:'s-dbsize'}];
@@ -957,7 +1024,7 @@ function openPage(id){closeDrawer();document.getElementById('page-'+id).classLis
 if(id==='admin'&&!adminAuth&&hasPerm('admin')){adminAuth=true;document.getElementById('admin-pin-gate').style.display='none';document.getElementById('admin-content').classList.add('visible');}
 if(id==='report'&&!reportAuth&&hasPerm('report')){reportAuth=true;var rg=document.getElementById('report-pin-gate');if(rg)rg.style.display='none';var rc=document.getElementById('report-content');if(rc)rc.classList.add('visible');}
 if(id==='settings'&&!settingsAuth&&hasPerm('settings')){settingsAuth=true;document.getElementById('settings-pin-gate').style.display='none';document.getElementById('settings-content').classList.add('visible');}
-if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();if(id==='settings'&&settingsAuth){sLoadRolesCache();sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}}
+if(id==='users'&&usersAuth)loadUsers();if(id==='report'&&reportAuth)refreshReport();if(id==='admin'&&adminAuth)loadAdminData();if(id==='dbsize')loadDbSize();if(id==='tshirt'){tsLoadStats();tsLoadAll();}if(id==='settings'&&settingsAuth){sLoadRolesCache();sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}}
 function closePage(id){document.getElementById('page-'+id).classList.remove('open');}
 
 // Admin PIN
@@ -1072,7 +1139,7 @@ function toggleAddUser(){var f=document.getElementById('s-add-user-fields');var 
 // Settings - Roles
 function sLoadRoles(){fetch('/api/roles').then(function(r){return r.json();}).catch(function(){return[];}).then(function(roles){sRolesCache=roles;sRenderRoles();});}
 var sEditingRoleId=null;
-function permLabel(p){var m={'scanner':'Scanner','records':'Records','settings':'Settings','admin':'Admin','report':'Report','support':'Support','coffee':'Coffee','tab-users':'Users','tab-roles':'Roles','tab-pitstops':'Pit Stops','tab-resetdb':'Reset DB','tab-dbsize':'DB Size'};return m[p]||p;}
+function permLabel(p){var m={'scanner':'Scanner','records':'Records','settings':'Settings','admin':'Admin','report':'Report','support':'Support','coffee':'Coffee','tshirt':'T-Shirts','tab-users':'Users','tab-roles':'Roles','tab-pitstops':'Pit Stops','tab-resetdb':'Reset DB','tab-dbsize':'DB Size'};return m[p]||p;}
 function sRenderRoles(){var roles=sRolesCache;var userCounts={};sUsersCache.forEach(function(u){if(u.role){userCounts[u.role]=(userCounts[u.role]||0)+1;}});if(!roles.length){document.getElementById('s-roles-list').innerHTML='<div class="empty">No roles created yet. Add one above.</div>';return;}var html='<div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>#</th><th>Role Name</th><th>Description</th><th>Permissions</th><th>Users</th><th>Actions</th></tr></thead><tbody>';roles.forEach(function(r,i){var perms=r.permissions||[];var homePerms=perms.filter(function(p){return p==='scanner'||p==='records';});var pages=perms.filter(function(p){return p.indexOf('tab-')!==0&&p!=='scanner'&&p!=='records';});var tabs=perms.filter(function(p){return p.indexOf('tab-')===0;});var permHtml='';if(homePerms.length)permHtml+=homePerms.map(function(p){return '<span class="perm-tag home-tag">'+permLabel(p)+'</span>';}).join('');if(pages.length)permHtml+=pages.map(function(p){return '<span class="perm-tag">'+permLabel(p)+'</span>';}).join('');if(tabs.length)permHtml+=tabs.map(function(p){return '<span class="perm-tag sub-tag">'+permLabel(p)+'</span>';}).join('');if(!perms.length)permHtml='<span class="perm-tag none">No access</span>';var isEditing=sEditingRoleId===r.id;html+='<tr><td>'+(i+1)+'</td><td><strong>'+r.name+'</strong></td><td>'+(r.description||'<span style="color:#9ca3af">-</span>')+'</td><td><div class="perm-tags">'+permHtml+'</div></td><td><span class="role-user-count">'+(userCounts[r.name]||0)+'</span></td><td class="rt-actions"><button class="rt-btn edit" onclick="sToggleRoleEdit('+r.id+')">'+(isEditing?'&#10005;':'&#9998;')+'</button><button class="rt-btn del" onclick="sDeleteRole('+r.id+')">&#128465;</button></td></tr>';if(isEditing){var editPermsHtml='<div class="perm-group-label">Home</div>'+ALL_SCREENS.filter(function(s){return s.group==="home";}).map(function(s){return '<label class="perm-check home"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('')+'<div class="perm-group-label">Pages</div>'+ALL_SCREENS.filter(function(s){return s.group==="page";}).map(function(s){return '<label class="perm-check"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('')+'<div class="perm-group-label">Settings Sub-tabs</div>'+ALL_SCREENS.filter(function(s){return s.group==="tab";}).map(function(s){return '<label class="perm-check sub"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('');html+='<tr class="edit-row"><td colspan="6"><div class="user-edit-form"><div class="ue-grid"><div><label>Role Name</label><input id="re-name-'+r.id+'" type="text" value="'+(r.name||'').replace(/"/g,'&quot;')+'"></div><div><label>Description</label><input id="re-desc-'+r.id+'" type="text" value="'+(r.description||'').replace(/"/g,'&quot;')+'"></div></div><div style="margin-top:10px;"><label style="font-weight:600;font-size:0.85rem;margin-bottom:6px;display:block;">Screen Permissions</label><div class="perm-checks" id="re-perms-'+r.id+'">'+editPermsHtml+'</div></div><div class="user-edit-btns"><button class="cancel-btn" onclick="sToggleRoleEdit(null)">Cancel</button><button class="save-btn" onclick="sSaveRole('+r.id+')">Save</button></div></div></td></tr>';}});html+='</tbody></table></div>';document.getElementById('s-roles-list').innerHTML=html;}
 function sToggleRoleEdit(id){sEditingRoleId=sEditingRoleId===id?null:id;sRenderRoles();}
 function sSaveRole(id){var name=document.getElementById('re-name-'+id).value.trim();var desc=document.getElementById('re-desc-'+id).value.trim();var perms=getCheckedPerms('re-perms-'+id);fetch('/api/roles/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,description:desc,permissions:perms})}).then(function(res){return res.json().then(function(d){return{status:res.status,data:d};});}).then(function(res){if(res.status===200){sEditingRoleId=null;sLoadRoles();sLoadRolesCache();}else{alert(res.data.error||'Failed.');}}).catch(function(){alert('Network error.');});}
@@ -1097,6 +1164,44 @@ function sConfirmReset(){if(!confirm('Are you sure? This will delete ALL scan re
 
 // Settings - DB Size
 function sLoadDbSize(){var el=document.getElementById('s-dbsize-content');el.innerHTML='<div class="empty">Loading...</div>';Promise.all([fetch('/api/stats').then(function(r){return r.json();}).catch(function(){return{};}),fetch('/api/users').then(function(r){return r.json();}).catch(function(){return[];})]).then(function(res){var st=res[0],users=res[1];var total=st.total||0;var byCP=st.byPitStop||[];var scanBytes=total*120;var userBytes=(users.length||0)*80;var totalBytes=scanBytes+userBytes;function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return (b/1024).toFixed(1)+'KB';return (b/1048576).toFixed(2)+'MB';}var cpRows=byCP.map(function(c){return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:0.88rem;"><span style="font-weight:600;">'+c.pit_stop+'</span><span style="color:var(--green);font-weight:700;">'+c.count+' records</span></div>';}).join('');el.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:14px;"><div style="background:#07570f;padding:10px 14px;color:#fff;font-size:0.78rem;font-weight:700;text-transform:uppercase;">Scans Table</div><div style="padding:14px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:0.85rem;color:#374151;">Total Records</span><span style="font-size:1.6rem;font-weight:800;color:var(--green);">'+total+'</span></div>'+cpRows+'<div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:0.82rem;color:#6b7280;"><span>Est. size</span><span>'+fmtSize(scanBytes)+'</span></div></div></div><div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:14px;"><div style="background:#1d4ed8;padding:10px 14px;color:#fff;font-size:0.78rem;font-weight:700;text-transform:uppercase;">Users Table</div><div style="padding:14px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:0.85rem;color:#374151;">Total Users</span><span style="font-size:1.6rem;font-weight:800;color:#1d4ed8;">'+users.length+'</span></div><div style="padding:0 14px 12px;font-size:0.82rem;color:#6b7280;display:flex;justify-content:space-between;"><span>Est. size</span><span>'+fmtSize(userBytes)+'</span></div></div><div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:0.85rem;font-weight:600;color:#15803d;">Total DB Size (est.)</span><span style="font-size:1.1rem;font-weight:800;color:#15803d;">'+fmtSize(totalBytes)+'</span></div><div style="text-align:center;"><button class="outline" onclick="sLoadDbSize()" style="font-size:0.8rem;">&#8635; Refresh</button></div>';});}
+
+// T-Shirt functions
+var tsAllData=[];
+function tsLoadStats(){fetch('/api/tshirts/stats').then(function(r){return r.json();}).then(function(d){document.querySelector('#ts-total .ts-stat-num').textContent=d.total||0;document.querySelector('#ts-delivered .ts-stat-num').textContent=d.delivered||0;document.querySelector('#ts-pending .ts-stat-num').textContent=d.pending||0;}).catch(function(){});}
+function tsLoadAll(){fetch('/api/tshirts').then(function(r){return r.json();}).then(function(data){tsAllData=data;tsRenderTable(data);}).catch(function(){document.getElementById('ts-table-wrap').innerHTML='<div class="empty">Failed to load.</div>';});}
+function tsRenderTable(data){if(!data.length){document.getElementById('ts-table-wrap').innerHTML='<div class="empty" style="padding:20px;">No riders found. Upload data first.</div>';return;}
+var html='<table class="ts-table"><thead><tr><th>#</th><th>CC ID</th><th>Name</th><th>Size</th><th>Distance</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+data.forEach(function(r,i){var status=r.delivered?'<span style="color:var(--green);font-weight:700;">Delivered</span>':'<span style="color:var(--amber);font-weight:700;">Pending</span>';
+html+='<tr><td>'+(i+1)+'</td><td><strong>'+r.cc_id+'</strong></td><td>'+(r.name||r.first_name+' '+r.last_name||'-')+'</td><td>'+(r.size||'-')+'</td><td>'+(r.distance||'-')+'</td><td>'+(r.payment_status||'-')+'</td><td>'+status+'</td><td>'+(r.delivered?'<span style="color:var(--gray);font-size:0.8rem;">Done</span>':'<button onclick="tsDeliver(\''+r.cc_id+'\')" style="background:var(--green);color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;">Deliver</button>')+'</td></tr>';});
+html+='</tbody></table>';document.getElementById('ts-table-wrap').innerHTML=html;}
+function tsFilterTable(){var q=document.getElementById('ts-filter').value.trim().toLowerCase();if(!q){tsRenderTable(tsAllData);return;}var filtered=tsAllData.filter(function(r){return (r.cc_id||'').toLowerCase().indexOf(q)!==-1||(r.name||'').toLowerCase().indexOf(q)!==-1||(r.first_name||'').toLowerCase().indexOf(q)!==-1||(r.last_name||'').toLowerCase().indexOf(q)!==-1;});tsRenderTable(filtered);}
+function tsLookup(){var id=document.getElementById('ts-lookup-id').value.trim();var el=document.getElementById('ts-lookup-result');if(!id){el.innerHTML='<span style="color:var(--red);font-size:0.85rem;">Enter a CC ID</span>';return;}
+el.innerHTML='<span style="color:var(--gray);font-size:0.85rem;">Searching...</span>';
+fetch('/api/tshirt/'+encodeURIComponent(id)).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(res){if(res.status===404){el.innerHTML='<span style="color:var(--red);font-size:0.85rem;">'+res.data.error+'</span>';return;}
+var r=res.data;var status=r.delivered?'<span style="color:var(--green);font-weight:700;">Delivered</span>':'<span style="color:var(--amber);font-weight:700;">Pending</span>';
+el.innerHTML='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;margin-top:6px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><strong style="font-size:1.1rem;">'+r.cc_id+'</strong>'+status+'</div>'
++'<div class="ts-detail-grid">'
++'<div><span class="ts-dlbl">Name</span><span class="ts-dval">'+(r.name||'-')+'</span></div>'
++'<div><span class="ts-dlbl">First Name</span><span class="ts-dval">'+(r.first_name||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Last Name</span><span class="ts-dval">'+(r.last_name||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Size</span><span class="ts-dval">'+(r.size||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Cycle</span><span class="ts-dval">'+(r.cycle||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Cycle Brand</span><span class="ts-dval">'+(r.cycle_brand||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Distance</span><span class="ts-dval">'+(r.distance||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Event</span><span class="ts-dval">'+(r.event_name||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Event Date</span><span class="ts-dval">'+(r.event_date||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Payment Status</span><span class="ts-dval">'+(r.payment_status||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Payment Method</span><span class="ts-dval">'+(r.payment_method||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Payment Date</span><span class="ts-dval">'+(r.payment_date||'-')+'</span></div>'
++'<div><span class="ts-dlbl">Collection Center</span><span class="ts-dval">'+(r.preferred_collection_center||'-')+'</span></div>'
++'</div>'
++(r.delivered?'<div style="margin-top:8px;font-size:0.82rem;color:var(--gray);">Delivered by '+(r.delivered_by||'?')+' at '+(r.delivered_at?new Date(r.delivered_at).toLocaleString():'?')+'</div>':'<button onclick="tsDeliver(\''+r.cc_id+'\')" style="margin-top:10px;width:100%;background:var(--green);color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">Mark as Delivered</button>')
++'</div>';
+}).catch(function(){el.innerHTML='<span style="color:var(--red);font-size:0.85rem;">Network error</span>';});}
+function tsDeliver(ccId){var by=sessionStorage.getItem('cc_user')||'';if(!confirm('Mark t-shirt delivered for '+ccId+'?'))return;fetch('/api/tshirt/deliver',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cc_id:ccId,delivered_by:by})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(res){if(res.status===200||res.status===201){tsLoadStats();tsLoadAll();document.getElementById('ts-lookup-result').innerHTML='<span style="color:var(--green);font-size:0.85rem;font-weight:700;">T-shirt delivered to '+ccId+'!</span>';}else{alert(res.data.error||'Failed.');}}).catch(function(){alert('Network error.');});}
+function tsBulkUpload(){var file=document.getElementById('ts-file').files[0];var msg=document.getElementById('ts-upload-msg');if(!file){msg.innerHTML='<span style="color:var(--red);">No file selected</span>';return;}msg.innerHTML='<span style="color:var(--gray);">Processing...</span>';
+var reader=new FileReader();reader.onload=function(e){try{var rows;if(file.name.endsWith('.json')){rows=JSON.parse(e.target.result);}else{var lines=e.target.result.split('\n').filter(function(l){return l.trim();});if(lines.length<2){msg.innerHTML='<span style="color:var(--red);">CSV needs header + data rows</span>';return;}var headers=lines[0].split(',').map(function(h){return h.trim().replace(/^"|"$/g,'');});rows=[];for(var i=1;i<lines.length;i++){var vals=lines[i].split(',').map(function(v){return v.trim().replace(/^"|"$/g,'');});var obj={};headers.forEach(function(h,j){obj[h]=vals[j]||'';});rows.push(obj);}}
+fetch('/api/tshirts/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rows:rows})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(res){if(res.data.ok){msg.innerHTML='<span style="color:var(--green);font-weight:700;">Uploaded '+res.data.count+' riders!</span>';tsLoadStats();tsLoadAll();}else{msg.innerHTML='<span style="color:var(--red);">'+res.data.error+'</span>';}}).catch(function(){msg.innerHTML='<span style="color:var(--red);">Network error</span>';});}catch(ex){msg.innerHTML='<span style="color:var(--red);">Parse error: '+ex.message+'</span>';}};reader.readAsText(file);}
 
 // Load pit stops on startup
 fetch('/api/pit-stops').then(function(r){return r.json();}).catch(function(){return[];}).then(function(ps){if(ps.length){pitStopsCache=ps;updatePitStopDropdown();}});
