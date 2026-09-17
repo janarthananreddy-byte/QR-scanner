@@ -890,11 +890,11 @@
         <div><label>Distance</label><input id="ts-f-distance" type="text" placeholder="Distance"></div>
         <div><label>Cycle</label><input id="ts-f-cycle" type="text" placeholder="Cycle Number"></div>
         <div><label>Cycle Brand</label><input id="ts-f-cbrand" type="text" placeholder="Cycle Brand"></div>
-        <div><label>Payment Status</label><input id="ts-f-pstatus" type="text" placeholder="Paid/Pending"></div>
-        <div><label>Payment Method</label><input id="ts-f-pmethod" type="text" placeholder="UPI/Cash/Card"></div>
-        <div><label>Payment Date</label><input id="ts-f-pdate" type="text" placeholder="Payment Date"></div>
+        <div><label>Payment Status</label><select id="ts-f-pstatus" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;background:#fff;"><option value="">-- Select --</option><option value="Paid">Paid</option><option value="Pending">Pending</option></select></div>
+        <div><label>Payment Method</label><select id="ts-f-pmethod" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;background:#fff;"><option value="">-- Select --</option><option value="UPI">UPI</option><option value="Cash">Cash</option><option value="Card">Card</option></select></div>
+        <div><label>Payment Date</label><input id="ts-f-pdate" type="date" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;"></div>
         <div><label>Event Name</label><input id="ts-f-event" type="text" placeholder="Event Name"></div>
-        <div><label>Event Date</label><input id="ts-f-edate" type="text" placeholder="Event Date"></div>
+        <div><label>Event Date</label><input id="ts-f-edate" type="date" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;"></div>
         <div><label>Collection Center</label><input id="ts-f-center" type="text" placeholder="Preferred Center"></div>
       </div>
       <button id="ts-form-btn" onclick="tsSaveRider()" style="width:100%;margin-top:10px;background:var(--green);color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">Add Rider</button>
