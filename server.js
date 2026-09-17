@@ -34,20 +34,40 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('app_users').select('id,username,created_at').order('id');
+    const { data, error } = await supabase.from('app_users').select('id,username,first_name,last_name,email,mobile,created_at').order('id');
     if (error) throw error;
     res.json(data);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/users', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, first_name, last_name, email, mobile } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Missing username or password' });
   try {
-    const { data, error } = await supabase.from('app_users').insert({ username: username.trim(), password }).select().single();
+    const record = { username: username.trim(), password };
+    if (first_name) record.first_name = first_name.trim();
+    if (last_name) record.last_name = last_name.trim();
+    if (email) record.email = email.trim().toLowerCase();
+    if (mobile) record.mobile = mobile.trim();
+    const { data, error } = await supabase.from('app_users').insert(record).select().single();
     if (error) throw error;
     res.json(data);
   } catch(e) { res.status(400).json({ error: e.message }); }
+});
+
+app.put('/api/users/:id', async (req, res) => {
+  const { first_name, last_name, email, mobile } = req.body;
+  const updates = {};
+  if (first_name !== undefined) updates.first_name = first_name.trim();
+  if (last_name !== undefined) updates.last_name = last_name.trim();
+  if (email !== undefined) updates.email = email.trim().toLowerCase();
+  if (mobile !== undefined) updates.mobile = mobile.trim();
+  if (!Object.keys(updates).length) return res.status(400).json({ error: 'Nothing to update' });
+  try {
+    const { data, error } = await supabase.from('app_users').update(updates).eq('id', req.params.id).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.delete('/api/users/:id', async (req, res) => {
