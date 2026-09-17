@@ -360,11 +360,17 @@
     .role-select{padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:0.78rem;background:#fff;cursor:pointer;}
     .role-select:focus{outline:none;border-color:var(--green);}
     .perm-checks{display:flex;flex-wrap:wrap;gap:8px;}
+    .perm-group-label{width:100%;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;margin-top:6px;}
+    .perm-group-label:first-child{margin-top:0;}
     .perm-check{display:flex;align-items:center;gap:5px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:0.82rem;cursor:pointer;transition:all 0.15s;}
+    .perm-check.sub{border-style:dashed;font-size:0.78rem;}
     .perm-check:has(input:checked){background:#eef2ff;border-color:#6366f1;color:#3730a3;}
+    .perm-check.sub:has(input:checked){background:#f0fdf4;border-color:#22c55e;color:#15803d;}
     .perm-check input{accent-color:#6366f1;}
+    .perm-check.sub input{accent-color:#22c55e;}
     .perm-tags{display:flex;flex-wrap:wrap;gap:4px;}
     .perm-tag{background:#eef2ff;color:#3730a3;font-size:0.72rem;padding:2px 8px;border-radius:10px;font-weight:600;}
+    .perm-tag.sub-tag{background:#f0fdf4;color:#15803d;}
     .perm-tag.none{background:#f3f4f6;color:#9ca3af;}
     .roles-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:#fff;}
     .roles-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
@@ -459,12 +465,12 @@
       <span class="di-arrow">&#8250;</span>
     </button>
     <div class="drawer-divider"></div>
-    <button class="drawer-item" onclick="openPage('support')">
+    <button class="drawer-item" id="drawer-support" onclick="openPage('support')">
       <span class="di-icon">&#128682;</span>
       <div class="di-text"><span class="di-title">Support</span><span class="di-sub">Helpline &amp; contacts</span></div>
       <span class="di-arrow">&#8250;</span>
     </button>
-    <button class="drawer-item coffee-item" onclick="openPage('coffee')">
+    <button class="drawer-item coffee-item" id="drawer-coffee" onclick="openPage('coffee')">
       <span class="di-icon">&#9749;</span>
       <div class="di-text"><span class="di-title">Buy Me a Coffee</span><span class="di-sub">Support the developer</span></div>
       <span class="di-arrow">&#8250;</span>
@@ -544,11 +550,11 @@
     </div>
     <div class="gated-content" id="settings-content">
       <div class="settings-tabs">
-        <button class="s-tab active" onclick="showSettingsTab('s-users',this)">&#128100; Users</button>
-        <button class="s-tab" onclick="showSettingsTab('s-roles',this)">&#127918; Roles</button>
-        <button class="s-tab" onclick="showSettingsTab('s-pitstops',this)">&#128205; Pit Stops</button>
-        <button class="s-tab" onclick="showSettingsTab('s-resetdb',this)">&#9888; Reset</button>
-        <button class="s-tab" onclick="showSettingsTab('s-dbsize',this)">&#128200; DB Size</button>
+        <button class="s-tab active" id="stab-users" onclick="showSettingsTab('s-users',this)">&#128100; Users</button>
+        <button class="s-tab" id="stab-roles" onclick="showSettingsTab('s-roles',this)">&#127918; Roles</button>
+        <button class="s-tab" id="stab-pitstops" onclick="showSettingsTab('s-pitstops',this)">&#128205; Pit Stops</button>
+        <button class="s-tab" id="stab-resetdb" onclick="showSettingsTab('s-resetdb',this)">&#9888; Reset</button>
+        <button class="s-tab" id="stab-dbsize" onclick="showSettingsTab('s-dbsize',this)">&#128200; DB Size</button>
       </div>
 
       <!-- Users Tab -->
@@ -600,9 +606,18 @@
           <div class="form-row">
             <label style="font-weight:600;font-size:0.85rem;margin-bottom:6px;display:block;">Screen Permissions</label>
             <div class="perm-checks" id="s-new-role-perms">
+              <div class="perm-group-label">Pages</div>
               <label class="perm-check"><input type="checkbox" value="settings"> <span>Settings</span></label>
-              <label class="perm-check"><input type="checkbox" value="admin"> <span>Admin Dashboard</span></label>
+              <label class="perm-check"><input type="checkbox" value="admin"> <span>Admin</span></label>
               <label class="perm-check"><input type="checkbox" value="report"> <span>Report</span></label>
+              <label class="perm-check"><input type="checkbox" value="support"> <span>Support</span></label>
+              <label class="perm-check"><input type="checkbox" value="coffee"> <span>Buy Me a Coffee</span></label>
+              <div class="perm-group-label">Settings Sub-tabs</div>
+              <label class="perm-check sub"><input type="checkbox" value="tab-users"> <span>Users</span></label>
+              <label class="perm-check sub"><input type="checkbox" value="tab-roles"> <span>Roles</span></label>
+              <label class="perm-check sub"><input type="checkbox" value="tab-pitstops"> <span>Pit Stops</span></label>
+              <label class="perm-check sub"><input type="checkbox" value="tab-resetdb"> <span>Reset DB</span></label>
+              <label class="perm-check sub"><input type="checkbox" value="tab-dbsize"> <span>DB Size</span></label>
             </div>
           </div>
           <button class="primary" onclick="sAddRole()" style="width:100%;">Add Role</button>
@@ -897,14 +912,22 @@ function doLogout(){
   resetPermissions();
 }
 // Permissions
-var ALL_SCREENS=[{key:'settings',label:'Settings'},{key:'admin',label:'Admin Dashboard'},{key:'report',label:'Report'}];
+var ALL_SCREENS=[
+{key:'settings',label:'Settings',group:'page'},{key:'admin',label:'Admin',group:'page'},{key:'report',label:'Report',group:'page'},{key:'support',label:'Support',group:'page'},{key:'coffee',label:'Buy Me a Coffee',group:'page'},
+{key:'tab-users',label:'Users',group:'tab'},{key:'tab-roles',label:'Roles',group:'tab'},{key:'tab-pitstops',label:'Pit Stops',group:'tab'},{key:'tab-resetdb',label:'Reset DB',group:'tab'},{key:'tab-dbsize',label:'DB Size',group:'tab'}
+];
+var SETTINGS_TABS=[{key:'tab-users',elTab:'stab-users',elContent:'s-users'},{key:'tab-roles',elTab:'stab-roles',elContent:'s-roles'},{key:'tab-pitstops',elTab:'stab-pitstops',elContent:'s-pitstops'},{key:'tab-resetdb',elTab:'stab-resetdb',elContent:'s-resetdb'},{key:'tab-dbsize',elTab:'stab-dbsize',elContent:'s-dbsize'}];
 function getUserPerms(){try{return JSON.parse(sessionStorage.getItem('cc_perms')||'[]');}catch(e){return[];}}
 function hasPerm(screen){var p=getUserPerms();return p.indexOf(screen)!==-1;}
-function applyPermissions(){var perms=getUserPerms();ALL_SCREENS.forEach(function(s){var el=document.getElementById('drawer-'+s.key);if(el)el.style.display=perms.length===0||perms.indexOf(s.key)!==-1?'':'none';});
+function applyPermissions(){var perms=getUserPerms();if(!perms.length)return;
+ALL_SCREENS.forEach(function(s){if(s.group==='page'){var el=document.getElementById('drawer-'+s.key);if(el)el.style.display=perms.indexOf(s.key)!==-1?'':'none';}});
+SETTINGS_TABS.forEach(function(t){var tab=document.getElementById(t.elTab);var content=document.getElementById(t.elContent);if(tab)tab.style.display=perms.indexOf(t.key)!==-1?'':'none';if(content&&perms.indexOf(t.key)===-1)content.classList.remove('active');});
+applySettingsFirstTab();
 if(perms.indexOf('settings')!==-1){settingsAuth=true;}
 if(perms.indexOf('admin')!==-1){adminAuth=true;}
 if(perms.indexOf('report')!==-1){reportAuth=true;}}
-function resetPermissions(){settingsAuth=false;adminAuth=false;reportAuth=false;ALL_SCREENS.forEach(function(s){var el=document.getElementById('drawer-'+s.key);if(el)el.style.display='';});}
+function applySettingsFirstTab(){var perms=getUserPerms();if(!perms.length)return;var first=null;SETTINGS_TABS.forEach(function(t){var tab=document.getElementById(t.elTab);if(tab&&tab.style.display!=='none'&&!first)first=t;});if(first){var tab=document.getElementById(first.elTab);var content=document.getElementById(first.elContent);if(tab&&!document.querySelector('.s-tab.active[style*="display"]')){document.querySelectorAll('.s-tab').forEach(function(b){b.classList.remove('active');});document.querySelectorAll('.s-tab-content').forEach(function(c){c.classList.remove('active');});tab.classList.add('active');if(content)content.classList.add('active');}}}
+function resetPermissions(){settingsAuth=false;adminAuth=false;reportAuth=false;ALL_SCREENS.forEach(function(s){if(s.group==='page'){var el=document.getElementById('drawer-'+s.key);if(el)el.style.display='';}});SETTINGS_TABS.forEach(function(t){var tab=document.getElementById(t.elTab);if(tab)tab.style.display='';});}
 
 // Check session on load
 (function(){
@@ -1011,7 +1034,7 @@ function confirmReset(){if(!confirm('Are you sure? This will delete ALL scan rec
 // Settings page
 var settingsAuth=false;
 function checkSettingsPin(){var v=document.getElementById('settings-pin').value;if(v==='jana1986'){settingsAuth=true;document.getElementById('settings-pin-gate').style.display='none';document.getElementById('settings-content').classList.add('visible');sLoadRolesCache();sLoadUsers();sLoadPitStops();sLoadResetStats();sLoadDbSize();}else{document.getElementById('settings-pin-err').textContent='Incorrect PIN.';}}
-function showSettingsTab(id,btn){document.querySelectorAll('.s-tab-content').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.s-tab').forEach(function(b){b.classList.remove('active');});document.getElementById(id).classList.add('active');btn.classList.add('active');if(id==='s-users'){sLoadRolesCache();sLoadUsers();}if(id==='s-roles')sLoadRoles();if(id==='s-pitstops')sLoadPitStops();if(id==='s-resetdb')sLoadResetStats();if(id==='s-dbsize')sLoadDbSize();}
+function showSettingsTab(id,btn){var perms=getUserPerms();var tabKey='tab-'+id.replace('s-','');if(perms.length&&perms.indexOf(tabKey)===-1)return;document.querySelectorAll('.s-tab-content').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.s-tab').forEach(function(b){b.classList.remove('active');});document.getElementById(id).classList.add('active');btn.classList.add('active');if(id==='s-users'){sLoadRolesCache();sLoadUsers();}if(id==='s-roles')sLoadRoles();if(id==='s-pitstops')sLoadPitStops();if(id==='s-resetdb')sLoadResetStats();if(id==='s-dbsize')sLoadDbSize();}
 
 // Settings - Roles cache
 var sRolesCache=[];
@@ -1034,7 +1057,8 @@ function toggleAddUser(){var f=document.getElementById('s-add-user-fields');var 
 // Settings - Roles
 function sLoadRoles(){fetch('/api/roles').then(function(r){return r.json();}).catch(function(){return[];}).then(function(roles){sRolesCache=roles;sRenderRoles();});}
 var sEditingRoleId=null;
-function sRenderRoles(){var roles=sRolesCache;var userCounts={};sUsersCache.forEach(function(u){if(u.role){userCounts[u.role]=(userCounts[u.role]||0)+1;}});if(!roles.length){document.getElementById('s-roles-list').innerHTML='<div class="empty">No roles created yet. Add one above.</div>';return;}var html='<div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>#</th><th>Role Name</th><th>Description</th><th>Permissions</th><th>Users</th><th>Actions</th></tr></thead><tbody>';roles.forEach(function(r,i){var perms=r.permissions||[];var permHtml=perms.length?perms.map(function(p){var lbl=p==='settings'?'Settings':p==='admin'?'Admin':p==='report'?'Report':p;return '<span class="perm-tag">'+lbl+'</span>';}).join(''):'<span class="perm-tag none">No access</span>';var isEditing=sEditingRoleId===r.id;html+='<tr><td>'+(i+1)+'</td><td><strong>'+r.name+'</strong></td><td>'+(r.description||'<span style="color:#9ca3af">-</span>')+'</td><td><div class="perm-tags">'+permHtml+'</div></td><td><span class="role-user-count">'+(userCounts[r.name]||0)+'</span></td><td class="rt-actions"><button class="rt-btn edit" onclick="sToggleRoleEdit('+r.id+')">'+(isEditing?'&#10005;':'&#9998;')+'</button><button class="rt-btn del" onclick="sDeleteRole('+r.id+')">&#128465;</button></td></tr>';if(isEditing){html+='<tr class="edit-row"><td colspan="6"><div class="user-edit-form"><div class="ue-grid"><div><label>Role Name</label><input id="re-name-'+r.id+'" type="text" value="'+(r.name||'').replace(/"/g,'&quot;')+'"></div><div><label>Description</label><input id="re-desc-'+r.id+'" type="text" value="'+(r.description||'').replace(/"/g,'&quot;')+'"></div></div><div style="margin-top:10px;"><label style="font-weight:600;font-size:0.85rem;margin-bottom:6px;display:block;">Screen Permissions</label><div class="perm-checks" id="re-perms-'+r.id+'">'+ALL_SCREENS.map(function(s){return '<label class="perm-check"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('')+'</div></div><div class="user-edit-btns"><button class="cancel-btn" onclick="sToggleRoleEdit(null)">Cancel</button><button class="save-btn" onclick="sSaveRole('+r.id+')">Save</button></div></div></td></tr>';}});html+='</tbody></table></div>';document.getElementById('s-roles-list').innerHTML=html;}
+function permLabel(p){var m={'settings':'Settings','admin':'Admin','report':'Report','support':'Support','coffee':'Coffee','tab-users':'Users','tab-roles':'Roles','tab-pitstops':'Pit Stops','tab-resetdb':'Reset DB','tab-dbsize':'DB Size'};return m[p]||p;}
+function sRenderRoles(){var roles=sRolesCache;var userCounts={};sUsersCache.forEach(function(u){if(u.role){userCounts[u.role]=(userCounts[u.role]||0)+1;}});if(!roles.length){document.getElementById('s-roles-list').innerHTML='<div class="empty">No roles created yet. Add one above.</div>';return;}var html='<div class="roles-table-wrap"><table class="roles-table"><thead><tr><th>#</th><th>Role Name</th><th>Description</th><th>Permissions</th><th>Users</th><th>Actions</th></tr></thead><tbody>';roles.forEach(function(r,i){var perms=r.permissions||[];var pages=perms.filter(function(p){return p.indexOf('tab-')!==0;});var tabs=perms.filter(function(p){return p.indexOf('tab-')===0;});var permHtml='';if(pages.length)permHtml+=pages.map(function(p){return '<span class="perm-tag">'+permLabel(p)+'</span>';}).join('');if(tabs.length)permHtml+=tabs.map(function(p){return '<span class="perm-tag sub-tag">'+permLabel(p)+'</span>';}).join('');if(!perms.length)permHtml='<span class="perm-tag none">No access</span>';var isEditing=sEditingRoleId===r.id;html+='<tr><td>'+(i+1)+'</td><td><strong>'+r.name+'</strong></td><td>'+(r.description||'<span style="color:#9ca3af">-</span>')+'</td><td><div class="perm-tags">'+permHtml+'</div></td><td><span class="role-user-count">'+(userCounts[r.name]||0)+'</span></td><td class="rt-actions"><button class="rt-btn edit" onclick="sToggleRoleEdit('+r.id+')">'+(isEditing?'&#10005;':'&#9998;')+'</button><button class="rt-btn del" onclick="sDeleteRole('+r.id+')">&#128465;</button></td></tr>';if(isEditing){var editPermsHtml='<div class="perm-group-label">Pages</div>'+ALL_SCREENS.filter(function(s){return s.group==="page";}).map(function(s){return '<label class="perm-check"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('')+'<div class="perm-group-label">Settings Sub-tabs</div>'+ALL_SCREENS.filter(function(s){return s.group==="tab";}).map(function(s){return '<label class="perm-check sub"><input type="checkbox" value="'+s.key+'"'+(perms.indexOf(s.key)!==-1?' checked':'')+'> <span>'+s.label+'</span></label>';}).join('');html+='<tr class="edit-row"><td colspan="6"><div class="user-edit-form"><div class="ue-grid"><div><label>Role Name</label><input id="re-name-'+r.id+'" type="text" value="'+(r.name||'').replace(/"/g,'&quot;')+'"></div><div><label>Description</label><input id="re-desc-'+r.id+'" type="text" value="'+(r.description||'').replace(/"/g,'&quot;')+'"></div></div><div style="margin-top:10px;"><label style="font-weight:600;font-size:0.85rem;margin-bottom:6px;display:block;">Screen Permissions</label><div class="perm-checks" id="re-perms-'+r.id+'">'+editPermsHtml+'</div></div><div class="user-edit-btns"><button class="cancel-btn" onclick="sToggleRoleEdit(null)">Cancel</button><button class="save-btn" onclick="sSaveRole('+r.id+')">Save</button></div></div></td></tr>';}});html+='</tbody></table></div>';document.getElementById('s-roles-list').innerHTML=html;}
 function sToggleRoleEdit(id){sEditingRoleId=sEditingRoleId===id?null:id;sRenderRoles();}
 function sSaveRole(id){var name=document.getElementById('re-name-'+id).value.trim();var desc=document.getElementById('re-desc-'+id).value.trim();var perms=getCheckedPerms('re-perms-'+id);fetch('/api/roles/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,description:desc,permissions:perms})}).then(function(res){return res.json().then(function(d){return{status:res.status,data:d};});}).then(function(res){if(res.status===200){sEditingRoleId=null;sLoadRoles();sLoadRolesCache();}else{alert(res.data.error||'Failed.');}}).catch(function(){alert('Network error.');});}
 function getCheckedPerms(containerId){var checks=document.querySelectorAll('#'+containerId+' input[type=checkbox]:checked');var perms=[];checks.forEach(function(c){perms.push(c.value);});return perms;}
