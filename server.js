@@ -282,6 +282,16 @@ app.get('/api/tshirt/:cc_id', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+app.get('/api/tshirt/search/:query', async (req, res) => {
+  const q = req.params.query.trim();
+  if (!q) return res.status(400).json({ error: 'Search query required' });
+  try {
+    const { data } = await supabase.from('tshirts').select('*').or('cc_id.ilike.%' + q + '%,mobile.ilike.%' + q + '%').limit(1).maybeSingle();
+    if (!data) return res.status(404).json({ error: 'No rider found for "' + q + '"' });
+    res.json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/tshirt/deliver', async (req, res) => {
   const { cc_id, delivered_by, distribution_center } = req.body;
   if (!cc_id) return res.status(400).json({ error: 'Missing cc_id' });
