@@ -352,7 +352,7 @@ app.get('/api/transactions', async (req, res) => {
 });
 
 app.post('/api/transaction', async (req, res) => {
-  const { cc_id, rider_name, cycle, tshirt_size, item, quantity, issued_by, pitstop } = req.body;
+  const { cc_id, rider_name, cycle, tshirt_size, event_name, item, quantity, issued_by, pitstop } = req.body;
   if (!cc_id || !item) return res.status(400).json({ error: 'CC ID and Item are required' });
   try {
     const { data, error } = await supabase.from('transactions').insert({
@@ -360,6 +360,7 @@ app.post('/api/transaction', async (req, res) => {
       rider_name: rider_name || '',
       cycle: cycle || '',
       tshirt_size: tshirt_size || '',
+      event_name: event_name || '',
       item: item.trim(),
       quantity: parseInt(quantity) || 1,
       issued_by: issued_by || '',
