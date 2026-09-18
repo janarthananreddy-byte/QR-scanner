@@ -238,13 +238,13 @@ app.delete('/api/pit-stops/:id', async (req, res) => {
 
 // T-SHIRT ENDPOINTS
 app.post('/api/tshirt', async (req, res) => {
-  const { cc_id, name, first_name, last_name, cycle, cycle_brand, size, payment_date, payment_status, payment_method, distance, event_name, event_date, preferred_collection_center } = req.body;
+  const { cc_id, name, first_name, last_name, mobile, cycle, cycle_brand, size, payment_date, payment_status, payment_method, distance, event_name, event_date, preferred_collection_center } = req.body;
   if (!cc_id) return res.status(400).json({ error: 'CC ID is required' });
   const code = cc_id.trim().toUpperCase();
   try {
     const { data: existing } = await supabase.from('tshirts').select('id').eq('cc_id', code).maybeSingle();
     if (existing) return res.status(409).json({ error: 'Rider ' + code + ' already exists' });
-    const { data, error } = await supabase.from('tshirts').insert({ cc_id: code, name: name || '', first_name: first_name || '', last_name: last_name || '', cycle: cycle || '', cycle_brand: cycle_brand || '', size: (size || '').toUpperCase(), payment_date: payment_date || '', payment_status: payment_status || '', payment_method: payment_method || '', distance: distance || '', event_name: event_name || '', event_date: event_date || '', preferred_collection_center: preferred_collection_center || '' }).select().single();
+    const { data, error } = await supabase.from('tshirts').insert({ cc_id: code, name: name || '', first_name: first_name || '', last_name: last_name || '', mobile: mobile || '', cycle: cycle || '', cycle_brand: cycle_brand || '', size: (size || '').toUpperCase(), payment_date: payment_date || '', payment_status: payment_status || '', payment_method: payment_method || '', distance: distance || '', event_name: event_name || '', event_date: event_date || '', preferred_collection_center: preferred_collection_center || '' }).select().single();
     if (error) throw error;
     res.json(data);
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -253,7 +253,7 @@ app.post('/api/tshirt', async (req, res) => {
 app.put('/api/tshirt/:cc_id', async (req, res) => {
   const cc_id = req.params.cc_id.trim().toUpperCase();
   const fields = {};
-  ['name','first_name','last_name','cycle','cycle_brand','size','payment_date','payment_status','payment_method','distance','event_name','event_date','preferred_collection_center'].forEach(f => {
+  ['name','first_name','last_name','mobile','cycle','cycle_brand','size','payment_date','payment_status','payment_method','distance','event_name','event_date','preferred_collection_center'].forEach(f => {
     if (req.body[f] !== undefined) fields[f] = f === 'size' ? (req.body[f] || '').toUpperCase() : (req.body[f] || '');
   });
   try {
@@ -314,6 +314,7 @@ app.post('/api/tshirts/bulk', async (req, res) => {
     name: String(r.name || r.Name || r.NAME || r['Rider Name'] || '').trim(),
     first_name: String(r.first_name || r['First Name'] || r.FirstName || r.FIRST_NAME || '').trim(),
     last_name: String(r.last_name || r['Last Name'] || r.LastName || r.LAST_NAME || '').trim(),
+    mobile: String(r.mobile || r.Mobile || r.MOBILE || r['Mobile Number'] || r.phone || r.Phone || '').trim(),
     cycle: String(r.cycle || r.Cycle || r.CYCLE || r['Cycle Number'] || '').trim(),
     cycle_brand: String(r.cycle_brand || r['Cycle Brand'] || r.CycleBrand || r.CYCLE_BRAND || '').trim(),
     size: String(r.size || r.Size || r.SIZE || r['T-Shirt Size'] || r['Tshirt Size'] || r.tshirt_size || '').trim().toUpperCase(),
